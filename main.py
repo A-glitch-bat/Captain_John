@@ -5,6 +5,8 @@ import os
 import tkinter as tk
 from PIL import Image, ImageDraw, ImageTk
 import subprocess
+from neon_button import create_neon_button
+from panel import info_panel
 #--------------------------------
 
 # Functions
@@ -72,15 +74,46 @@ def on_button_release(event, button, default_image, command):
     button.image = default_image
     # Execute the command
     command()
-
-def print_text():
-    output_text.insert(tk.END, "This is a simple line of text.\n")
 #--------------------------------
 
 # Define app
 root = tk.Tk()
-root.title("John")
-root.configure(bg='black')
+root.configure(bg="black") #250x150
+root.geometry("550x400+200+150")  # Custom position
+root.overrideredirect(True)  # Remove the default title bar
+
+# Remove default title bar and create a new grid setup
+title_bar = tk.Frame(root, bg="black", relief="raised", bd=0)
+title_bar.grid(row=0, column=0, columnspan=3, sticky="we")
+
+# Title label on the custom title bar
+title_label = tk.Label(title_bar, text="Captain John", bg="black", fg="cyan", font=("Arial", 10, "bold"))
+title_label.pack(side="left", padx=5)
+
+# Close button on the custom title bar
+close_button = tk.Button(title_bar, text="X", bg="black", fg="red", font=("Arial", 10, "bold"),
+                         command=root.destroy, relief="flat", cursor="hand2")
+close_button.pack(side="right", padx=5)
+
+# Allow dragging the custom title bar
+def start_move(event):
+    root.x = event.x
+    root.y = event.y
+
+def stop_move(event):
+    root.x = None
+    root.y = None
+
+def on_motion(event):
+    delta_x = event.x - root.x
+    delta_y = event.y - root.y
+    new_x = root.winfo_x() + delta_x
+    new_y = root.winfo_y() + delta_y
+    root.geometry(f"+{new_x}+{new_y}")
+
+title_bar.bind("<Button-1>", start_move)
+title_bar.bind("<ButtonRelease-1>", stop_move)
+title_bar.bind("<B1-Motion>", on_motion)
 #--------------------------------
 
 # Define elements
@@ -102,31 +135,30 @@ pressed_image = create_rounded_button(
     button_border_thickness, "#00CC00",  # Darker green when pressed
     outer_border_color, inner_border_color
 )
-
-# Create a frame to hold the buttons
-button_frame = tk.Frame(root, bg='black')
-button_frame.grid(row=0, column=0, pady=20)
-
+#--------------------------------
+# Button frame
+button_frame = tk.Frame(root, bg="black")
+button_frame.grid(row=1, column=0, columnspan=3, pady=20)
+#--------------------------------
 button_vscode = tk.Button(root, text="Open VS Code", command=open_vscode,
                           bg='black', fg='lime', activebackground='black', activeforeground='lime',
                           highlightbackground='lime', highlightthickness=2)
-button_vscode.grid(row=0, column=0, padx=10)
-
-# Create a canvas to act as a custom button
-rounded_button = tk.Canvas(root, width=button_width, height=button_height, bg='black', highlightthickness=0)
-rounded_button.create_image(0, 0, anchor="nw", image=default_image, tags="button_image")
-rounded_button.create_text(button_width // 2, button_height // 2, text="Click Me", 
-                           fill="white", font=("Arial", 16, "bold"), tags="button_text")
-rounded_button.grid(row=0, column=1, padx=10, pady=20)
-
-# Bind mouse events to the canvas itself to simulate button press and release
-rounded_button.bind("<ButtonPress-1>", lambda event: on_button_press(event, rounded_button, pressed_image))
-rounded_button.bind("<ButtonRelease-1>", lambda event: on_button_release(event, rounded_button, default_image, print_text))
+button_vscode.grid(row=1, column=0, padx=10, pady=5)
+#--------------------------------
+def on_button_click(output_widget):
+    output_widget.insert(tk.END, "Button clicked!\n")
+neon_button = create_neon_button(root, text="Click Me", command=lambda: on_button_click(output_text))
+neon_button.grid(row=1, column=1, padx=10, pady=5)
+#--------------------------------
+open_panel_button = tk.Button(button_frame, text="Open Extra Panel", command=info_panel,
+                              bg="black", fg="lime", font=("Arial", 12, "bold"), cursor="hand2", relief="flat")
+open_panel_button.grid(row=1, column=2, padx=10, pady=5)
+#--------------------------------
 
 # Create a text widget to display output
 output_text = tk.Text(root, wrap='word', height=15, width=60, bg='black', fg='lime',
                       insertbackground='lime', highlightbackground='lime', highlightthickness=2)
-output_text.grid(row=1, column=0, padx=10, pady=10)
+output_text.grid(row=2, column=0, columnspan=3, padx=10, pady=10)
 #--------------------------------
 
 # Wake John up
