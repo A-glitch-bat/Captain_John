@@ -1,166 +1,167 @@
 #--------------------------------
 
 # Imports
-import os
-import tkinter as tk
-from PIL import Image, ImageDraw, ImageTk
+import sys
 import subprocess
-from neon_button import create_neon_button
+import os
+from PyQt5 import QtWidgets, QtGui, QtCore
+from PIL import Image, ImageDraw
 from panel import info_panel
 #--------------------------------
 
-# Functions
-def open_vscode():
-    folder_path = "C:\\John"
-    process = subprocess.Popen(
-        ["code", folder_path], 
-        stdout=subprocess.PIPE, 
-        stderr=subprocess.PIPE, 
-        text=True, 
-        shell=True, 
-        creationflags=subprocess.CREATE_NO_WINDOW
-    )
-    stdout, stderr = process.communicate()
+# Main class
+class CustomWindow(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
 
-    # Clear the text widget and display output
-    #output_text.delete(1.0, tk.END)  # (clearing disabled)
-    if stdout:
-        output_text.insert(tk.END, f"Output:\n{stdout}\n")
-    if stderr:
-        output_text.insert(tk.END, f"Errors:\n{stderr}\n")
+        # Set up the main window properties
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)  # Remove window border
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)  # Enable transparent background
+        self.setGeometry(200, 150, 550, 400)  # Set window size and position
 
-def create_rounded_button(width, height, radius, border_thickness, color, outer_border_color, inner_border_color):
-    # Create a rounded rectangle image with transparency
-    image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(image)
+        # Load and set the custom background image
+        self.background_label = QtWidgets.QLabel(self)
+        pixmap = QtGui.QPixmap("C:/John/visuals/xmas_visuals/xmas_border_h.png")
+        pixmap = pixmap.scaled(self.width(), self.height(), QtCore.Qt.KeepAspectRatioByExpanding, QtCore.Qt.SmoothTransformation)
+        self.background_label.setPixmap(pixmap)
+        self.background_label.setGeometry(0, 0, self.width(), self.height())
+        
+        # Create the custom "X" close button
+        self.close_button = QtWidgets.QPushButton("X", self)
+        self.close_button.setStyleSheet("""
+            QPushButton {
+                background-color: red;
+                color: white;
+                font-weight: bold;
+                border-radius: 15px;
+            }
+            QPushButton:hover {
+                background-color: darkred;
+            }
+        """)
+        self.close_button.clicked.connect(self.close)  # Connect to the close function
+        
+        # Create a central widget to hold the layout for the other buttons
+        central_widget = QtWidgets.QWidget(self)
+        self.setCentralWidget(central_widget)
 
-    # Draw the outer border (3D effect)
-    draw.rounded_rectangle(
-        (0, 0, width, height),
-        radius,
-        fill=None,
-        outline=outer_border_color,
-        width=border_thickness
-    )
+        # Create a horizontal layout for the VS Code and placeholder button
+        button_layout = QtWidgets.QHBoxLayout()
+        button_layout.setContentsMargins(10, 10, 10, 10)
+        button_layout.setSpacing(15)
+        
+        # Create a vertical layout to combine button layout and terminal display
+        main_layout = QtWidgets.QVBoxLayout()
+        main_layout.addLayout(button_layout)
+        central_widget.setLayout(main_layout)
 
-    # Draw the inner black border
-    inner_offset = border_thickness
-    draw.rounded_rectangle(
-        (inner_offset, inner_offset, width - inner_offset, height - inner_offset),
-        radius - border_thickness,
-        fill=None,
-        outline=inner_border_color,
-        width=border_thickness
-    )
+        # Button to open VS Code
+        open_vscode_button = QtWidgets.QPushButton("CODE")
+        open_vscode_button.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        open_vscode_button.setMinimumSize(128, 64)
+        open_vscode_button.setStyleSheet("""
+            QPushButton {
+                color: white;
+                font-weight: bold;
+                font-size: 15px;
+                font-family: OCR A Extended;
+                border: none;
+                background-image: url('C:/John/visuals/Button1.png');
+            }
+            QPushButton:hover {
+                background-image: url('C:/John/visuals/Button1.png');
+            }
+            QPushButton:pressed {
+                background-image: url('C:/John/visuals/Button1.png');
+            }
+        """)
+        open_vscode_button.clicked.connect(self.open_vscode)
+        button_layout.addWidget(open_vscode_button)
 
-    # Fill the main button area with the specified color
-    main_offset = 2 * border_thickness
-    draw.rounded_rectangle(
-        (main_offset, main_offset, width - main_offset, height - main_offset),
-        radius - 2 * border_thickness,
-        fill=color
-    )
+        # Create a custom close button with an image
+        print_button = QtWidgets.QPushButton("INFO", self)
+        print_button.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        print_button.setMinimumSize(128, 64)
+        print_button.setStyleSheet("""
+            QPushButton {
+                color: white;
+                font-weight: bold;
+                font-size: 15px;
+                font-family: OCR A Extended;
+                border: none;
+                background-image: url('C:/John/visuals/Button1.png');
+            }
+            QPushButton:hover {
+                background-image: url('C:/John/visuals/Button1.png');
+            }
+            QPushButton:pressed {
+                background-image: url('C:/John/visuals/Button1.png');
+            }
+        """)
+        print_button.clicked.connect(self.open_vscode)
+        button_layout.addWidget(print_button)
 
-    return ImageTk.PhotoImage(image)
+        # Create a custom close button with an image
+        stats_button = QtWidgets.QPushButton("PRINT", self)
+        stats_button.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        stats_button.setMinimumSize(128, 64)
+        stats_button.setStyleSheet("""
+            QPushButton {
+                color: white;
+                font-weight: bold;
+                font-size: 15px;
+                font-family: OCR A Extended;
+                border: none;
+                background-image: url('C:/John/visuals/Button1.png');
+            }
+            QPushButton:hover {
+                background-image: url('C:/John/visuals/Button1.png');
+            }
+            QPushButton:pressed {
+                background-image: url('C:/John/visuals/Button1.png');
+            }
+        """)
+        stats_button.clicked.connect(self.print_to_terminal)
+        button_layout.addWidget(stats_button)
 
-def on_button_press(event, button, pressed_image):
-    # Change the button appearance when pressed
-    button.config(image=pressed_image)
-    button.image = pressed_image
+        # Create the terminal display area
+        self.terminal_display = QtWidgets.QTextEdit(self)
+        self.terminal_display.setReadOnly(True)  # Make it read-only
+        self.terminal_display.setStyleSheet("""
+            QTextEdit {
+                background-color: black;
+                color: hotpink;
+                font-family: OCR A Extended;
+                font-size: 14px;
+                border: 2px solid hotpink;
+            }
+        """)
+        self.terminal_display.setMinimumSize(128, 64)
+        self.terminal_display.setMaximumSize(256, 128)
+        main_layout.addWidget(self.terminal_display)
+        
+        # Ensure the app can be closed
+        self.adjust_close_button_position()
+        self.close_button.raise_()
+    #--------------------------------
 
-def on_button_release(event, button, default_image, command):
-    # Restore the button appearance after release
-    button.config(image=default_image)
-    button.image = default_image
-    # Execute the command
-    command()
-#--------------------------------
+    # Functions
+    def adjust_close_button_position(self):
+        # Position close button in the top-right corner based on current window width
+        self.close_button.setGeometry(self.width() - 40, 10, 30, 30)
 
-# Define app
-root = tk.Tk()
-root.configure(bg="black") #250x150
-root.geometry("550x400+200+150")  # Custom position
-root.overrideredirect(True)  # Remove the default title bar
+    def open_vscode(self):
+        folder_path = "C:/John"
+        subprocess.Popen(["code", folder_path], shell=True)
 
-# Remove default title bar and create a new grid setup
-title_bar = tk.Frame(root, bg="black", relief="raised", bd=0)
-title_bar.grid(row=0, column=0, columnspan=3, sticky="we")
-
-# Title label on the custom title bar
-title_label = tk.Label(title_bar, text="Captain John", bg="black", fg="cyan", font=("Arial", 10, "bold"))
-title_label.pack(side="left", padx=5)
-
-# Close button on the custom title bar
-close_button = tk.Button(title_bar, text="X", bg="black", fg="red", font=("Arial", 10, "bold"),
-                         command=root.destroy, relief="flat", cursor="hand2")
-close_button.pack(side="right", padx=5)
-
-# Allow dragging the custom title bar
-def start_move(event):
-    root.x = event.x
-    root.y = event.y
-
-def stop_move(event):
-    root.x = None
-    root.y = None
-
-def on_motion(event):
-    delta_x = event.x - root.x
-    delta_y = event.y - root.y
-    new_x = root.winfo_x() + delta_x
-    new_y = root.winfo_y() + delta_y
-    root.geometry(f"+{new_x}+{new_y}")
-
-title_bar.bind("<Button-1>", start_move)
-title_bar.bind("<ButtonRelease-1>", stop_move)
-title_bar.bind("<B1-Motion>", on_motion)
-#--------------------------------
-
-# Define elements
-button_width, button_height = 75, 50
-button_radius = 10
-button_border_thickness = 2
-button_color = "#00FF00"  # Lime green color
-outer_border_color = "#00CC00"  # Slightly darker lime green
-inner_border_color = "black"  # Inner border color
-
-# Create button images for default and pressed states
-default_image = create_rounded_button(
-    button_width, button_height, button_radius,
-    button_border_thickness, button_color,
-    outer_border_color, inner_border_color
-)
-pressed_image = create_rounded_button(
-    button_width, button_height, button_radius,
-    button_border_thickness, "#00CC00",  # Darker green when pressed
-    outer_border_color, inner_border_color
-)
-#--------------------------------
-# Button frame
-button_frame = tk.Frame(root, bg="black")
-button_frame.grid(row=1, column=0, columnspan=3, pady=20)
-#--------------------------------
-button_vscode = tk.Button(root, text="Open VS Code", command=open_vscode,
-                          bg='black', fg='lime', activebackground='black', activeforeground='lime',
-                          highlightbackground='lime', highlightthickness=2)
-button_vscode.grid(row=1, column=0, padx=10, pady=5)
-#--------------------------------
-def on_button_click(output_widget):
-    output_widget.insert(tk.END, "Button clicked!\n")
-neon_button = create_neon_button(root, text="Click Me", command=lambda: on_button_click(output_text))
-neon_button.grid(row=1, column=1, padx=10, pady=5)
-#--------------------------------
-open_panel_button = tk.Button(button_frame, text="Open Extra Panel", command=info_panel,
-                              bg="black", fg="lime", font=("Arial", 12, "bold"), cursor="hand2", relief="flat")
-open_panel_button.grid(row=1, column=2, padx=10, pady=5)
-#--------------------------------
-
-# Create a text widget to display output
-output_text = tk.Text(root, wrap='word', height=15, width=60, bg='black', fg='lime',
-                      insertbackground='lime', highlightbackground='lime', highlightthickness=2)
-output_text.grid(row=2, column=0, columnspan=3, padx=10, pady=10)
+    def print_to_terminal(self):
+        # Append a test message to the terminal display
+        self.terminal_display.append("This is a test message printed to the terminal.")
 #--------------------------------
 
 # Wake John up
-root.mainloop()
+app = QtWidgets.QApplication(sys.argv)
+window = CustomWindow()
+window.show()
+sys.exit(app.exec_())
 #--------------------------------
