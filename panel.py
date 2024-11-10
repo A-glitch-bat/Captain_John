@@ -1,105 +1,130 @@
 #--------------------------------
 
 # Imports
-import tkinter as tk
+import sys
+import subprocess
+import os
 import psutil
+from PyQt5 import QtWidgets, QtGui, QtCore
+from PIL import Image, ImageDraw
 #--------------------------------
 
-# Semi-transparent panel for info display
-def info_panel():
-    panel = tk.Toplevel()
-    panel.geometry("300x300+50+450") # Size and position
-    panel.title("INFO")
-    panel.configure(bg="#1a1a1a")  # Set background color for the cyberpunk theme
-    panel.attributes("-alpha", 0.75)  # Set transparency
-    #--------------------------------
-    panel.overrideredirect(True)  # Remove the default title bar
-    #--------------------------------
+class InfoPanel(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
 
-    # Outer frame to act as an outline
-    outline_frame = tk.Frame(panel, bg="hotpink")  # Border color
-    outline_frame.pack(fill="both", expand=True, padx=10, pady=10)  # Adjust padding for border thickness
+        # Window properties
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setGeometry(50, 450, 300, 300)
+        self.setWindowTitle("INFO")
+        
+        # Outer frame as a border
+        outer_layout = QtWidgets.QVBoxLayout(self)
+        outer_layout.setContentsMargins(10, 10, 10, 10)
+        outer_layout.setSpacing(0)
 
-    # Inner frame for the actual content
-    content_frame = tk.Frame(outline_frame, bg="#1a1a1a")  # Main content background color
-    content_frame.pack(fill="both", expand=True)
+        outline_frame = QtWidgets.QFrame(self)
+        outline_frame.setStyleSheet("background-color: hotpink; border-radius: 10px;")
+        outer_layout.addWidget(outline_frame)
 
-    # Custom title bar within the inner frame
-    title_bar = tk.Frame(content_frame, bg="#1a1a1a", relief="raised", bd=0)
-    title_bar.pack(fill="x")
+        # Inner frame for content
+        content_layout = QtWidgets.QVBoxLayout(outline_frame)
+        content_layout.setContentsMargins(10, 10, 10, 10)
+        
+        content_frame = QtWidgets.QFrame(outline_frame)
+        content_frame.setStyleSheet("background-color: #1a1a1a; border-radius: 8px;")
+        content_layout.addWidget(content_frame)
 
-    title_label = tk.Label(title_bar, text="System Info", bg="#1a1a1a", fg="hotpink", font=("Arial", 10, "bold"))
-    title_label.pack(side="left", padx=5)
+        # Custom title bar with close button
+        title_bar = QtWidgets.QHBoxLayout()
+        content_frame.setLayout(QtWidgets.QVBoxLayout())
+        content_frame.layout().addLayout(title_bar)
 
-    close_button = tk.Button(title_bar, text="X", bg="#1a1a1a", fg="red", font=("Arial", 10, "bold"), 
-                             command=panel.destroy, relief="flat", cursor="hand2")
-    close_button.pack(side="right", padx=5)
-    #--------------------------------
+        title_label = QtWidgets.QLabel("System Info")
+        title_label.setStyleSheet("color: hotpink; font: bold 10pt OCR A Extended;")
+        title_bar.addWidget(title_label)
+        title_bar.addSpacerItem(QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum))
 
-    # Allow dragging the custom title bar
-    def start_move(event):
-        panel.x = event.x
-        panel.y = event.y
+        close_button = QtWidgets.QPushButton("EXIT")
+        close_button.setStyleSheet("""
+            QPushButton {
+                background-color: #1a1a1a;
+                color: hotpink;
+                font: bold 10pt OCR A Extended;
+                padding: 5px;
+                border: 2px solid hotpink;
+                border-radius: 10px;
+            }
+            QPushButton:hover {
+                background-color: #333333;  /* Slightly darker on hover */
+            }
+            QPushButton:pressed {
+                background-color: #555555;  /* Even darker on press */
+            }
+        """)
+        close_button.clicked.connect(self.close_panel)
+        title_bar.addWidget(close_button)
 
-    def stop_move(event):
-        panel.x = None
-        panel.y = None
+        # Draggable title bar
+        title_bar.addStretch()
+        title_label.mousePressEvent = self.start_move
+        title_label.mouseMoveEvent = self.on_motion
+        #--------------------------------
 
-    def on_motion(event):
-        delta_x = event.x - panel.x
-        delta_y = event.y - panel.y
-        new_x = panel.winfo_x() + delta_x
-        new_y = panel.winfo_y() + delta_y
-        panel.geometry(f"+{new_x}+{new_y}")
-    #--------------------------------
-    title_bar.bind("<Button-1>", start_move)
-    title_bar.bind("<ButtonRelease-1>", stop_move)
-    title_bar.bind("<B1-Motion>", on_motion)
-    # ---------------------------------------------
+        # CPU and RAM usage displays
+        self.cpu_label = QtWidgets.QLabel("CPU: --%")
+        self.ram_label = QtWidgets.QLabel("RAM: --%")
+        for label in (self.cpu_label, self.ram_label):
+            label.setStyleSheet("color: magenta; font: bold 10pt OCR A Extended;")
+            content_frame.layout().addWidget(label)
 
-    # Canvas for CPU and RAM usage
-    cpu_canvas = tk.Canvas(panel, width=100, height=100, bg="#1a1a1a", highlightthickness=0)
-    cpu_canvas.pack(pady=10)
+        # Drawing area for CPU and RAM usage arcs
+        self.cpu_canvas = QtWidgets.QLabel()
+        self.cpu_canvas.setFixedSize(100, 100)
+        self.ram_canvas = QtWidgets.QLabel()
+        self.ram_canvas.setFixedSize(100, 100)
+        content_frame.layout().addWidget(self.cpu_canvas)
+        content_frame.layout().addWidget(self.ram_canvas)
 
-    ram_canvas = tk.Canvas(panel, width=100, height=100, bg="#1a1a1a", highlightthickness=0)
-    ram_canvas.pack(pady=10)
+        # Set up a timer to update the CPU and RAM usage every second
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.update_usage)
+        self.timer.start(1000)  # Update every 1000 ms (1 second)
 
-    # Labels for CPU and RAM usage
-    cpu_label = tk.Label(cpu_canvas, text="CPU: --%", fg="magenta", bg="#1a1a1a", font=("Arial", 10, "bold"))
-    cpu_label.place(relx=0.5, rely=0.5, anchor="center")
-
-    ram_label = tk.Label(ram_canvas, text="RAM: --%", fg="magenta", bg="#1a1a1a", font=("Arial", 10, "bold"))
-    ram_label.place(relx=0.5, rely=0.5, anchor="center")
-
-    # Initialise
-    cpu_label.config(text=f"CPU: {psutil.cpu_percent(interval=0)}%")  # Immediate CPU reading
-    ram_label.config(text=f"RAM: {psutil.virtual_memory().percent}%")  # Immediate RAM reading
-
-    cpu_canvas.create_arc(10, 10, 90, 90, start=90, extent=(psutil.cpu_percent(interval=0) * 3.6),
-                          outline="hotpink", width=8, style="arc", tags="arc")
-    ram_canvas.create_arc(10, 10, 90, 90, start=90, extent=(psutil.virtual_memory().percent * 3.6),
-                          outline="hotpink", width=8, style="arc", tags="arc")
-    #--------------------------------
-    def update_gauges():
-        # Get CPU and RAM usage
-        cpu_percent = psutil.cpu_percent(interval=1)  # Smooth updates
+    def update_usage(self):
+        # Update CPU and RAM usage data and display
+        cpu_percent = psutil.cpu_percent(interval=0)
         ram_percent = psutil.virtual_memory().percent
-        cpu_label.config(text=f"CPU: {cpu_percent}%")
-        ram_label.config(text=f"RAM: {ram_percent}%")
+        self.cpu_label.setText(f"CPU: {cpu_percent}%")
+        self.ram_label.setText(f"RAM: {ram_percent}%")
+        self.draw_arc(self.cpu_canvas, cpu_percent, "hotpink")
+        self.draw_arc(self.ram_canvas, ram_percent, "hotpink")
 
-        # CPU arc
-        cpu_canvas.delete("arc")  # Remove the previous arc
-        cpu_canvas.create_arc(10, 10, 90, 90, start=90, extent=(cpu_percent * 3.6),
-                              outline="hotpink", width=8, style="arc", tags="arc")
+    # Draw arcs for usage percentages
+    def draw_arc(self, label, percent, color):
+        pixmap = QtGui.QPixmap(100, 100)
+        pixmap.fill(QtCore.Qt.transparent)
+        painter = QtGui.QPainter(pixmap)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        pen = QtGui.QPen(QtGui.QColor(color))
+        pen.setWidth(8)
+        painter.setPen(pen)
+        painter.drawArc(10, 10, 80, 80, 90 * 16, -int(percent * 3.6) * 16)
+        painter.end()
+        label.setPixmap(pixmap)
 
-        # RAM arc
-        ram_canvas.delete("arc")  # Remove the previous arc
-        ram_canvas.create_arc(10, 10, 90, 90, start=90, extent=(ram_percent * 3.6),
-                              outline="hotpink", width=8, style="arc", tags="arc")
+    # Draggable window logic
+    def start_move(self, event):
+        self.click_position = event.globalPos()
 
-        panel.after(1000, update_gauges)
-    #--------------------------------
+    def on_motion(self, event):
+        delta = event.globalPos() - self.click_position
+        self.move(self.x() + delta.x(), self.y() + delta.y())
+        self.click_position = event.globalPos()
 
-    # Update every second
-    panel.after(1000, update_gauges)
+    # Clean up the timer when closing the panel
+    def close_panel(self):
+        self.timer.stop()  # Stop the timer
+        self.close()
 #--------------------------------
