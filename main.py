@@ -5,7 +5,7 @@ import sys
 import subprocess
 import os
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PIL import Image, ImageDraw
+import config
 from panel import InfoPanel
 #--------------------------------
 
@@ -16,14 +16,15 @@ class CustomWindow(QtWidgets.QMainWindow):
         #--------------------------------
 
         # Set up the main window properties
-        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)  # Remove window border
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)  # Enable transparent background
-        self.setGeometry(200, 150, 550, 400)  # Set window size and position
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)  # remove window border
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)  # transparent background
+        self.setGeometry(200, 150, config.scale*550, config.scale*400)  # window size and position
         #--------------------------------
 
         # Load and set the custom background image
         self.background_label = QtWidgets.QLabel(self)
-        pixmap = QtGui.QPixmap("C:/John/visuals/xmas_visuals/xmas_border_h.png")
+        border_location = os.path.join(config.destination, "xmas_visuals/xmas_border_h.png")
+        pixmap = QtGui.QPixmap(border_location)
         pixmap = pixmap.scaled(self.width(), self.height(), QtCore.Qt.KeepAspectRatioByExpanding, QtCore.Qt.SmoothTransformation)
         self.background_label.setPixmap(pixmap)
         self.background_label.setGeometry(0, 0, self.width(), self.height())
@@ -40,10 +41,10 @@ class CustomWindow(QtWidgets.QMainWindow):
                 border-radius: 10px;
             }
             QPushButton:hover {
-                background-color: #333333;  /* Slightly darker on hover */
+                background-color: #333333;
             }
             QPushButton:pressed {
-                background-color: #555555;  /* Even darker on press */
+                background-color: #555555;
             }
         """)
         self.close_button.clicked.connect(self.close)  # Connect to the close function
@@ -54,7 +55,7 @@ class CustomWindow(QtWidgets.QMainWindow):
 
         # Main horizontal layout for the button column and terminal display
         main_layout = QtWidgets.QHBoxLayout()
-        main_layout.setContentsMargins(50, 75, 50, 75) # L, Up, R, Down
+        main_layout.setContentsMargins(config.scale*25, config.scale*75, config.scale*50, config.scale*75) # L, Up, R, Down
         central_widget.setLayout(main_layout)
 
         # Create a vertical layout for buttons on the left
@@ -63,13 +64,17 @@ class CustomWindow(QtWidgets.QMainWindow):
         #--------------------------------
 
         # Buttons
+        B1 = os.path.join(config.destination, "Button1.png")
+        B1_pressed = os.path.join(config.destination, "Button1.png")
+        B2 = os.path.join(config.destination, "Button2.png")
+        B2_pressed = os.path.join(config.destination, "Button2_pressed.png")
         #--------------------------------
         # VS Code Button
         open_vscode_button = QtWidgets.QPushButton("CODE")
         open_vscode_button.setMinimumSize(128, 64)
         open_vscode_button.setMaximumSize(128, 64)
-        open_vscode_button.setStyleSheet("""
-            QPushButton {
+        open_vscode_button.setStyleSheet(f"""
+            QPushButton {{
                 color: black;
                 font-weight: bold;
                 font-size: 15px;
@@ -77,14 +82,14 @@ class CustomWindow(QtWidgets.QMainWindow):
                 border-radius: 10px;
                 padding: 12px 24px;
                 text-align: left;
-                background-image: url('C:/John/visuals/Button2.png');
-            }
-            QPushButton:hover {
-                background-image: url('C:/John/visuals/Button2_pressed.png');
-            }
-            QPushButton:pressed {
-                background-image: url('C:/John/visuals/Button2_pressed.png');
-            }
+                background-image: url('{B2}');
+            }}
+            QPushButton:hover {{
+                background-image: url('{B2_pressed}');
+            }}
+            QPushButton:pressed {{
+                background-image: url('{B2_pressed}');
+            }}
         """)
         open_vscode_button.clicked.connect(self.open_vscode)
         button_layout.addWidget(open_vscode_button)
@@ -93,8 +98,8 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.print_button = QtWidgets.QPushButton("INFO", self)
         self.print_button.setMinimumSize(128, 64)
         self.print_button.setMaximumSize(128, 64)
-        self.print_button.setStyleSheet("""
-            QPushButton {
+        self.print_button.setStyleSheet(f"""
+            QPushButton {{
                 color: black;
                 font-weight: bold;
                 font-size: 15px;
@@ -102,14 +107,14 @@ class CustomWindow(QtWidgets.QMainWindow):
                 border-radius: 10px;
                 padding: 12px 24px;
                 text-align: left;
-                background-image: url('C:/John/visuals/Button2.png');
-            }
-            QPushButton:hover {
-                background-image: url('C:/John/visuals/Button2_pressed.png');
-            }
-            QPushButton:pressed {
-                background-image: url('C:/John/visuals/Button2_pressed.png');
-            }
+                background-image: url('{B2}');
+            }}
+            QPushButton:hover {{
+                background-image: url('{B2_pressed}');
+            }}
+            QPushButton:pressed {{
+                background-image: url('{B2_pressed}');
+            }}
         """)
         self.print_button.clicked.connect(self.open_info_panel)
         button_layout.addWidget(self.print_button)
@@ -118,8 +123,8 @@ class CustomWindow(QtWidgets.QMainWindow):
         stats_button = QtWidgets.QPushButton("SEARCH", self)
         stats_button.setMinimumSize(128, 64)
         stats_button.setMaximumSize(128, 64)
-        stats_button.setStyleSheet("""
-            QPushButton {
+        stats_button.setStyleSheet(f"""
+            QPushButton {{
                 color: black;
                 font-weight: bold;
                 font-size: 15px;
@@ -127,14 +132,14 @@ class CustomWindow(QtWidgets.QMainWindow):
                 border-radius: 10px;
                 padding: 12px 24px;
                 text-align: left;
-                background-image: url('C:/John/visuals/Button2.png');
-            }
-            QPushButton:hover {
-                background-image: url('C:/John/visuals/Button2_pressed.png');
-            }
-            QPushButton:pressed {
-                background-image: url('C:/John/visuals/Button2_pressed.png');
-            }
+                background-image: url('{B2}');
+            }}
+            QPushButton:hover {{
+                background-image: url('{B2_pressed}');
+            }}
+            QPushButton:pressed {{
+                background-image: url('{B2_pressed}');
+            }}
         """)
         stats_button.clicked.connect(self.print_to_terminal)
         button_layout.addWidget(stats_button)
@@ -154,8 +159,8 @@ class CustomWindow(QtWidgets.QMainWindow):
                 border: 2px solid hotpink;
             }
         """)
-        self.terminal_display.setMinimumSize(128, 64)
-        self.terminal_display.setMaximumSize(256, 128)
+        self.terminal_display.setMinimumSize(config.scale*128, config.scale*64)
+        self.terminal_display.setMaximumSize(config.scale*256, config.scale*128)
         main_layout.addWidget(self.terminal_display)
         #--------------------------------
         # Ensure the app can be closed
