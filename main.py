@@ -7,6 +7,8 @@ import os
 from PyQt5 import QtWidgets, QtGui, QtCore
 import config
 from panel import InfoPanel
+from aihead import AIhead
+from listmaker import ListMaker
 #--------------------------------
 
 # Main class
@@ -119,11 +121,11 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.print_button.clicked.connect(self.open_info_panel)
         button_layout.addWidget(self.print_button)
         #--------------------------------
-        # Search button
-        stats_button = QtWidgets.QPushButton("SEARCH", self)
-        stats_button.setMinimumSize(128, 64)
-        stats_button.setMaximumSize(128, 64)
-        stats_button.setStyleSheet(f"""
+        # AI start button
+        AI_button = QtWidgets.QPushButton("CHAT", self)
+        AI_button.setMinimumSize(128, 64)
+        AI_button.setMaximumSize(128, 64)
+        AI_button.setStyleSheet(f"""
             QPushButton {{
                 color: black;
                 font-weight: bold;
@@ -141,8 +143,34 @@ class CustomWindow(QtWidgets.QMainWindow):
                 background-image: url('{B2_pressed}');
             }}
         """)
-        stats_button.clicked.connect(self.print_to_terminal)
-        button_layout.addWidget(stats_button)
+        AI_button.clicked.connect(self.start_AI)
+        button_layout.addWidget(AI_button)
+        #--------------------------------
+        # Listmaker button
+        list_button = QtWidgets.QPushButton("LIST", self)
+        list_button.setMinimumSize(128, 64)
+        list_button.setMaximumSize(128, 64)
+        list_button.setStyleSheet(f"""
+            QPushButton {{
+                color: black;
+                font-weight: bold;
+                font-size: 15px;
+                font-family: OCR A Extended;
+                border-radius: 10px;
+                padding: 12px 24px;
+                text-align: left;
+                background-image: url('{B2}');
+            }}
+            QPushButton:hover {{
+                background-image: url('{B2_pressed}');
+            }}
+            QPushButton:pressed {{
+                background-image: url('{B2_pressed}');
+            }}
+        """)
+        list_button.clicked.connect(self.start_listdisplay)
+        button_layout.addWidget(list_button)
+        #--------------------------------
         # Stretchable space to push buttons to the top
         button_layout.addStretch()
         #--------------------------------
@@ -179,13 +207,19 @@ class CustomWindow(QtWidgets.QMainWindow):
         subprocess.Popen(["code", folder_path], shell=True)
     #--------------------------------
     def open_info_panel(self):
-        # Open the InfoPanel when button is clicked
-        self.info_panel = InfoPanel()  # Store it as an attribute to prevent it from being garbage-collected
+        # Open InfoPanel on button click
+        self.info_panel = InfoPanel() # prevent garbage-collection
         self.info_panel.show()
     #--------------------------------
-    def print_to_terminal(self):
-        # Append a test message to the terminal display
-        self.terminal_display.append("This is a test message printed to the terminal.")
+    def start_AI(self):
+        # Open AI head on button click
+        self.aihead = AIhead() # prevent garbage-collection
+        self.aihead.show()
+    #--------------------------------
+    def start_listdisplay(self):
+        # Open list display on button click
+        self.listdisplay = ListMaker() # prevent garbage-collection
+        self.listdisplay.show()
     #--------------------------------
 
 #--------------------------------
