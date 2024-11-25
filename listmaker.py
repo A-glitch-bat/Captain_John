@@ -14,7 +14,8 @@ class ListMaker(QtWidgets.QWidget):
         self.setWindowTitle("Base for list component")
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint) # remove window border
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground) # transparent background
-        self.setGeometry(200+int(config.scale*350), 550, int(config.scale*350), int(config.scale*450))  # window size and position
+        self.setGeometry(int(config.scale*200)+int(config.scale*350), int(config.scale*550), 
+                         int(config.scale*350), int(config.scale*450))  # window size, window position
         #--------------------------------
 
         # Load custom background image
@@ -116,7 +117,8 @@ class ListMaker(QtWidgets.QWidget):
         re-position close button to top-right corner
         before raising (based on window size)
         """
-        self.close_button.setGeometry(self.width() - 60, 25, 50, 25)
+        self.close_button.setGeometry(self.width() - int(config.scale*60), int(config.scale*30),
+                                      int(config.scale*50), int(config.scale*30)) # L, H, R, W
     #--------------------------------
     def write_input(self):
         """
