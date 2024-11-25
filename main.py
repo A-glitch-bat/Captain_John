@@ -20,7 +20,8 @@ class CustomWindow(QtWidgets.QMainWindow):
         # Set up the main window properties
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)  # remove window border
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)  # transparent background
-        self.setGeometry(200, 150, config.scale*550, config.scale*400)  # window size and position
+        self.setGeometry(int(config.scale*200), int(config.scale*150), 
+                         int(config.scale*550), int(config.scale*400))  # window size, window position
         #--------------------------------
 
         # Load and set the custom background image
@@ -199,25 +200,35 @@ class CustomWindow(QtWidgets.QMainWindow):
     # Functions
     #--------------------------------
     def adjust_close_button_position(self):
-        # Position close button in the top-right corner based on current window width
-        self.close_button.setGeometry(self.width() - 60, 25, 50, 25)
+        """
+        re-position close button to top-right corner
+        before raising (based on window size)
+        """
+        self.close_button.setGeometry(self.width() - int(config.scale*60), int(config.scale*30),
+                                      int(config.scale*50), int(config.scale*30)) # L, H, R, W
     #--------------------------------
     def open_vscode(self):
         folder_path = "C:/John"
         subprocess.Popen(["code", folder_path], shell=True)
     #--------------------------------
     def open_info_panel(self):
-        # Open InfoPanel on button click
+        """
+        Open InfoPanel on button click
+        """
         self.info_panel = InfoPanel() # prevent garbage-collection
         self.info_panel.show()
     #--------------------------------
     def start_AI(self):
-        # Open AI head on button click
+        """
+        Open AI head on button click
+        """
         self.aihead = AIhead() # prevent garbage-collection
         self.aihead.show()
     #--------------------------------
     def start_listdisplay(self):
-        # Open list display on button click
+        """
+        Open list display on button click
+        """
         self.listdisplay = ListMaker() # prevent garbage-collection
         self.listdisplay.show()
     #--------------------------------

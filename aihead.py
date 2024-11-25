@@ -20,7 +20,8 @@ class AIhead(QtWidgets.QWidget):
         self.setWindowTitle("Base for AI component")
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)  # remove window border
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)  # transparent background
-        self.setGeometry(200, 550, int(config.scale*350), int(config.scale*450))  # window size and position
+        self.setGeometry(int(config.scale*200), int(config.scale*550), 
+                         int(config.scale*350), int(config.scale*450))  # window size, window position
         #--------------------------------
 
         # Load and set the custom background image
@@ -123,8 +124,12 @@ class AIhead(QtWidgets.QWidget):
     # Functions
     #--------------------------------
     def adjust_close_button_position(self):
-        # Position close button in the top-right corner based on current window width
-        self.close_button.setGeometry(self.width() - 60, 25, 50, 25)
+        """
+        re-position close button to top-right corner
+        before raising (based on window size)
+        """
+        self.close_button.setGeometry(self.width() - int(config.scale*60), int(config.scale*30),
+                                      int(config.scale*50), int(config.scale*30)) # L, H, R, W
     #--------------------------------
     def get_reply(self):
         user_input = self.input_field.text()
