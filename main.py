@@ -8,7 +8,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import config
 from panel import InfoPanel
 from aihead import AIhead
-from listmaker import ListMaker
+from ttshead import TtS
 #--------------------------------
 
 # Main class
@@ -152,7 +152,7 @@ class CustomWindow(QtWidgets.QMainWindow):
         button_layout.addWidget(AI_button)
         #--------------------------------
         # Listmaker button
-        list_button = QtWidgets.QPushButton("LIST", self)
+        list_button = QtWidgets.QPushButton("TEST", self)
         list_button.setMinimumSize(128, 64)
         list_button.setMaximumSize(128, 64)
         list_button.setStyleSheet(f"""
@@ -173,7 +173,8 @@ class CustomWindow(QtWidgets.QMainWindow):
                 background-image: url('{B2_pressed}');
             }}
         """)
-        list_button.clicked.connect(self.start_listdisplay)
+        list_button.clicked.connect(self.start_ttshead)
+        self.start_ttshead() # auto-start for convenience
         button_layout.addWidget(list_button)
         #--------------------------------
         # Stretchable space to push buttons to the top
@@ -262,11 +263,11 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.aihead = AIhead() # prevent garbage-collection
         self.aihead.show()
     #--------------------------------
-    def start_listdisplay(self):
+    def start_ttshead(self):
         """
         Open list display on button click
         """
-        self.listdisplay = ListMaker() # prevent garbage-collection
+        self.listdisplay = TtS() # prevent garbage-collection
         self.listdisplay.show()
     #--------------------------------
     def write_input(self):

@@ -20,7 +20,7 @@ class AIhead(QtWidgets.QWidget):
         self.setWindowTitle("Base for AI component")
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)  # remove window border
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)  # transparent background
-        self.setGeometry(int(config.scale*200), int(config.scale*550), 
+        self.setGeometry(int(config.scale*200)+int(config.scale*350), int(config.scale*550), 
                          int(config.scale*350), int(config.scale*450))  # window size, window position
         #--------------------------------
 
