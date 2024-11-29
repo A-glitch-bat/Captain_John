@@ -1,1 +1,5 @@
 draw interface (january)
+glitch effects
+gif in empty space
+neon glow
+fix AI empty input crash
