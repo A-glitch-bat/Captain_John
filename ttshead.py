@@ -1,6 +1,7 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
 import os
 import torch
+from PyQt5 import QtWidgets, QtGui, QtCore
+import pyttsx3
 import config
 #--------------------------------
 
@@ -86,6 +87,7 @@ class TtS(QtWidgets.QWidget):
                 color: black;
             }}
         """)
+        self.tts_button.clicked.connect(self.read_text)
 
         glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
         glow_effect.setBlurRadius(25)
@@ -110,6 +112,24 @@ class TtS(QtWidgets.QWidget):
         """
         self.close_button.setGeometry(self.width() - int(config.scale*60), int(config.scale*30),
                                       int(config.scale*50), int(config.scale*30)) # L, H, R, W
+    #--------------------------------
+    def read_text(self):
+        """
+        does what the button says
+        """
+        text = "Hello good sir."
+        engine = pyttsx3.init()
+        engine.setProperty('rate', 125) # base is 150
+        """voices = engine.getProperty('voices')
+        for voice in voices:
+            print(voice, voice.id)
+            engine.setProperty('voice', voice.id)
+            engine.say(text)
+            engine.runAndWait()
+            engine.stop()
+        use on windows 11"""
+        engine.say(text)
+        engine.runAndWait()
     #--------------------------------
 
 # Temporary main
