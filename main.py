@@ -20,7 +20,7 @@ class CustomWindow(QtWidgets.QMainWindow):
         # Set up the main window properties
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)  # remove window border
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)  # transparent background
-        self.setGeometry(int(config.scale*200), int(config.scale*150), 
+        self.setGeometry(int((config.scale-0.45)*200), int((config.scale-0.40)*150), 
                          int(config.scale*550), int(config.scale*400))  # window size, window position
         #--------------------------------
 
@@ -99,13 +99,20 @@ class CustomWindow(QtWidgets.QMainWindow):
             }}
         """)
         open_vscode_button.clicked.connect(self.open_vscode)
+
+        glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
+        glow_effect.setBlurRadius(20)
+        glow_effect.setColor(QtGui.QColor("hotpink"))
+        glow_effect.setOffset(0, 0)
+
+        open_vscode_button.setGraphicsEffect(glow_effect)
         button_layout.addWidget(open_vscode_button)
         #--------------------------------
         # Info Butoon
-        self.print_button = QtWidgets.QPushButton("INFO", self)
-        self.print_button.setMinimumSize(128, 64)
-        self.print_button.setMaximumSize(128, 64)
-        self.print_button.setStyleSheet(f"""
+        self.info_button = QtWidgets.QPushButton("INFO", self)
+        self.info_button.setMinimumSize(128, 64)
+        self.info_button.setMaximumSize(128, 64)
+        self.info_button.setStyleSheet(f"""
             QPushButton {{
                 color: black;
                 font-weight: bold;
@@ -123,8 +130,15 @@ class CustomWindow(QtWidgets.QMainWindow):
                 background-image: url('{B2_pressed}');
             }}
         """)
-        self.print_button.clicked.connect(self.open_info_panel)
-        button_layout.addWidget(self.print_button)
+        self.info_button.clicked.connect(self.open_info_panel)
+        
+        glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
+        glow_effect.setBlurRadius(20)
+        glow_effect.setColor(QtGui.QColor("hotpink"))
+        glow_effect.setOffset(0, 0)
+
+        self.info_button.setGraphicsEffect(glow_effect)
+        button_layout.addWidget(self.info_button)
         #--------------------------------
         # AI start button
         AI_button = QtWidgets.QPushButton("CHAT", self)
@@ -149,6 +163,13 @@ class CustomWindow(QtWidgets.QMainWindow):
             }}
         """)
         AI_button.clicked.connect(self.start_AI)
+
+        glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
+        glow_effect.setBlurRadius(20)
+        glow_effect.setColor(QtGui.QColor("hotpink"))
+        glow_effect.setOffset(0, 0)
+
+        AI_button.setGraphicsEffect(glow_effect)
         button_layout.addWidget(AI_button)
         #--------------------------------
         # Listmaker button
@@ -175,6 +196,13 @@ class CustomWindow(QtWidgets.QMainWindow):
         """)
         list_button.clicked.connect(self.start_ttshead)
         self.start_ttshead() # auto-start for convenience
+
+        glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
+        glow_effect.setBlurRadius(20)
+        glow_effect.setColor(QtGui.QColor("hotpink"))
+        glow_effect.setOffset(0, 0)
+
+        list_button.setGraphicsEffect(glow_effect)
         button_layout.addWidget(list_button)
         #--------------------------------
         # Stretchable space to push buttons to the top

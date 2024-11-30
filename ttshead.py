@@ -11,10 +11,10 @@ class TtS(QtWidgets.QWidget):
         #--------------------------------
 
         # Set up main window properties
-        self.setWindowTitle("Base for list component")
+        self.setWindowTitle("Make glowy text to speech panel")
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint) # remove window border
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground) # transparent background
-        self.setGeometry(int(config.scale*200), int(config.scale*550), 
+        self.setGeometry(int((config.scale-0.45)*200), int((config.scale-0.40)*150 + int(config.scale*400)), 
                          int(config.scale*350), int(config.scale*450))  # window size, window position
         #--------------------------------
 
@@ -46,19 +46,56 @@ class TtS(QtWidgets.QWidget):
         """)
         self.close_button.clicked.connect(self.close)
         #--------------------------------
+        # Layout
+        main_layout = QtWidgets.QVBoxLayout()
+        main_layout.setContentsMargins(int(config.scale*50), int(config.scale*75),
+                                       int(config.scale*50), int(config.scale*75)) # L, Up, R, Down
+        self.setLayout(main_layout)
+        #--------------------------------
+
         # Buttons and widgets
         self.txt_file = config.txt_file
+        B1 = os.path.join(config.destination, "Button1.png")
         B2 = os.path.join(config.destination, "Button2.png")
         B2_pressed = os.path.join(config.destination, "Button2_pressed.png")
         self.V_check = os.path.join(config.destination, "Vibe_check.png")
         self.V_cancel = os.path.join(config.destination, "Vibe_cancel.png")
         #--------------------------------
+        # Text-To-Speech button
+        self.tts_button = QtWidgets.QPushButton("READ")
+        self.tts_button.setMinimumSize(128, 64)
+        self.tts_button.setMaximumSize(128, 64)
+        self.tts_button.setStyleSheet(f"""
+            QPushButton {{
+                color: hotpink;
+                font-weight: bold;
+                font-size: 15px;
+                font-family: OCR A Extended;
+                border: 2px solid hotpink;
+                border-radius: 10px;
+                padding: 12px 24px;
+                text-align: left;
+                background-image: url('{B1}');
+            }}
+            QPushButton:hover {{
+                background-image: url('{B2_pressed}');
+                color: black;
+            }}
+            QPushButton:pressed {{
+                background-image: url('{B2_pressed}');
+                color: black;
+            }}
+        """)
 
-        # Layout
-        main_layout = QtWidgets.QVBoxLayout()
-        main_layout.setContentsMargins(int(config.scale*50), int(config.scale*75),
-                                       int(config.scale*50), int(config.scale*75)) # L, Up, R, Down
+        glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
+        glow_effect.setBlurRadius(25)
+        glow_effect.setColor(QtGui.QColor("hotpink"))
+        glow_effect.setOffset(0, 0)
+
+        self.tts_button.setGraphicsEffect(glow_effect)
+        main_layout.addWidget(self.tts_button, alignment=QtCore.Qt.AlignCenter)
         #--------------------------------
+
         # Ensure the app works as intended
         self.adjust_close_button_position()
         self.close_button.raise_()
