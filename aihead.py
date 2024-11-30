@@ -20,7 +20,7 @@ class AIhead(QtWidgets.QWidget):
         self.setWindowTitle("Base for AI component")
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)  # remove window border
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)  # transparent background
-        self.setGeometry(int(config.scale*200)+int(config.scale*350), int(config.scale*550), 
+        self.setGeometry(int((config.scale-0.45)*200) + int(config.scale*350), int((config.scale-0.40)*150 + int(config.scale*400)), 
                          int(config.scale*350), int(config.scale*450))  # window size, window position
         #--------------------------------
 
@@ -133,6 +133,9 @@ class AIhead(QtWidgets.QWidget):
     #--------------------------------
     def get_reply(self):
         user_input = self.input_field.text()
+        if user_input == "":
+            return
+
         # Ensure the tokenizer has a padding token
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
