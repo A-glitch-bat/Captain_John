@@ -321,7 +321,7 @@ class CustomWindow(QtWidgets.QMainWindow):
                     file.write("\n")
             file.write(text)
     # sub-function ^
-    def delete_item(self, item, checkbox):
+    def delete_item(self, item, item_text, checkbox):
         """
         delete the line from the text file and remove 
         the list item if the checkbox is checked
@@ -333,7 +333,7 @@ class CustomWindow(QtWidgets.QMainWindow):
                 lines = file.readlines()
             with open(self.txt_file, "w") as file:
                 for line in lines:
-                    if line.strip() != item.text():
+                    if line.strip() != item_text:
                         file.write(line)
 
             # also remove from the list widget
@@ -392,11 +392,11 @@ class CustomWindow(QtWidgets.QMainWindow):
         row_layout.setAlignment(QtCore.Qt.AlignLeft)
         row_widget.setLayout(row_layout)
         list_item = QtWidgets.QListWidgetItem(self.terminal_display)
-        list_item.setSizeHint(row_widget.sizeHint())  # Match size to contents
+        list_item.setSizeHint(row_widget.sizeHint())
         self.terminal_display.setItemWidget(list_item, row_widget)
 
         # delete button click connection
-        delete_button.clicked.connect(lambda: self.delete_item(list_item, checkbox.isChecked()))
+        delete_button.clicked.connect(lambda: self.delete_item(list_item, text, checkbox.isChecked()))
     # sub-function ^
     def handle_checkbox_toggled(self, state, text):
         """
