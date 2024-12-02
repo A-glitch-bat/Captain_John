@@ -1,4 +1,3 @@
-glitch effects
-gif in empty space
-fix list item delete
 draw interface (2025)
+gif in empty space
+update & align sys info
