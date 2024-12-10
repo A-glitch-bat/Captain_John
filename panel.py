@@ -5,12 +5,44 @@ import sys
 import subprocess
 import os
 import psutil
-from PyQt5 import QtWidgets, QtGui, QtCore
-from PIL import Image, ImageDraw
+from PyQt5 import QtCore
+from PyQt5.QtWidgets import QLabel, QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QFrame, QApplication, QSpacerItem, QSizePolicy
+from PyQt5.QtGui import QColor, QPalette, QPainter, QPen, QFont
 import config
 #--------------------------------
 
-class InfoPanel(QtWidgets.QWidget):
+# Percentage display widgts
+#--------------------------------
+class PercentageCircleWidget(QWidget):
+    def __init__(self, percentage, name, parent=None):
+        super().__init__(parent)
+        self.percentage = percentage
+        self.name = name
+        self.setMinimumSize(50, 50)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing) # smooth edges
+
+        rect = self.rect()  # Get the rectangle representing the widget's size
+        radius = min(rect.width(), rect.height()) // 2 - 10  # Calculate radius for the circle
+        center = rect.center()
+
+        # Draw arc and text
+        painter.setPen(QPen(QColor("#FF69B4"), 16)) # colour & thickness
+        span_angle = int(360 * 16 * (self.percentage / 100))
+        painter.drawArc(
+            center.x() - radius, center.y() - radius, int(2.15*radius), int(2.15*radius), 90 * 16, -span_angle
+        )
+        painter.setPen(QColor("#FF69B4")) # colour
+        painter.setFont(QFont("OCR A Extended", 10, QFont.Bold)) # text properties
+        text = f"{self.name + ':' + str(self.percentage)}%"
+        painter.drawText(rect, QtCore.Qt.AlignCenter, text)
+#--------------------------------
+
+# Classes for separate parts of an L-shaped panel component
+#--------------------------------
+class TopInfoPanel(QWidget):
     def __init__(self):
         super().__init__()
 
@@ -18,63 +50,41 @@ class InfoPanel(QtWidgets.QWidget):
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setWindowOpacity(0.8)
-        self.setGeometry(int(config.scale*775), int(config.scale*225),  # W pos, H pos,
-                         int(config.scale*250), int(config.scale*300))  # W size, H size
-        self.setWindowTitle("INFO")
+        self.setWindowTitle("INFO_1")
         
         # Outer frame as a border
-        outer_layout = QtWidgets.QVBoxLayout(self)
+        outer_layout = QVBoxLayout(self)
         outer_layout.setContentsMargins(5, 5, 5, 5)
         outer_layout.setSpacing(0)
 
-        outline_frame = QtWidgets.QFrame(self)
+        outline_frame = QFrame(self)
         outline_frame.setStyleSheet("background-color: hotpink; border-radius: 10px;")
         outer_layout.addWidget(outline_frame)
 
         # Inner content frame
-        content_layout = QtWidgets.QVBoxLayout(outline_frame)
+        content_layout = QVBoxLayout(outline_frame)
         content_layout.setContentsMargins(10, 10, 10, 10)
         
-        self.content_frame = QtWidgets.QFrame(outline_frame)
+        self.content_frame = QFrame(outline_frame)
         self.content_frame.setStyleSheet("background-color: #1a1a1a; border-radius: 8px;")
         content_layout.addWidget(self.content_frame)
 
         # Custom title bar with close button
-        title_bar = QtWidgets.QHBoxLayout()
-        self.content_frame.setLayout(QtWidgets.QVBoxLayout())
+        title_bar = QHBoxLayout()
+        self.content_frame.setLayout(QVBoxLayout())
         self.content_frame.layout().addLayout(title_bar)
 
-        title_label = QtWidgets.QLabel("System Info")
+        title_label = QLabel("System Info")
         title_label.setStyleSheet("color: cyan; font: bold 10pt OCR A Extended;")
         title_bar.addWidget(title_label)
-        title_bar.addSpacerItem(QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum))
-
-        close_button = QtWidgets.QPushButton("EXIT")
-        close_button.setStyleSheet("""
-            QPushButton {
-                background-color: #1a1a1a;
-                color: hotpink;
-                font: bold 10pt OCR A Extended;
-                padding: 5px;
-                border: 2px solid hotpink;
-                border-radius: 10px;
-            }
-            QPushButton:hover {
-                background-color: #333333;
-            }
-            QPushButton:pressed {
-                background-color: #555555;
-            }
-        """)
-        close_button.clicked.connect(self.close_panel)
-        title_bar.addWidget(close_button)
+        title_bar.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
 
         # Draggable title bar
         title_bar.addStretch()
         title_label.mousePressEvent = self.start_move
         title_label.mouseMoveEvent = self.on_motion
         #--------------------------------
-        self.central_widget = QtWidgets.QWidget()
+        self.central_widget = QWidget()
 
         # CPU and RAM usage displays
         self.CPU_widget = PercentageCircleWidget(10, "CPU")
@@ -127,43 +137,136 @@ class InfoPanel(QtWidgets.QWidget):
         self.move(self.x() + delta.x(), self.y() + delta.y())
         self.click_position = event.globalPos()
     #--------------------------------
-    def close_panel(self):
-        """
-        stop timer on closing
-        """
-        self.timer.stop()
+    def stop_timer(self):
+        if self.timer.isActive():
+            self.timer.stop()
         self.close()
 #--------------------------------
 
-class PercentageCircleWidget(QtWidgets.QWidget):
-    def __init__(self, percentage, name, parent=None):
-        super().__init__(parent)
-        self.percentage = percentage
-        self.name = name
-        self.setMinimumSize(50, 50)
+class BottomInfoPanel(QWidget):
+    def __init__(self):
+        super().__init__()
 
-    def paintEvent(self, event):
-        painter = QtGui.QPainter(self)
-        painter.setRenderHint(QtGui.QPainter.Antialiasing) # smooth edges
+        # Window properties
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setWindowOpacity(0.8)
+        self.setWindowTitle("INFO_2")
+        
+        # Outer frame as a border
+        outer_layout = QVBoxLayout(self)
+        outer_layout.setContentsMargins(5, 5, 5, 5)
+        outer_layout.setSpacing(0)
 
-        rect = self.rect()  # Get the rectangle representing the widget's size
-        radius = min(rect.width(), rect.height()) // 2 - 10  # Calculate radius for the circle
-        center = rect.center()
+        outline_frame = QFrame(self)
+        outline_frame.setStyleSheet("background-color: hotpink; border-radius: 10px;")
+        outer_layout.addWidget(outline_frame)
 
-        # Draw arc and text
-        painter.setPen(QtGui.QPen(QtGui.QColor("#FF69B4"), 16)) # colour & thickness
-        span_angle = int(360 * 16 * (self.percentage / 100))
-        painter.drawArc(
-            center.x() - radius, center.y() - radius, int(2.15*radius), int(2.15*radius), 90 * 16, -span_angle
+        # Inner content frame
+        content_layout = QVBoxLayout(outline_frame)
+        content_layout.setContentsMargins(10, 10, 10, 10)
+        
+        self.content_frame = QFrame(outline_frame)
+        self.content_frame.setStyleSheet("background-color: #1a1a1a; border-radius: 8px;")
+        content_layout.addWidget(self.content_frame)
+
+        # Custom title bar with close button
+        title_bar = QHBoxLayout()
+        self.content_frame.setLayout(QVBoxLayout())
+        self.content_frame.layout().addLayout(title_bar)
+
+        title_label = QLabel("Info Sub-panel")
+        title_label.setStyleSheet("color: cyan; font: bold 10pt OCR A Extended;")
+        title_bar.addWidget(title_label)
+        title_bar.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
+        #--------------------------------
+        # Draggable title bar
+        title_bar.addStretch()
+        #--------------------------------
+        # Timer to update displays
+        self.timer = QtCore.QTimer()
+        self.timer.start(1000)  # Update every second
+        #--------------------------------
+
+    # Functions
+    #--------------------------------
+    def stop_timer(self):
+        if self.timer.isActive():
+            self.timer.stop()
+        self.close()
+#--------------------------------
+
+# Main window class and file main
+class MainWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.init_ui()
+        self.setGeometry(int(config.scale*550) + int((config.scale-0.45)*200), # W pos,
+                         int((config.scale-0.40)*150), # H pos,
+                         int(config.scale*350), int(config.scale*800))  # W size, H size
+        
+        # Custom title bar with close button
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+
+        outline_frame = QFrame(self)
+        self.content_frame = QFrame(outline_frame)
+        title_bar = QHBoxLayout()
+        self.content_frame.setLayout(QVBoxLayout())
+        self.content_frame.layout().addLayout(title_bar)
+
+    def init_ui(self):
+        # Create instances of TopPanel and BottomPanel
+        self.top_panel = TopInfoPanel()
+        self.bottom_panel = BottomInfoPanel()
+
+        # Create spacers for alignment
+        horizontal_spacer = QSpacerItem(
+            40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum
         )
-        painter.setPen(QtGui.QColor("#FF69B4")) # colour
-        painter.setFont(QtGui.QFont("OCR A Extended", 10, QtGui.QFont.Bold)) # text properties
-        text = f"{self.name + ':' + str(self.percentage)}%"
-        painter.drawText(rect, QtCore.Qt.AlignCenter, text)
 
-# Temporary main
+        # Combine layouts in L-shape and add close button
+        main_layout = QVBoxLayout()
+        close_button = QPushButton("EXIT")
+        close_button.setStyleSheet("""
+            QPushButton {
+                background-color: #1a1a1a;
+                color: hotpink;
+                font: bold 10pt OCR A Extended;
+                padding: 5px;
+                border: 2px solid hotpink;
+                border-radius: 10px;
+            }
+            QPushButton:hover {
+                background-color: #333333;
+            }
+            QPushButton:pressed {
+                background-color: #555555;
+            }
+        """)
+        close_button.clicked.connect(self.closeEvent)
+        main_layout.addWidget(close_button)
+
+        bottom_layout = QHBoxLayout()
+        bottom_layout.addItem(horizontal_spacer)
+        bottom_layout.addWidget(self.bottom_panel)
+
+        main_layout.addWidget(self.top_panel)
+        main_layout.addLayout(bottom_layout)
+        self.setLayout(main_layout)
+
+    def closeEvent(self, _):
+        """
+        shut down both timers and close app
+        """
+        self.top_panel.stop_timer()
+        self.bottom_panel.stop_timer()
+        self.close()
+#--------------------------------
+
 if __name__ == "__main__":
-    app = QtWidgets.QApplication([])
-    window = InfoPanel()
+    app = QApplication([])
+    window = MainWindow()
     window.show()
-    app.exec_()
+    app.exec()
+#--------------------------------
