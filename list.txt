@@ -1,3 +1,6 @@
 draw interface (2025)
 gif in empty space
-update & align sys info
+slow start AI
+add opening line to AI head
+voice activated main
+digital rain to info
