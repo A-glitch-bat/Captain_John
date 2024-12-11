@@ -4,11 +4,16 @@
 import sys
 import subprocess
 import os
-from PyQt5 import QtWidgets, QtGui, QtCore
-import config
-from panel import InfoPanel
+
+from PyQt5 import QtWidgets
+from PyQt5.QtGui import QBrush, QColor, QPixmap, QIcon
+from PyQt5.QtCore import Qt, QSize
+
+from panel import MainWindow
 from aihead import AIhead
 from ttshead import TtS
+from digitrain import DigitalRainPanel
+import config
 #--------------------------------
 
 # Main class
@@ -18,17 +23,18 @@ class CustomWindow(QtWidgets.QMainWindow):
         #--------------------------------
 
         # Set up the main window properties
-        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)  # remove window border
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)  # transparent background
-        self.setGeometry(int((config.scale-0.45)*200), int((config.scale-0.40)*150), 
-                         int(config.scale*550), int(config.scale*400))  # window size, window position
+        self.setWindowFlags(Qt.FramelessWindowHint)  # remove window border
+        self.setAttribute(Qt.WA_TranslucentBackground)  # transparent background
+        Wh = int((config.scale-0.45)*200); Ww = int((config.scale-0.40)*150) # window size
+        Ph = int(config.scale*550); Pw = int(config.scale*400) # window position
+        self.setGeometry(Wh, Ww, Ph, Pw)
         #--------------------------------
 
         # Load and set the background image
         self.background_label = QtWidgets.QLabel(self)
         border_location = os.path.join(config.destination, "xmas_visuals/xmas_border_h.png")
-        pixmap = QtGui.QPixmap(border_location)
-        pixmap = pixmap.scaled(self.width(), self.height(), QtCore.Qt.KeepAspectRatioByExpanding, QtCore.Qt.SmoothTransformation)
+        pixmap = QPixmap(border_location)
+        pixmap = pixmap.scaled(self.width(), self.height(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
         self.background_label.setPixmap(pixmap)
         self.background_label.setGeometry(0, 0, self.width(), self.height())
         
@@ -65,7 +71,7 @@ class CustomWindow(QtWidgets.QMainWindow):
         button_layout = QtWidgets.QVBoxLayout()
         button_container.setLayout(button_layout)
         button_container.setMinimumWidth(int(config.scale * 150))
-        main_layout.addWidget(button_container, alignment=QtCore.Qt.AlignLeft)
+        main_layout.addWidget(button_container, alignment=Qt.AlignLeft)
 
         #--------------------------------
         # Buttons and widgets
@@ -102,7 +108,7 @@ class CustomWindow(QtWidgets.QMainWindow):
 
         glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
         glow_effect.setBlurRadius(20)
-        glow_effect.setColor(QtGui.QColor("hotpink"))
+        glow_effect.setColor(QColor("hotpink"))
         glow_effect.setOffset(0, 0)
 
         open_vscode_button.setGraphicsEffect(glow_effect)
@@ -134,7 +140,7 @@ class CustomWindow(QtWidgets.QMainWindow):
         
         glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
         glow_effect.setBlurRadius(20)
-        glow_effect.setColor(QtGui.QColor("hotpink"))
+        glow_effect.setColor(QColor("hotpink"))
         glow_effect.setOffset(0, 0)
 
         self.info_button.setGraphicsEffect(glow_effect)
@@ -166,7 +172,7 @@ class CustomWindow(QtWidgets.QMainWindow):
 
         glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
         glow_effect.setBlurRadius(20)
-        glow_effect.setColor(QtGui.QColor("hotpink"))
+        glow_effect.setColor(QColor("hotpink"))
         glow_effect.setOffset(0, 0)
 
         AI_button.setGraphicsEffect(glow_effect)
@@ -199,7 +205,7 @@ class CustomWindow(QtWidgets.QMainWindow):
 
         glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
         glow_effect.setBlurRadius(20)
-        glow_effect.setColor(QtGui.QColor("hotpink"))
+        glow_effect.setColor(QColor("hotpink"))
         glow_effect.setOffset(0, 0)
 
         list_button.setGraphicsEffect(glow_effect)
@@ -246,7 +252,7 @@ class CustomWindow(QtWidgets.QMainWindow):
         input_layout.addWidget(self.input_field)
         
         self.submit_button = QtWidgets.QPushButton()
-        self.submit_button.setIcon(QtGui.QIcon.fromTheme(self.V_check))
+        self.submit_button.setIcon(QIcon.fromTheme(self.V_check))
         self.submit_button.setFixedSize(30, 30)
         self.submit_button.setStyleSheet("""
             QPushButton {
@@ -257,6 +263,13 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.submit_button.clicked.connect(self.write_input)        
         input_layout.addWidget(self.submit_button)
         #--------------------------------
+
+        # Background digital rain
+        rainColour = [0, 255, 255] #rainColour = [255, 105, 180] # cyan//hotpink
+        self.background_text = DigitalRainPanel([Wh, Ww, Ph, Pw], rainColour, central_widget)
+        self.background_text.lower() # Widget to background
+        #--------------------------------
+
         # Ensure the app works as intended
         self.read_list()
         self.adjust_close_button_position()
@@ -281,7 +294,7 @@ class CustomWindow(QtWidgets.QMainWindow):
         """
         Open InfoPanel on button click
         """
-        self.info_panel = InfoPanel() # prevent garbage-collection
+        self.info_panel = MainWindow() # prevent garbage-collection
         self.info_panel.show()
     #--------------------------------
     def start_AI(self):
@@ -379,8 +392,8 @@ class CustomWindow(QtWidgets.QMainWindow):
         text_label.setStyleSheet("color: hotpink; font-size: 14px; font-family: OCR A Extended;")
 
         delete_button = QtWidgets.QPushButton()
-        delete_button.setIcon(QtGui.QIcon(self.V_cancel))
-        delete_button.setIconSize(QtCore.QSize(24, 24))
+        delete_button.setIcon(QIcon(self.V_cancel))
+        delete_button.setIconSize(QSize(24, 24))
         delete_button.setFixedSize(30, 30)
         delete_button.setStyleSheet("border: none;")
 
@@ -389,7 +402,7 @@ class CustomWindow(QtWidgets.QMainWindow):
         row_layout.addWidget(text_label)
         row_layout.addWidget(delete_button)
 
-        row_layout.setAlignment(QtCore.Qt.AlignLeft)
+        row_layout.setAlignment(Qt.AlignLeft)
         row_widget.setLayout(row_layout)
         list_item = QtWidgets.QListWidgetItem(self.terminal_display)
         list_item.setSizeHint(row_widget.sizeHint())
@@ -405,17 +418,17 @@ class CustomWindow(QtWidgets.QMainWindow):
         for i in range(self.terminal_display.count()):
             item = self.terminal_display.item(i)
             if item.text() == text:
-                if state == QtCore.Qt.Checked:
+                if state == Qt.Checked:
                     font = item.font()
                     font.setStrikeOut(True)
                     item.setFont(font)
-                    item.setForeground(QtCore.Qt.darkGray)
+                    item.setForeground(Qt.darkGray)
                 else:
                     # restore default item look
                     font = item.font()
                     font.setStrikeOut(False)
                     item.setFont(font)
-                    item.setForeground(QtGui.QBrush(QtGui.QColor("hotpink")))
+                    item.setForeground(QBrush(QColor("hotpink")))
     #--------------------------------
 
 #--------------------------------
