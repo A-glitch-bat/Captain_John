@@ -1,6 +1,6 @@
 draw interface (2025)
 gif in empty space
-slow start AI
 add opening line to AI head
 voice activated main
 digital rain to info
+fix list checkbox print

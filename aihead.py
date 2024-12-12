@@ -22,6 +22,10 @@ class AIhead(QtWidgets.QWidget):
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)  # transparent background
         self.setGeometry(int((config.scale-0.45)*200) + int(config.scale*350), int((config.scale-0.40)*150 + int(config.scale*400)), 
                          int(config.scale*350), int(config.scale*450))  # window size, window position
+        
+        self.tokenizer = None
+        self.model = None
+        self.chat_history_ids = None
         #--------------------------------
 
         # Load and set the custom background image
@@ -31,12 +35,6 @@ class AIhead(QtWidgets.QWidget):
         pixmap = pixmap.scaled(self.width(), self.height(), QtCore.Qt.KeepAspectRatioByExpanding, QtCore.Qt.SmoothTransformation)
         self.background_label.setPixmap(pixmap)
         self.background_label.setGeometry(0, 0, self.width(), self.height())
-        
-        # Load model and tokenizer
-        model_name = "gpt2"
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForCausalLM.from_pretrained(model_name)
-        self.chat_history_ids = None
 
         # Create the custom "X" close button
         self.close_button = QtWidgets.QPushButton("EXIT", self)
@@ -131,10 +129,20 @@ class AIhead(QtWidgets.QWidget):
         self.close_button.setGeometry(self.width() - int(config.scale*60), int(config.scale*30),
                                       int(config.scale*50), int(config.scale*30)) # L, H, R, W
     #--------------------------------
+    def launch_AI(self):
+        """
+        load model and tokenizer when needed
+        """
+        model_name = "gpt2"
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = AutoModelForCausalLM.from_pretrained(model_name)
+    #--------------------------------
     def get_reply(self):
         user_input = self.input_field.text()
         if user_input == "":
             return
+        elif self.model == None:
+            self.launch_AI()
 
         # Ensure the tokenizer has a padding token
         if self.tokenizer.pad_token is None:
