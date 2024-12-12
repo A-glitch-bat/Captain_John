@@ -201,7 +201,6 @@ class CustomWindow(QtWidgets.QMainWindow):
             }}
         """)
         list_button.clicked.connect(self.start_ttshead)
-        self.start_ttshead() # auto-start for convenience
 
         glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
         glow_effect.setBlurRadius(20)
@@ -211,8 +210,14 @@ class CustomWindow(QtWidgets.QMainWindow):
         list_button.setGraphicsEffect(glow_effect)
         button_layout.addWidget(list_button)
         #--------------------------------
+
         # Stretchable space to push buttons to the top
         button_layout.addStretch()
+        #--------------------------------
+
+        # Automatically start main two panels
+        self.start_AI()
+        self.start_ttshead()
         #--------------------------------
 
         # Create a vertical layout for the list on the right
