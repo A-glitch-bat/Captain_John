@@ -227,8 +227,8 @@ class CustomWindow(QtWidgets.QMainWindow):
         list_layout.addLayout(input_layout)
 
         # Terminal display
-        self.terminal_display = QtWidgets.QListWidget(self)
-        self.terminal_display.setStyleSheet("""
+        self.list_display = QtWidgets.QListWidget(self)
+        self.list_display.setStyleSheet("""
             QListWidget {
                 background-color: black;
                 color: hotpink;
@@ -237,9 +237,9 @@ class CustomWindow(QtWidgets.QMainWindow):
                 border: 2px solid hotpink;
             }
         """)
-        self.terminal_display.setMinimumSize(int(config.scale*128), int(config.scale*128))
-        self.terminal_display.setMaximumSize(int(config.scale*256), int(config.scale*256))
-        list_layout.addWidget(self.terminal_display)
+        self.list_display.setMinimumSize(int(config.scale*128), int(config.scale*128))
+        self.list_display.setMaximumSize(int(config.scale*256), int(config.scale*256))
+        list_layout.addWidget(self.list_display)
 
         # Input
         self.input_field = QtWidgets.QLineEdit(self)
@@ -355,8 +355,8 @@ class CustomWindow(QtWidgets.QMainWindow):
                         file.write(line)
 
             # also remove from the list widget
-            row = self.terminal_display.row(item)
-            self.terminal_display.takeItem(row)
+            row = self.list_display.row(item)
+            self.list_display.takeItem(row)
     #--------------------------------
     def read_list(self):
         """
@@ -365,13 +365,13 @@ class CustomWindow(QtWidgets.QMainWindow):
         try:
             with open(self.txt_file, "r") as file:
                 lines = file.readlines()
-            self.terminal_display.clear()
+            self.list_display.clear()
             for line in lines:
                 line = line.strip()
                 self.add_list_item(line)
         except FileNotFoundError:
-            self.terminal_display.clear()
-            self.terminal_display.addItem("Error: 'list.txt' not found.")
+            self.list_display.clear()
+            self.list_display.addItem("Error: 'list.txt' not found.")
     # sub-function ^
     def add_list_item(self, text):
         """
@@ -393,6 +393,7 @@ class CustomWindow(QtWidgets.QMainWindow):
                 background-color: hotpink;
             }
         """)
+        checkbox.stateChanged.connect(lambda checked, text=text: self.checkbox_toggle_visual(checked, text))
         text_label = QtWidgets.QLabel(text)
         text_label.setStyleSheet("color: hotpink; font-size: 14px; font-family: OCR A Extended;")
 
@@ -409,31 +410,32 @@ class CustomWindow(QtWidgets.QMainWindow):
 
         row_layout.setAlignment(Qt.AlignLeft)
         row_widget.setLayout(row_layout)
-        list_item = QtWidgets.QListWidgetItem(self.terminal_display)
+        list_item = QtWidgets.QListWidgetItem(self.list_display)
         list_item.setSizeHint(row_widget.sizeHint())
-        self.terminal_display.setItemWidget(list_item, row_widget)
+        self.list_display.setItemWidget(list_item, row_widget)
 
         # delete button click connection
         delete_button.clicked.connect(lambda: self.delete_item(list_item, text, checkbox.isChecked()))
-    # sub-function ^
-    def handle_checkbox_toggled(self, state, text):
+    #--------------------------------
+    def checkbox_toggle_visual(self, state, text):
         """
-        checkbox toggling
+        checkbox toggling visual effect
         """
-        for i in range(self.terminal_display.count()):
-            item = self.terminal_display.item(i)
-            if item.text() == text:
-                if state == Qt.Checked:
-                    font = item.font()
+        for i in range(self.list_display.count()):
+            widget_item = self.list_display.item(i)
+            row_item = self.list_display.itemWidget(widget_item)
+            item_label = row_item.findChild(QtWidgets.QLabel)
+            if item_label.text() == text:
+                if state == 2:
+                    font = item_label.font()
                     font.setStrikeOut(True)
-                    item.setFont(font)
-                    item.setForeground(Qt.darkGray)
-                else:
-                    # restore default item look
-                    font = item.font()
+                    item_label.setFont(font)
+                    item_label.setStyleSheet("color: rgba(255, 105, 180, 100);")
+                elif state == 0:
+                    font = item_label.font()
                     font.setStrikeOut(False)
-                    item.setFont(font)
-                    item.setForeground(QBrush(QColor("hotpink")))
+                    item_label.setFont(font)
+                    item_label.setStyleSheet("color: hotpink;")
     #--------------------------------
 
 #--------------------------------

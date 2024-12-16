@@ -3,4 +3,3 @@ gif in empty space
 add opening line to AI head
 voice activated main
 digital rain to info
-fix list checkbox print
