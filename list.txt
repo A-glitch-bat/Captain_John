@@ -2,3 +2,7 @@ draw interface (2025)
 add opening line to AI head
 voice activated main
 digital rain to info
+basic voice commands
+GPU and space to info
+ambient neon buzz sounds
+live weather info to info
