@@ -7,6 +7,7 @@ import pyttsx3
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPainter, QPen, QColor, QPixmap, QMovie
 from PyQt5.QtCore import Qt, QTimer, QSize
+from glitchwidget import GlitchWidget
 import config
 #--------------------------------
 
@@ -108,16 +109,40 @@ class TtS(QtWidgets.QWidget):
         self.text_field = QtWidgets.QTextEdit(self)
         self.text_field.setStyleSheet("""
             QTextEdit {
-                background-color: black;
+                background: rgba(0, 0, 0, 0);
                 color: hotpink;
                 font-family: OCR A Extended;
                 font-size: 14px;
-                border: 2px solid hotpink;
+                border: none;
+                padding: 15px;
+                margin: 15px;
             }
         """)
+        self.text_field.setReadOnly(True)
+        self.text_field.setAttribute(Qt.WA_TranslucentBackground, True)
         self.text_field.setMinimumSize(int(config.scale*128), int(config.scale*128))
         self.text_field.setMaximumSize(int(config.scale*256), int(config.scale*256))
-        main_layout.addWidget(self.text_field)
+        neuromancer_text = (
+        "The sky above the port was the color of television, tuned to a dead channel. \n"
+        "The room smelled of sweat and old tobacco. Beneath him, the mattress creaked. \n"
+        "He jacked out, blinking away the illusion, and stared at the cracked ceiling above him, "
+        "wondering how much longer he could keep running."
+        )
+        self.text_field.setText(neuromancer_text)
+
+        # Stack glitch over text
+        glitch_overlay = GlitchWidget(self)
+        stacked_layout = QtWidgets.QStackedLayout()
+        stacked_layout.addWidget(self.text_field)
+        stacked_layout.addWidget(glitch_overlay)
+        stacked_layout.setStackingMode(QtWidgets.QStackedLayout.StackAll)
+
+        glitch_container = QtWidgets.QWidget()
+        glitch_container.setLayout(stacked_layout)
+        main_layout.addWidget(glitch_container)
+        def resize_glitch():
+            glitch_overlay.setGeometry(self.text_field.geometry())
+        glitch_container.resizeEvent = lambda event: resize_glitch()
 
         # GIF widget
         gif_label = QtWidgets.QLabel(self)
@@ -129,12 +154,6 @@ class TtS(QtWidgets.QWidget):
         gif_label.setMovie(gif)
         gif.start()
         main_layout.addWidget(gif_label)
-        #--------------------------------
-
-        # Run a timed glitch over the text
-        self.setup_glitch_timer(self.text_field, 
-                                interval=1500, 
-                                glitch_duration=500)
         #--------------------------------
 
         # Ensure the app works as intended
@@ -151,32 +170,6 @@ class TtS(QtWidgets.QWidget):
         """
         self.close_button.setGeometry(self.width() - int(config.scale*60), int(config.scale*30),
                                       int(config.scale*50), int(config.scale*30)) # L, H, R, W
-    #--------------------------------
-    def setup_glitch_timer(self, widget, interval=2000, glitch_duration=300):
-        """
-        bind glitch to a widget
-        """
-        print("setting up glitches")
-        self.glitch_timer = QTimer()
-        self.painter = QPainter(widget)
-        pen = QPen(Qt.red, 2, Qt.DashLine)
-        self.painter.setPen(pen)
-
-        self.glitch_timer.timeout.connect(lambda: self.apply_fragment_effect(widget,
-                                                                 duration=glitch_duration))
-        self.glitch_timer.start(interval)
-    # sub-function ^
-    def apply_fragment_effect(self, widget, duration=300, colors=None):
-        print("glitches running")
-        if colors is None: # randomize colours
-            colors = [QColor(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))]
-
-        for _ in range(10):
-            x_start = random.randint(0, widget.width())
-            y_start = random.randint(0, widget.height())
-            x_end = x_start + random.randint(-20, 20)
-            y_end = y_start + random.randint(-20, 20)
-            self.painter.drawLine(x_start, y_start, x_end, y_end)
     #--------------------------------
     def read_text(self):
         """
