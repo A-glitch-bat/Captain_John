@@ -5,8 +5,8 @@ import os
 import random
 import pyttsx3
 from PyQt5 import QtWidgets
-from PyQt5.QtGui import QPainter, QPen, QColor, QPixmap
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QPainter, QPen, QColor, QPixmap, QMovie
+from PyQt5.QtCore import Qt, QTimer, QSize
 import config
 #--------------------------------
 
@@ -118,6 +118,17 @@ class TtS(QtWidgets.QWidget):
         self.text_field.setMinimumSize(int(config.scale*128), int(config.scale*128))
         self.text_field.setMaximumSize(int(config.scale*256), int(config.scale*256))
         main_layout.addWidget(self.text_field)
+
+        # GIF widget
+        gif_label = QtWidgets.QLabel(self)
+        gif_label.setAlignment(Qt.AlignCenter)
+        G1 = os.path.join(config.destination, "square_glitch.gif")
+        gif = QMovie(G1)
+        gif.setScaledSize(QSize(64, 64))
+
+        gif_label.setMovie(gif)
+        gif.start()
+        main_layout.addWidget(gif_label)
         #--------------------------------
 
         # Run a timed glitch over the text
@@ -147,6 +158,10 @@ class TtS(QtWidgets.QWidget):
         """
         print("setting up glitches")
         self.glitch_timer = QTimer()
+        self.painter = QPainter(widget)
+        pen = QPen(Qt.red, 2, Qt.DashLine)
+        self.painter.setPen(pen)
+
         self.glitch_timer.timeout.connect(lambda: self.apply_fragment_effect(widget,
                                                                  duration=glitch_duration))
         self.glitch_timer.start(interval)
@@ -156,17 +171,12 @@ class TtS(QtWidgets.QWidget):
         if colors is None: # randomize colours
             colors = [QColor(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))]
 
-        painter = QPainter(widget)
-        pen = QPen(Qt.red, 2, Qt.DashLine)
-        painter.setPen(pen)
-
         for _ in range(10):
             x_start = random.randint(0, widget.width())
             y_start = random.randint(0, widget.height())
             x_end = x_start + random.randint(-20, 20)
             y_end = y_start + random.randint(-20, 20)
-            painter.drawLine(x_start, y_start, x_end, y_end)
-        painter.end()
+            self.painter.drawLine(x_start, y_start, x_end, y_end)
     #--------------------------------
     def read_text(self):
         """
