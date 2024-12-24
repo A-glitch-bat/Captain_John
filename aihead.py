@@ -6,7 +6,7 @@ import subprocess
 import os
 from PyQt5 import QtWidgets, QtGui, QtCore
 from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
+from johnsAI import JohnsNN
 import config
 #--------------------------------
 
@@ -112,6 +112,8 @@ class AIhead(QtWidgets.QWidget):
         """)
         
         main_layout.addWidget(self.output_display)
+        self.output_display.append(f"Hello! How may I help you? \n")
+
         self.setLayout(main_layout)
         #--------------------------------
         # Ensure the app can be closed
@@ -169,6 +171,8 @@ class AIhead(QtWidgets.QWidget):
         if reply.startswith(user_input):
             reply = reply[len(user_input):].strip()
         self.output_display.append(f"B: {reply}")
+
+        self.output_display.append(f"---------------------- \n")
         self.input_field.clear()
     #--------------------------------
 
