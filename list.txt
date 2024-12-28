@@ -1,7 +1,7 @@
 draw interface (2025)
 voice activated main
-digital rain to info
 basic voice commands
+add on/off displays to tts
+digital rain to info
 GPU and space to info
-ambient neon buzz sounds
 live weather info to info

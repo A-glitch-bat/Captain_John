@@ -2,12 +2,16 @@
 
 # Imports
 import os
-import random
 import pyttsx3
+import speech_recognition as sr
+import random
+
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPainter, QPen, QColor, QPixmap, QMovie
 from PyQt5.QtCore import Qt, QTimer, QSize
+
 from glitchwidget import GlitchWidget
+from audio.audioplayer import AmbientPlayer
 import config
 #--------------------------------
 
@@ -23,6 +27,7 @@ class TtS(QtWidgets.QWidget):
         self.setAttribute(Qt.WA_TranslucentBackground) # transparent background
         self.setGeometry(int((config.scale-0.45)*200), int((config.scale-0.40)*150 + int(config.scale*400)), 
                          int(config.scale*350), int(config.scale*450))  # window size, window position
+        self.sound_player = None
         #--------------------------------
 
         # Load custom background image
@@ -70,7 +75,7 @@ class TtS(QtWidgets.QWidget):
         #--------------------------------
 
         # Text-To-Speech button
-        self.tts_button = QtWidgets.QPushButton("READ")
+        self.tts_button = QtWidgets.QPushButton("SPEECH")
         self.tts_button.setMinimumSize(128, 64)
         self.tts_button.setMaximumSize(128, 64)
         self.tts_button.setStyleSheet(f"""
@@ -94,7 +99,7 @@ class TtS(QtWidgets.QWidget):
                 color: black;
             }}
         """)
-        self.tts_button.clicked.connect(self.read_text)
+        self.tts_button.clicked.connect(self.launch_speech)
 
         glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
         glow_effect.setBlurRadius(25)
@@ -103,6 +108,41 @@ class TtS(QtWidgets.QWidget):
 
         self.tts_button.setGraphicsEffect(glow_effect)
         main_layout.addWidget(self.tts_button, alignment=Qt.AlignCenter)
+        #--------------------------------
+        # Ambient audio button
+        self.ambient_button = QtWidgets.QPushButton("AUDIO")
+        self.ambient_button.setMinimumSize(128, 64)
+        self.ambient_button.setMaximumSize(128, 64)
+        self.ambient_button.setStyleSheet(f"""
+            QPushButton {{
+                color: hotpink;
+                font-weight: bold;
+                font-size: 15px;
+                font-family: OCR A Extended;
+                border: 2px solid hotpink;
+                border-radius: 10px;
+                padding: 12px 24px;
+                text-align: left;
+                background-image: url('{B1}');
+            }}
+            QPushButton:hover {{
+                background-image: url('{B2_pressed}');
+                color: black;
+            }}
+            QPushButton:pressed {{
+                background-image: url('{B2_pressed}');
+                color: black;
+            }}
+        """)
+        self.ambient_button.clicked.connect(self.launch_audio)
+
+        glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
+        glow_effect.setBlurRadius(25)
+        glow_effect.setColor(QColor("hotpink"))
+        glow_effect.setOffset(0, 0)
+
+        self.ambient_button.setGraphicsEffect(glow_effect)
+        main_layout.addWidget(self.ambient_button, alignment=Qt.AlignCenter)
         #--------------------------------
 
         # Text field
@@ -171,13 +211,25 @@ class TtS(QtWidgets.QWidget):
         self.close_button.setGeometry(self.width() - int(config.scale*60), int(config.scale*30),
                                       int(config.scale*50), int(config.scale*30)) # L, H, R, W
     #--------------------------------
-    def read_text(self):
+    def launch_audio(self):
         """
-        does what the button says
+        start the sound player
+        """
+        if not self.sound_player:
+            self.sound_player = AmbientPlayer(min_interval=60, max_interval=360)
+            self.sound_player.start()
+            print("Ambient audio started.")
+        else:
+            print("Ambient audio is already running.")
+    #--------------------------------
+    def launch_speech(self):
+        """
+        make the module listen and talk
         """
         text = "Hello there."
         engine = pyttsx3.init()
         engine.setProperty('rate', 125) # base is 150
+
         """voices = engine.getProperty('voices')
         for voice in voices:
             print(voice, voice.id)
@@ -186,6 +238,7 @@ class TtS(QtWidgets.QWidget):
             engine.runAndWait()
             engine.stop()
         use on windows 11"""
+
         engine.say(text)
         engine.runAndWait()
     #--------------------------------
