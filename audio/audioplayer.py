@@ -32,8 +32,6 @@ class AmbientPlayer:
     # sub-function ^
     def stop(self):
         self.is_running = False
-        if hasattr(self, 'thread'):
-            self.thread.join()
         print("Stopping ambient sounds")
     #--------------------------------
     def loop_sound(self):
@@ -50,4 +48,6 @@ class AmbientPlayer:
             interval = random.randint(self.min_interval, self.max_interval)
             print(f"Next sound in {interval} seconds...")
             time.sleep(interval)
+            if not self.is_running:  # Exit the thread if the flag is False
+                break
     #--------------------------------
