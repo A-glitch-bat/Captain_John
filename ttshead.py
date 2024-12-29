@@ -28,6 +28,7 @@ class TtS(QtWidgets.QWidget):
         self.setGeometry(int((config.scale-0.45)*200), int((config.scale-0.40)*150 + int(config.scale*400)), 
                          int(config.scale*350), int(config.scale*450))  # window size, window position
         self.sound_player = None
+        self.tts_engine = None
         #--------------------------------
 
         # Load custom background image
@@ -107,8 +108,27 @@ class TtS(QtWidgets.QWidget):
         glow_effect.setOffset(0, 0)
 
         self.tts_button.setGraphicsEffect(glow_effect)
-        main_layout.addWidget(self.tts_button, alignment=Qt.AlignCenter)
+        tts_BoxLayout = QtWidgets.QHBoxLayout()
+        tts_BoxLayout.addWidget(self.tts_button)
+
+        self.tts_onoff = QtWidgets.QLabel("0FF")
+        self.tts_onoff.setFixedSize(QSize(48, 48))
+        self.tts_onoff.setAlignment(Qt.AlignCenter)
+        self.tts_onoff.setStyleSheet("""
+            QLabel {
+                background-color: transparent;
+                color: cyan;
+                border: 3px solid cyan;
+                border-radius: 14px;
+                font-family: OCR A Extended;
+                font-size: 14px;
+                font-weight: bold;
+            }
+        """)
+        tts_BoxLayout.addWidget(self.tts_onoff)
+        main_layout.addLayout(tts_BoxLayout)
         #--------------------------------
+
         # Ambient audio button
         self.ambient_button = QtWidgets.QPushButton("AUDIO")
         self.ambient_button.setMinimumSize(128, 64)
@@ -142,7 +162,25 @@ class TtS(QtWidgets.QWidget):
         glow_effect.setOffset(0, 0)
 
         self.ambient_button.setGraphicsEffect(glow_effect)
-        main_layout.addWidget(self.ambient_button, alignment=Qt.AlignCenter)
+        audio_BoxLayout = QtWidgets.QHBoxLayout()
+        audio_BoxLayout.addWidget(self.ambient_button)
+
+        self.audio_onoff = QtWidgets.QLabel("0FF")
+        self.audio_onoff.setFixedSize(QSize(48, 48))
+        self.audio_onoff.setAlignment(Qt.AlignCenter)
+        self.audio_onoff.setStyleSheet("""
+            QLabel {
+                background-color: transparent;
+                color: cyan;
+                border: 3px solid cyan;
+                border-radius: 14px;
+                font-family: OCR A Extended;
+                font-size: 14px;
+                font-weight: bold;
+            }
+        """)
+        audio_BoxLayout.addWidget(self.audio_onoff)
+        main_layout.addLayout(audio_BoxLayout)
         #--------------------------------
 
         # Text field
@@ -211,6 +249,12 @@ class TtS(QtWidgets.QWidget):
         self.close_button.setGeometry(self.width() - int(config.scale*60), int(config.scale*30),
                                       int(config.scale*50), int(config.scale*30)) # L, H, R, W
     #--------------------------------
+    def toggle_status(self, button_label, status):
+        """
+        turn a label to true or false
+        """
+        print(button_label);print(status)
+    #--------------------------------
     def launch_audio(self):
         """
         start the sound player
@@ -218,29 +262,38 @@ class TtS(QtWidgets.QWidget):
         if not self.sound_player:
             self.sound_player = AmbientPlayer(min_interval=60, max_interval=360)
             self.sound_player.start()
-            print("Ambient audio started.")
+            self.toggle_status(self.audio_onoff, self.sound_player)
         else:
-            print("Ambient audio is already running.")
+            self.sound_player.stop()
+            self.sound_player = None
+            self.toggle_status(self.audio_onoff, self.sound_player)
     #--------------------------------
     def launch_speech(self):
         """
         make the module listen and talk
         """
-        text = "Hello there."
-        engine = pyttsx3.init()
-        engine.setProperty('rate', 125) # base is 150
+        if not self.tts_engine:
+            self.tts_engine = pyttsx3.init()
+            self.toggle_status(self.tts_onoff, self.tts_engine)
 
-        """voices = engine.getProperty('voices')
-        for voice in voices:
-            print(voice, voice.id)
-            engine.setProperty('voice', voice.id)
-            engine.say(text)
-            engine.runAndWait()
-            engine.stop()
-        use on windows 11"""
+            text = "Hello there."
+            self.tts_engine.setProperty('rate', 125) # base is 150
+            """voices = engine.getProperty('voices')
+            for voice in voices:
+                print(voice, voice.id)
+                engine.setProperty('voice', voice.id)
+                engine.say(text)
+                engine.runAndWait()
+                engine.stop()
+            use on windows 11"""
+            self.tts_engine.say(text)
+            self.tts_engine.runAndWait()
 
-        engine.say(text)
-        engine.runAndWait()
+            self.tts_engine = None
+            self.toggle_status(self.tts_onoff, self.tts_engine)
+        else:
+            self.tts_engine = None
+            self.toggle_status(self.tts_onoff, self.tts_engine)
     #--------------------------------
 
 # Temporary main
