@@ -1,7 +1,6 @@
 draw interface (2025)
 voice activated main
 basic voice commands
-add on/off displays to tts
 digital rain to info
 GPU and space to info
 live weather info to info

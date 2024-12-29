@@ -12,6 +12,7 @@ from PyQt5.QtCore import Qt, QTimer, QSize
 
 from glitchwidget import GlitchWidget
 from audio.audioplayer import AmbientPlayer
+from elements.status_button import StatusButton
 import config
 #--------------------------------
 
@@ -111,20 +112,7 @@ class TtS(QtWidgets.QWidget):
         tts_BoxLayout = QtWidgets.QHBoxLayout()
         tts_BoxLayout.addWidget(self.tts_button)
 
-        self.tts_onoff = QtWidgets.QLabel("0FF")
-        self.tts_onoff.setFixedSize(QSize(48, 48))
-        self.tts_onoff.setAlignment(Qt.AlignCenter)
-        self.tts_onoff.setStyleSheet("""
-            QLabel {
-                background-color: transparent;
-                color: cyan;
-                border: 3px solid cyan;
-                border-radius: 14px;
-                font-family: OCR A Extended;
-                font-size: 14px;
-                font-weight: bold;
-            }
-        """)
+        self.tts_onoff = StatusButton()
         tts_BoxLayout.addWidget(self.tts_onoff)
         main_layout.addLayout(tts_BoxLayout)
         #--------------------------------
@@ -165,20 +153,7 @@ class TtS(QtWidgets.QWidget):
         audio_BoxLayout = QtWidgets.QHBoxLayout()
         audio_BoxLayout.addWidget(self.ambient_button)
 
-        self.audio_onoff = QtWidgets.QLabel("0FF")
-        self.audio_onoff.setFixedSize(QSize(48, 48))
-        self.audio_onoff.setAlignment(Qt.AlignCenter)
-        self.audio_onoff.setStyleSheet("""
-            QLabel {
-                background-color: transparent;
-                color: cyan;
-                border: 3px solid cyan;
-                border-radius: 14px;
-                font-family: OCR A Extended;
-                font-size: 14px;
-                font-weight: bold;
-            }
-        """)
+        self.audio_onoff = StatusButton()
         audio_BoxLayout.addWidget(self.audio_onoff)
         main_layout.addLayout(audio_BoxLayout)
         #--------------------------------
@@ -249,12 +224,6 @@ class TtS(QtWidgets.QWidget):
         self.close_button.setGeometry(self.width() - int(config.scale*60), int(config.scale*30),
                                       int(config.scale*50), int(config.scale*30)) # L, H, R, W
     #--------------------------------
-    def toggle_status(self, button_label, status):
-        """
-        turn a label to true or false
-        """
-        print(button_label);print(status)
-    #--------------------------------
     def launch_audio(self):
         """
         start the sound player
@@ -262,11 +231,11 @@ class TtS(QtWidgets.QWidget):
         if not self.sound_player:
             self.sound_player = AmbientPlayer(min_interval=60, max_interval=360)
             self.sound_player.start()
-            self.toggle_status(self.audio_onoff, self.sound_player)
+            self.audio_onoff.set_status(self.sound_player)
         else:
             self.sound_player.stop()
             self.sound_player = None
-            self.toggle_status(self.audio_onoff, self.sound_player)
+            self.audio_onoff.set_status(self.sound_player)
     #--------------------------------
     def launch_speech(self):
         """
@@ -274,7 +243,7 @@ class TtS(QtWidgets.QWidget):
         """
         if not self.tts_engine:
             self.tts_engine = pyttsx3.init()
-            self.toggle_status(self.tts_onoff, self.tts_engine)
+            self.tts_onoff.set_status(self.tts_engine)
 
             text = "Hello there."
             self.tts_engine.setProperty('rate', 125) # base is 150
@@ -290,10 +259,10 @@ class TtS(QtWidgets.QWidget):
             self.tts_engine.runAndWait()
 
             self.tts_engine = None
-            self.toggle_status(self.tts_onoff, self.tts_engine)
+            self.tts_onoff.set_status(self.tts_engine)
         else:
             self.tts_engine = None
-            self.toggle_status(self.tts_onoff, self.tts_engine)
+            self.tts_onoff.set_status(self.tts_engine)
     #--------------------------------
 
 # Temporary main
