@@ -12,7 +12,7 @@ from PyQt5.QtCore import Qt, QSize
 from panel import MainWindow
 from aihead import AIhead
 from ttshead import TtS
-from digitrain import DigitalRainPanel
+from elements.digitrain import DigitalRainPanel
 import config
 #--------------------------------
 
