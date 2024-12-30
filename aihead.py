@@ -21,7 +21,7 @@ class AIhead(QtWidgets.QWidget):
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)  # remove window border
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)  # transparent background
         self.setGeometry(int((config.scale-0.45)*200) + int(config.scale*350), int((config.scale-0.40)*150 + int(config.scale*400)), 
-                         int(config.scale*350), int(config.scale*450))  # window size, window position
+                         int(config.scale*350), int(config.scale*450))  # window position, size
         
         self.tokenizer = None
         self.model = None
@@ -30,7 +30,7 @@ class AIhead(QtWidgets.QWidget):
 
         # Load and set the custom background image
         self.background_label = QtWidgets.QLabel(self)
-        border_location = os.path.join(config.destination, "xmas_visuals/xmas_border_v.png")
+        border_location = os.path.join(config.destination, "V_background2.png")
         pixmap = QtGui.QPixmap(border_location)
         pixmap = pixmap.scaled(self.width(), self.height(), QtCore.Qt.KeepAspectRatioByExpanding, QtCore.Qt.SmoothTransformation)
         self.background_label.setPixmap(pixmap)
@@ -112,7 +112,7 @@ class AIhead(QtWidgets.QWidget):
         """)
         
         main_layout.addWidget(self.output_display)
-        self.output_display.append(f"Hello! How may I help you? \n")
+        self.output_display.append(f"B: Hello! How may I help you? \n")
 
         self.setLayout(main_layout)
         #--------------------------------
