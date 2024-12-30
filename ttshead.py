@@ -10,7 +10,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPainter, QPen, QColor, QPixmap, QMovie
 from PyQt5.QtCore import Qt, QTimer, QSize
 
-from glitchwidget import GlitchWidget
+from elements.glitchwidget import GlitchWidget
 from audio.audioplayer import AmbientPlayer
 from elements.status_button import StatusButton
 import config
