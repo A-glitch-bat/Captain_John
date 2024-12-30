@@ -27,14 +27,14 @@ class TtS(QtWidgets.QWidget):
         self.setWindowFlags(Qt.FramelessWindowHint) # remove window border
         self.setAttribute(Qt.WA_TranslucentBackground) # transparent background
         self.setGeometry(int((config.scale-0.45)*200), int((config.scale-0.40)*150 + int(config.scale*400)), 
-                         int(config.scale*350), int(config.scale*450))  # window size, window position
+                         int(config.scale*350), int(config.scale*450))  # window position, size
         self.sound_player = None
         self.tts_engine = None
         #--------------------------------
 
         # Load custom background image
         self.background_label = QtWidgets.QLabel(self)
-        border_location = os.path.join(config.destination, "xmas_visuals/xmas_border_v.png")
+        border_location = os.path.join(config.destination, "V_background1.png")
         pixmap = QPixmap(border_location)
         pixmap = pixmap.scaled(self.width(), self.height(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
         self.background_label.setPixmap(pixmap)
@@ -177,7 +177,6 @@ class TtS(QtWidgets.QWidget):
         self.text_field.setMaximumSize(int(config.scale*256), int(config.scale*256))
         neuromancer_text = (
         "The sky above the port was the color of television, tuned to a dead channel. \n"
-        "The room smelled of sweat and old tobacco. Beneath him, the mattress creaked. \n"
         "He jacked out, blinking away the illusion, and stared at the cracked ceiling above him, "
         "wondering how much longer he could keep running."
         )

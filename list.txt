@@ -1,4 +1,3 @@
-draw interface (2025)
 voice activated main
 basic voice commands
 digital rain to info

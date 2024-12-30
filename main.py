@@ -25,14 +25,14 @@ class CustomWindow(QtWidgets.QMainWindow):
         # Set up the main window properties
         self.setWindowFlags(Qt.FramelessWindowHint)  # remove window border
         self.setAttribute(Qt.WA_TranslucentBackground)  # transparent background
-        Wh = int((config.scale-0.45)*200); Ww = int((config.scale-0.40)*150) # window size
-        Ph = int(config.scale*550); Pw = int(config.scale*400) # window position
-        self.setGeometry(Wh, Ww, Ph, Pw)
+        Ph = int((config.scale-0.45)*200); Pw = int((config.scale-0.40)*150) # window position
+        Wh = int(config.scale*550); Ww = int(config.scale*400) # window size
+        self.setGeometry(Ph, Pw, Wh, Ww)
         #--------------------------------
 
         # Load and set the background image
         self.background_label = QtWidgets.QLabel(self)
-        border_location = os.path.join(config.destination, "xmas_visuals/xmas_border_h.png")
+        border_location = os.path.join(config.destination, "H_background1.png")
         pixmap = QPixmap(border_location)
         pixmap = pixmap.scaled(self.width(), self.height(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
         self.background_label.setPixmap(pixmap)
@@ -271,7 +271,7 @@ class CustomWindow(QtWidgets.QMainWindow):
 
         # Background digital rain
         rainColour = [0, 255, 255] #rainColour = [255, 105, 180] # cyan//hotpink
-        self.background_text = DigitalRainPanel([Wh, Ww, Ph, Pw], rainColour, central_widget)
+        self.background_text = DigitalRainPanel([Ph, Pw, Wh, Ww], rainColour, central_widget)
         self.background_text.lower() # Widget to background
         #--------------------------------
 
