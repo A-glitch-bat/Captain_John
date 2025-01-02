@@ -3,3 +3,5 @@ basic voice commands
 digital rain to info
 GPU and space to info
 live weather info to info
+holographic ASCII art
+play music from app
