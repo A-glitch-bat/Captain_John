@@ -1,6 +1,5 @@
 voice activated main
 basic voice commands
 GPU and space to info
-live weather info to info
 holographic ASCII art
 play music from app
