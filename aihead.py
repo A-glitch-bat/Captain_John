@@ -6,7 +6,7 @@ import subprocess
 import os
 from PyQt5 import QtWidgets, QtGui, QtCore
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from johnsAI import JohnsNN
+from AI_heads.chat_head import JohnsNN
 import config
 #--------------------------------
 
