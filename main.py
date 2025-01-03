@@ -13,6 +13,7 @@ from panel import MainWindow
 from aihead import AIhead
 from ttshead import TtS
 from elements.digitrain import DigitalRainPanel
+from elements.glitchwidget import GlitchWidget
 import config
 #--------------------------------
 
@@ -62,8 +63,8 @@ class CustomWindow(QtWidgets.QMainWindow):
         central_widget = QtWidgets.QWidget(self)
         self.setCentralWidget(central_widget)
         main_layout = QtWidgets.QHBoxLayout()
-        main_layout.setContentsMargins(int(config.scale*75), int(config.scale*75),
-                                       int(config.scale*75), int(config.scale*75)) # L, Up, R, Down
+        main_layout.setContentsMargins(int(config.scale*45), int(config.scale*55),
+                                       int(config.scale*50), int(config.scale*45)) # L, Up, R, Down
         central_widget.setLayout(main_layout)
 
         # Create a vertical layout for buttons on the left
@@ -112,7 +113,7 @@ class CustomWindow(QtWidgets.QMainWindow):
         glow_effect.setOffset(0, 0)
 
         open_vscode_button.setGraphicsEffect(glow_effect)
-        button_layout.addWidget(open_vscode_button)
+        button_layout.addWidget(open_vscode_button, alignment=Qt.AlignCenter)
         #--------------------------------
         # Info Butoon
         self.info_button = QtWidgets.QPushButton("INFO", self)
@@ -144,41 +145,9 @@ class CustomWindow(QtWidgets.QMainWindow):
         glow_effect.setOffset(0, 0)
 
         self.info_button.setGraphicsEffect(glow_effect)
-        button_layout.addWidget(self.info_button)
+        button_layout.addWidget(self.info_button, alignment=Qt.AlignCenter)
         #--------------------------------
-        # AI start button
-        AI_button = QtWidgets.QPushButton("CHAT", self)
-        AI_button.setMinimumSize(128, 64)
-        AI_button.setMaximumSize(128, 64)
-        AI_button.setStyleSheet(f"""
-            QPushButton {{
-                color: black;
-                font-weight: bold;
-                font-size: 15px;
-                font-family: OCR A Extended;
-                border-radius: 10px;
-                padding: 12px 24px;
-                text-align: left;
-                background-image: url('{B2}');
-            }}
-            QPushButton:hover {{
-                background-image: url('{B2_pressed}');
-            }}
-            QPushButton:pressed {{
-                background-image: url('{B2_pressed}');
-            }}
-        """)
-        AI_button.clicked.connect(self.start_AI)
-
-        glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
-        glow_effect.setBlurRadius(20)
-        glow_effect.setColor(QColor("hotpink"))
-        glow_effect.setOffset(0, 0)
-
-        AI_button.setGraphicsEffect(glow_effect)
-        button_layout.addWidget(AI_button)
-        #--------------------------------
-        # Listmaker button
+        # Testing button
         list_button = QtWidgets.QPushButton("TEST", self)
         list_button.setMinimumSize(128, 64)
         list_button.setMaximumSize(128, 64)
@@ -208,11 +177,47 @@ class CustomWindow(QtWidgets.QMainWindow):
         glow_effect.setOffset(0, 0)
 
         list_button.setGraphicsEffect(glow_effect)
-        button_layout.addWidget(list_button)
+        button_layout.addWidget(list_button, alignment=Qt.AlignCenter)
         #--------------------------------
 
-        # Stretchable space to push buttons to the top
+        # Text field
+        self.text_field = QtWidgets.QTextEdit(self)
+        self.text_field.setStyleSheet("""
+            QTextEdit {
+                background: rgba(0, 0, 0, 0);
+                color: hotpink;
+                font-family: OCR A Extended;
+                font-size: 14px;
+                border: none;
+                padding: 0px 35px;
+            }
+        """)
+        self.text_field.setReadOnly(True)
+        self.text_field.setAttribute(Qt.WA_TranslucentBackground, True)
+        neuromancer_text = (
+        "The sky above the port was the color of television, tuned to a dead channel.\n \n"
+        "He jacked out, blinking away the illusion, and stared at the cracked ceiling above him."
+        )
+        self.text_field.setText(neuromancer_text)
+
+        # stacked glitch overlay and text field
+        glitch_overlay = GlitchWidget(self)
+        stacked_layout = QtWidgets.QStackedLayout()
+        stacked_layout.addWidget(self.text_field)
+        stacked_layout.addWidget(glitch_overlay)
+        stacked_layout.setStackingMode(QtWidgets.QStackedLayout.StackAll)
+
+        # container widget for the stacked layout
+        glitch_container = QtWidgets.QWidget()
+        glitch_container.setLayout(stacked_layout)
+        button_layout.addWidget(glitch_container)
+        button_layout.setAlignment(Qt.AlignHCenter)
         button_layout.addStretch()
+
+        # resize glitch overlay to container
+        def resize_glitch():
+            glitch_overlay.setGeometry(self.text_field.geometry())
+        glitch_container.resizeEvent = lambda event: resize_glitch()
         #--------------------------------
 
         # Automatically start main two panels
@@ -258,11 +263,10 @@ class CustomWindow(QtWidgets.QMainWindow):
         
         self.submit_button = QtWidgets.QPushButton()
         self.submit_button.setIcon(QIcon.fromTheme(self.V_check))
-        self.submit_button.setFixedSize(30, 30)
+        self.submit_button.setFixedSize(32, 32)
         self.submit_button.setStyleSheet("""
             QPushButton {
-                background-color: black;
-                border: 2px solid hotpink;
+                background-color: transparent;
             }
         """)
         self.submit_button.clicked.connect(self.write_input)        
