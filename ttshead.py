@@ -4,13 +4,15 @@
 import os
 import pyttsx3
 import speech_recognition as sr
+import threading
 import random
 
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPainter, QPen, QColor, QPixmap, QMovie
-from PyQt5.QtCore import Qt, QTimer, QSize
+from PyQt5.QtCore import Qt, QTimer, QSize, QThread
 
 from elements.glitchwidget import GlitchWidget
+from AI_heads.speech_head import SpeechHead
 from audio.audioplayer import AmbientPlayer
 from elements.status_button import StatusButton
 import config
@@ -30,6 +32,7 @@ class TtS(QtWidgets.QWidget):
                          int(config.scale*350), int(config.scale*450))  # window position, size
         self.sound_player = None
         self.tts_engine = None
+        self.speech_listener = None
         #--------------------------------
 
         # Load custom background image
@@ -62,8 +65,8 @@ class TtS(QtWidgets.QWidget):
         #--------------------------------
         # Layout
         main_layout = QtWidgets.QVBoxLayout()
-        main_layout.setContentsMargins(int(config.scale*50), int(config.scale*75),
-                                       int(config.scale*50), int(config.scale*75)) # L, Up, R, Down
+        main_layout.setContentsMargins(int(config.scale*25), int(config.scale*75), # L, Up,
+                                       int(config.scale*25), int(config.scale*25)) # R, Down
         self.setLayout(main_layout)
         #--------------------------------
 
@@ -175,12 +178,7 @@ class TtS(QtWidgets.QWidget):
         self.text_field.setAttribute(Qt.WA_TranslucentBackground, True)
         self.text_field.setMinimumSize(int(config.scale*128), int(config.scale*128))
         self.text_field.setMaximumSize(int(config.scale*256), int(config.scale*256))
-        neuromancer_text = (
-        "The sky above the port was the color of television, tuned to a dead channel. \n"
-        "He jacked out, blinking away the illusion, and stared at the cracked ceiling above him, "
-        "wondering how much longer he could keep running."
-        )
-        self.text_field.setText(neuromancer_text)
+        self.text_field.setText("Speech head not active.")
 
         # Stack glitch over text
         glitch_overlay = GlitchWidget(self)
@@ -223,6 +221,41 @@ class TtS(QtWidgets.QWidget):
         self.close_button.setGeometry(self.width() - int(config.scale*60), int(config.scale*30),
                                       int(config.scale*50), int(config.scale*30)) # L, H, R, W
     #--------------------------------
+    def launch_speech(self):
+        """
+        make the module listen and talk
+        """
+        self.text_field.setText("Speech head ready.")
+        
+        if not self.tts_engine:
+            self.tts_engine = pyttsx3.init()
+            self.tts_onoff.set_status(self.tts_engine)
+
+            # Connect signal to slot
+            self.speech_listener = SpeechHead()
+            self.speech_listener.text_detected.connect(self.update_text_field)
+
+            self.listener_thread = threading.Thread(target=self.speech_listener.listen)
+            self.listener_thread.start()
+
+            """ready_speech = 0
+            if ready_speech == 1:
+                text = "Hello there."
+                self.tts_engine.setProperty('rate', 125) # base is 150
+                self.tts_engine.say(text)
+                self.tts_engine.runAndWait()
+
+                self.tts_engine = None
+                self.speechhead = None
+                self.tts_onoff.set_status(self.tts_engine)"""
+        else:
+            self.tts_engine = None
+            self.speechhead = None
+            self.tts_onoff.set_status(self.tts_engine)
+    # sub-function ^
+    def update_text_field(self, detected_speech):
+        self.text_field.append(detected_speech)
+    #--------------------------------
     def launch_audio(self):
         """
         start the sound player
@@ -236,32 +269,11 @@ class TtS(QtWidgets.QWidget):
             self.sound_player = None
             self.audio_onoff.set_status(self.sound_player)
     #--------------------------------
-    def launch_speech(self):
-        """
-        make the module listen and talk
-        """
-        if not self.tts_engine:
-            self.tts_engine = pyttsx3.init()
-            self.tts_onoff.set_status(self.tts_engine)
-
-            text = "Hello there."
-            self.tts_engine.setProperty('rate', 125) # base is 150
-            """voices = engine.getProperty('voices')
-            for voice in voices:
-                print(voice, voice.id)
-                engine.setProperty('voice', voice.id)
-                engine.say(text)
-                engine.runAndWait()
-                engine.stop()
-            use on windows 11"""
-            self.tts_engine.say(text)
-            self.tts_engine.runAndWait()
-
-            self.tts_engine = None
-            self.tts_onoff.set_status(self.tts_engine)
-        else:
-            self.tts_engine = None
-            self.tts_onoff.set_status(self.tts_engine)
+    def closeEvent(self, event):
+        if hasattr(self, 'speech_listener'):
+            self.speech_listener.stop()
+            self.listener_thread.join()
+        super().closeEvent(event)
     #--------------------------------
 
 # Temporary main
