@@ -3,8 +3,9 @@
 # Imports
 import psutil
 from PyQt5 import QtCore
+from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtWidgets import QLabel, QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QFrame, QApplication, QSpacerItem, QSizePolicy
-from PyQt5.QtGui import QColor, QPalette, QPainter, QPen, QFont
+from PyQt5.QtGui import QColor, QBrush, QPainterPath, QPainter
 
 from elements.ratio_widgets import PercentageCircleWidget
 import config
@@ -19,7 +20,6 @@ class TopInfoPanel(QWidget):
         # Window properties
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setWindowOpacity(0.8)
         self.setWindowTitle("INFO_1")
         
         # Outer frame as a border
@@ -28,7 +28,6 @@ class TopInfoPanel(QWidget):
         outer_layout.setSpacing(0)
 
         outline_frame = QFrame(self)
-        outline_frame.setStyleSheet("background-color: hotpink; border-radius: 10px;")
         outer_layout.addWidget(outline_frame)
 
         # Inner content frame
@@ -36,7 +35,6 @@ class TopInfoPanel(QWidget):
         content_layout.setContentsMargins(10, 10, 10, 10)
         
         self.content_frame = QFrame(outline_frame)
-        self.content_frame.setStyleSheet("background-color: #1a1a1a; border-radius: 8px;")
         content_layout.addWidget(self.content_frame)
 
         # Custom title bar with close button
@@ -107,6 +105,33 @@ class TopInfoPanel(QWidget):
         self.move(self.x() + delta.x(), self.y() + delta.y())
         self.click_position = event.globalPos()
     #--------------------------------
+    def paintEvent(self, event):
+        """
+        paint event for holographic visuals
+        """
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        
+        # custom outline of the top panel
+        path = QPainterPath()
+        rect = self.rect()
+        radius = 30
+        path.moveTo(rect.x() + radius, rect.y()) # start at top-left corner
+        path.lineTo(rect.right() - radius, rect.y()) # top edge
+        path.lineTo(rect.right(), rect.y() + radius) # top-right corner
+        path.lineTo(rect.right(), rect.bottom()) # right edge
+        path.lineTo(rect.x() + radius, rect.bottom()) # bottom edge
+        path.lineTo(rect.x(), rect.bottom() - radius) # bottom-left corner 
+        path.lineTo(rect.x(), rect.y() + radius) # left edge
+        path.lineTo(rect.x() + radius, rect.y()) # top-left corner 
+
+        # translucent background
+        painter.setBrush(QBrush(QColor(255, 105, 180, 50)))
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.drawPath(path)
+        
+        painter.end()
+    #--------------------------------
     def stop_timer(self):
         if self.timer.isActive():
             self.timer.stop()
@@ -120,7 +145,6 @@ class BottomInfoPanel(QWidget):
         # Window properties
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setWindowOpacity(0.8)
         self.setWindowTitle("INFO_2")
         
         # Outer frame as a border
@@ -129,7 +153,6 @@ class BottomInfoPanel(QWidget):
         outer_layout.setSpacing(0)
 
         outline_frame = QFrame(self)
-        outline_frame.setStyleSheet("background-color: hotpink; border-radius: 10px;")
         outer_layout.addWidget(outline_frame)
 
         # Inner content frame
@@ -137,7 +160,6 @@ class BottomInfoPanel(QWidget):
         content_layout.setContentsMargins(10, 10, 10, 10)
         
         self.content_frame = QFrame(outline_frame)
-        self.content_frame.setStyleSheet("background-color: #1a1a1a; border-radius: 8px;")
         content_layout.addWidget(self.content_frame)
 
         # Custom title bar with close button
@@ -160,6 +182,32 @@ class BottomInfoPanel(QWidget):
 
     # Functions
     #--------------------------------
+    def paintEvent(self, event):
+        """
+        paint event for holographic visuals
+        """
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        
+        # custom outline of the top panel
+        path = QPainterPath()
+        rect = self.rect()
+        radius = 30
+        path.moveTo(rect.x(), rect.y()) # start at top-left corner
+        path.lineTo(rect.right(), rect.y()) # top edge
+        path.lineTo(rect.right(), rect.bottom() - radius) # right edge
+        path.lineTo(rect.right() - radius, rect.bottom()) # bottom-right corner 
+        path.lineTo(rect.x() + radius, rect.bottom()) # bottom edge
+        path.lineTo(rect.x(), rect.bottom() - radius) # bottom-left corner 
+        path.lineTo(rect.x(), rect.y()) # left edge
+
+        # translucent background
+        painter.setBrush(QBrush(QColor(255, 105, 180, 50)))
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.drawPath(path)
+        
+        painter.end()
+    #--------------------------------
     def stop_timer(self):
         if self.timer.isActive():
             self.timer.stop()
@@ -175,32 +223,38 @@ class MainWindow(QWidget):
                          int((config.scale-0.40)*150), # H pos,
                          int(config.scale*350), int(config.scale*800))  # W size, H size
         
-        # Custom title bar with close button
-        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-
-        outline_frame = QFrame(self)
-        self.content_frame = QFrame(outline_frame)
-        title_bar = QHBoxLayout()
-        self.content_frame.setLayout(QVBoxLayout())
-        self.content_frame.layout().addLayout(title_bar)
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setWindowOpacity(0.75)
 
     def init_ui(self):
-        # Create instances of TopPanel and BottomPanel
+        """
+        Setup UI with top and bottom panels, and overlay EXIT button.
+        """
+        # Panels
         self.top_panel = TopInfoPanel()
         self.bottom_panel = BottomInfoPanel()
 
-        # Create spacers for alignment
+        # Main layout
+        main_layout = QVBoxLayout(self)
+        self.setLayout(main_layout)
+
+        # Add top panel
+        main_layout.addWidget(self.top_panel)
+
+        # Bottom panel in a horizontal layout with spacer
+        bottom_layout = QHBoxLayout()
         horizontal_spacer = QSpacerItem(
             40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum
         )
+        bottom_layout.addItem(horizontal_spacer)
+        bottom_layout.addWidget(self.bottom_panel)
+        main_layout.addLayout(bottom_layout)
 
-        # Combine layouts in L-shape and add close button
-        main_layout = QVBoxLayout()
-        close_button = QPushButton("EXIT")
-        close_button.setStyleSheet("""
+        # Add EXIT button (overlaid on top_panel)
+        self.exit_button = QPushButton("EXIT", self)
+        self.exit_button.setStyleSheet("""
             QPushButton {
-                background-color: #1a1a1a;
                 color: hotpink;
                 font: bold 10pt OCR A Extended;
                 padding: 5px;
@@ -214,17 +268,34 @@ class MainWindow(QWidget):
                 background-color: #555555;
             }
         """)
-        close_button.clicked.connect(self.closeEvent)
-        main_layout.addWidget(close_button)
+        self.exit_button.setFixedSize(70, 30)
+        self.exit_button.clicked.connect(self.close)
 
-        bottom_layout = QHBoxLayout()
-        bottom_layout.addItem(horizontal_spacer)
-        bottom_layout.addWidget(self.bottom_panel)
-
-        main_layout.addWidget(self.top_panel)
-        main_layout.addLayout(bottom_layout)
-        self.setLayout(main_layout)
-
+        # Ensure the button is raised and positioned
+        self.reposition_exit_button()
+#--------------------------------
+    def resizeEvent(self, event):
+        """
+        Reposition the EXIT button when the window is resized.
+        """
+        self.reposition_exit_button()
+        super().resizeEvent(event)
+#--------------------------------
+    def reposition_exit_button(self):
+        """
+        Dynamically position the EXIT button at the top-right corner of the `top_panel`.
+        """
+        if self.top_panel:
+            top_panel_geometry = self.top_panel.geometry()
+            self.exit_button.setGeometry(
+                QRect(
+                    top_panel_geometry.x() + top_panel_geometry.width() - self.exit_button.width() - 25,
+                    top_panel_geometry.y() + 25,
+                    self.exit_button.width(),
+                    self.exit_button.height(),
+                )
+            )
+#--------------------------------
     def closeEvent(self, _):
         """
         shut down both timers and close app

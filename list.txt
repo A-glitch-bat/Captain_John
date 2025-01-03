@@ -1,6 +1,5 @@
 voice activated main
 basic voice commands
-digital rain to info
 GPU and space to info
 live weather info to info
 holographic ASCII art
