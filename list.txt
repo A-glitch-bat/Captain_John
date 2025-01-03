@@ -1,5 +1,5 @@
-voice activated main
 basic voice commands
 GPU and space to info
 holographic ASCII art
 play music from app
+connect music to spotify
