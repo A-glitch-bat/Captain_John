@@ -1,5 +1,7 @@
-basic voice commands
-GPU and space to info
+consecutive voice commands
+get faster GPU reading
+space to info
 holographic ASCII art
-play music from app
 connect music to spotify
+text in main to front
+add custom text windows

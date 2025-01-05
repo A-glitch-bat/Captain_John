@@ -5,7 +5,7 @@ import os
 import pyttsx3
 import speech_recognition as sr
 import threading
-import random
+import webbrowser
 
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPainter, QPen, QColor, QPixmap, QMovie
@@ -30,9 +30,11 @@ class TtS(QtWidgets.QWidget):
         self.setAttribute(Qt.WA_TranslucentBackground) # transparent background
         self.setGeometry(int((config.scale-0.45)*200), int((config.scale-0.40)*150 + int(config.scale*400)), 
                          int(config.scale*350), int(config.scale*450))  # window position, size
+        self.speech_active = None
         self.sound_player = None
-        self.tts_engine = None
         self.speech_listener = None
+        self.tts_engine = pyttsx3.init()
+        self.tts_engine.setProperty('rate', 125) # base is 150
         #--------------------------------
 
         # Load custom background image
@@ -225,36 +227,60 @@ class TtS(QtWidgets.QWidget):
         """
         make the module listen and talk
         """
-        self.text_field.setText("Speech head ready.")
-        
-        if not self.tts_engine:
-            self.tts_engine = pyttsx3.init()
-            self.tts_onoff.set_status(self.tts_engine)
+        if not self.speech_active:
+            # Start up speech head on separate thread
+            self.speech_active = 1
+            self.tts_onoff.set_status(self.speech_active)
 
             # Connect signal to slot
             self.speech_listener = SpeechHead()
-            self.speech_listener.text_detected.connect(self.update_text_field)
+            self.speech_listener.text_detected.connect(self.process_detected_command)
 
             self.listener_thread = threading.Thread(target=self.speech_listener.listen)
             self.listener_thread.start()
-
-            """ready_speech = 0
-            if ready_speech == 1:
-                text = "Hello there."
-                self.tts_engine.setProperty('rate', 125) # base is 150
-                self.tts_engine.say(text)
-                self.tts_engine.runAndWait()
-
-                self.tts_engine = None
-                self.speechhead = None
-                self.tts_onoff.set_status(self.tts_engine)"""
+            self.text_field.append("Speech head ready.")
         else:
-            self.tts_engine = None
-            self.speechhead = None
-            self.tts_onoff.set_status(self.tts_engine)
+            # Shut down speech head and close thread
+            self.shutdown_speech()
     # sub-function ^
-    def update_text_field(self, detected_speech):
+    def process_detected_command(self, detected_speech):
+        if self.speech_active:
+            self.text_field.append("Speech head is busy. Please wait...")
+            return
+        
+        response = "I don't know how to answer that."
+        if "stop" in detected_speech or "shut down" in detected_speech or "error" in detected_speech:
+            self.shutdown_speech()
+            response = "Stopping speech module."
+        elif "play" in detected_speech or "music" in detected_speech:
+            webbrowser.open("https://youtu.be/RRKJiM9Njr8?si=fvPsyxbmB5MjrE_Q")
+            response = "Playing MCR."
+        
+        # Answer last spoken command and set status to stopped
+        self.speech_active = 1 # set flag before processing
         self.text_field.append(detected_speech)
+        try:
+            self.speech_active = 1
+            #self.tts_engine.say(response)
+            #self.tts_engine.runAndWait()
+        finally:
+            self.speech_active = None # reset flag
+        self.shutdown_speech()
+    # sub-function ^
+    def shutdown_speech(self):
+        """
+        shut down the speech listener and TTS
+        """
+        if self.speech_listener:
+            print("Stopping...")
+            self.text_field.append("Stopping...")
+            self.speech_listener.stop()
+            self.listener_thread.join()
+        self.speech_listener = None
+        self.speech_active = None
+        self.tts_onoff.set_status(self.speech_active)
+        print("Speech head stopped.")
+        self.text_field.append("Speech head stopped.")
     #--------------------------------
     def launch_audio(self):
         """
@@ -270,9 +296,7 @@ class TtS(QtWidgets.QWidget):
             self.audio_onoff.set_status(self.sound_player)
     #--------------------------------
     def closeEvent(self, event):
-        if hasattr(self, 'speech_listener'):
-            self.speech_listener.stop()
-            self.listener_thread.join()
+        self.shutdown_speech()
         super().closeEvent(event)
     #--------------------------------
 
