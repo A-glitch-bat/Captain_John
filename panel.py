@@ -2,6 +2,7 @@
 
 # Imports
 import psutil
+import shutil
 import requests
 import GPUtil
 
@@ -11,7 +12,7 @@ from PyQt5.QtWidgets import QLabel, QPushButton, QWidget, QVBoxLayout, QHBoxLayo
 from PyQt5.QtGui import QColor, QBrush, QPainterPath, QPainter
 
 from elements.glitchwidget import GlitchWidget
-from elements.ratio_widgets import PercentageCircleWidget
+from elements.ratio_widgets import PercentageCircleWidget, PercentageBarWidget
 import config
 #--------------------------------
 
@@ -96,8 +97,8 @@ class TopInfoPanel(QWidget):
         self.content_frame.setLayout(QVBoxLayout())
         self.content_frame.layout().addLayout(title_bar)
 
-        title_label = QLabel("System Info")
-        title_label.setStyleSheet("color: cyan; font: bold 10pt OCR A Extended;")
+        title_label = QLabel("INFO")
+        title_label.setStyleSheet("color: hotpink; font: bold 10pt OCR A Extended;")
         title_bar.addWidget(title_label)
 
         # title bar
@@ -107,9 +108,15 @@ class TopInfoPanel(QWidget):
         #--------------------------------
         self.central_widget = QWidget()
 
-        # CPU and RAM usage displays
+        # CPU, GPU, RAM, disk usage displays
         self.CPU_widget = PercentageCircleWidget(10, "CPU")
         self.RAM_widget = PercentageCircleWidget(50, "RAM")
+        total, used, _ = shutil.disk_usage("C:/")
+        total_gb = total / (1024 ** 3)
+        used_gb = used / (1024 ** 3)
+        self.space_widget = PercentageBarWidget(total_gb, used_gb, "GB")
+
+        self.content_frame.layout().addWidget(self.space_widget)
         self.content_frame.layout().addWidget(self.CPU_widget)
         self.content_frame.layout().addWidget(self.RAM_widget)
 
