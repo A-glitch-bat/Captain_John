@@ -38,8 +38,28 @@ class PercentageCircleWidget(QWidget):
 # Percentage display bar widgt
 #--------------------------------
 class PercentageBarWidget(QWidget):
-    def __init__(self, percentage, name, parent=None):
+    def __init__(self, total, used, name, parent=None):
         super().__init__(parent)
-        self.percentage = percentage
+        self.max = int(total)
+        self.use = int(used)
+        self.remain = self.max - self.use
         self.name = name
         self.setMinimumSize(50, 50)
+    
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing) # smooth edges
+        rect = self.rect() # rectangle representing the widget's size
+        center = rect.center()
+
+        # Draw lines and text
+        painter.setPen(QPen(QColor(255, 105, 180, 100), 24))
+        painter.drawLine(int(1*center.x()/4), center.y(), int(7*center.x()/4), center.y())
+        painter.setPen(QPen(QColor(255, 105, 180, 255), 24))
+        painter.drawLine(int(1*center.x()/4), center.y(), int((7*self.use/self.max)*center.x()/4), center.y())
+
+        painter.setPen(QColor("#000000")) # colour
+        painter.setFont(QFont("OCR A Extended", 10, QFont.Bold)) # text properties
+        text = f"{str(self.remain)+self.name +'/'+ str(self.max)+self.name} REMAINING"
+        painter.drawText(rect, QtCore.Qt.AlignCenter, text)
+#--------------------------------
