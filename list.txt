@@ -4,3 +4,4 @@ holographic ASCII art
 connect music to spotify
 text in main to front
 add custom text windows
+Add rust somehow
