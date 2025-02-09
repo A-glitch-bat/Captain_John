@@ -4,6 +4,8 @@
 import psutil
 import shutil
 import requests
+import subprocess
+import torch
 import GPUtil
 
 from PyQt5 import QtCore
@@ -16,26 +18,22 @@ from elements.ratio_widgets import PercentageCircleWidget, PercentageBarWidget
 import config
 #--------------------------------
 
-def get_gpu_usage():
+print("CUDA Available:", torch.cuda.is_available())
+print("Using Device:", torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+
+def get_gpu_stats():
     """
-    implement this with something faster
+    sniffs out the gpus
     """
+    # naturally by running shell through python
+    cmd = "Get-CimInstance Win32_VideoController | Select-Object Name, Availability"
+    result = subprocess.run(["powershell", "-Command", cmd], capture_output=True, text=False)
+
     gpus = GPUtil.getGPUs()
-    if not gpus:
-        return "No GPU detected"
-    gpu_info = []
-    MrGPU_counter = 0
     for gpu in gpus:
-        MrGPU_counter+=1
-        info = {
-            "id": gpu.id,
-            "name": gpu.name,
-            "memory_used": f"{gpu.memoryUsed} MB",
-            "memory_total": f"{gpu.memoryTotal} MB",
-            "load": f"{gpu.load * 100:.2f}%"
-        }
-        gpu_info.append(info)
-    return MrGPU_counter, gpu_info
+        print(gpu)
+
+    return result
 
 def get_coordinates():
     """
@@ -317,11 +315,8 @@ class MainWindow(QWidget):
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setWindowOpacity(0.75)
 
-        nGPU, GPUstats = get_gpu_usage()
-        if nGPU == 0:
-            print("error: GPU not found")
-        else:
-            print("GPU usage:" + GPUstats[0]['load'])
+        GPUstats = get_gpu_stats()
+        print(GPUstats)
 
     def init_ui(self):
         """
