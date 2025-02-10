@@ -1,7 +1,7 @@
 consecutive voice commands
-get faster GPU reading
 holographic ASCII art
 connect music to spotify
 text in main to front
 add custom text windows
 Add rust somehow
+add double GPU option

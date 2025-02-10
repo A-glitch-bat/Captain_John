@@ -5,6 +5,7 @@ import psutil
 import shutil
 import requests
 import subprocess
+import json
 import torch
 import GPUtil
 
@@ -14,26 +15,29 @@ from PyQt5.QtWidgets import QLabel, QPushButton, QWidget, QVBoxLayout, QHBoxLayo
 from PyQt5.QtGui import QColor, QBrush, QPainterPath, QPainter
 
 from elements.glitchwidget import GlitchWidget
-from elements.ratio_widgets import PercentageCircleWidget, PercentageBarWidget
+from elements.ratio_widgets import PercentageCircleWidget, PercentageBarWidget, HoloDataWidget
 import config
 #--------------------------------
 
-print("CUDA Available:", torch.cuda.is_available())
-print("Using Device:", torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("Device:", device)
 
 def get_gpu_stats():
     """
     sniffs out the gpus
     """
     # naturally by running shell through python
-    cmd = "Get-CimInstance Win32_VideoController | Select-Object Name, Availability"
-    result = subprocess.run(["powershell", "-Command", cmd], capture_output=True, text=False)
-
+    cmd = "Get-WmiObject Win32_VideoController | Select-Object Name, Availability | ConvertTo-Json"
+    result = subprocess.run(
+        ["powershell", "-Command", cmd],
+        capture_output=True,
+        text=True,
+        startupinfo=subprocess.STARTUPINFO()
+    )
+    gpu_info = json.loads(result.stdout)
     gpus = GPUtil.getGPUs()
-    for gpu in gpus:
-        print(gpu)
 
-    return result
+    return gpu_info, gpus
 
 def get_coordinates():
     """
@@ -106,9 +110,10 @@ class TopInfoPanel(QWidget):
         #--------------------------------
         self.central_widget = QWidget()
 
-        # CPU, GPU, RAM, disk usage displays
+        # CPU, RAM, GPU, disk usage displays
         self.CPU_widget = PercentageCircleWidget(10, "CPU")
         self.RAM_widget = PercentageCircleWidget(50, "RAM")
+        self.GPU_widget = HoloDataWidget("temp", "GPU")
         total, used, _ = shutil.disk_usage("C:/")
         total_gb = total / (1024 ** 3)
         used_gb = used / (1024 ** 3)
@@ -117,6 +122,7 @@ class TopInfoPanel(QWidget):
         self.content_frame.layout().addWidget(self.space_widget)
         self.content_frame.layout().addWidget(self.CPU_widget)
         self.content_frame.layout().addWidget(self.RAM_widget)
+        self.content_frame.layout().addWidget(self.GPU_widget)
 
         # Timer to update displays
         self.timer = QtCore.QTimer()
@@ -148,6 +154,16 @@ class TopInfoPanel(QWidget):
                 old_widget.widget().deleteLater()
             self.RAM_widget = PercentageCircleWidget(ram_percent, "RAM")
             self.content_frame.layout().addWidget(self.RAM_widget)
+
+        GPUinfo, GPUstats = get_gpu_stats()
+
+        if self.GPU_widget:
+            # remove the previous and add the updated widget
+            old_widget = self.content_frame.layout().takeAt(self.content_frame.layout().indexOf(self.GPU_widget))
+            if old_widget:
+                old_widget.widget().deleteLater()
+            self.GPU_widget = HoloDataWidget(str(GPUstats[0].temperature)+"°C", GPUinfo["Name"])
+            self.content_frame.layout().addWidget(self.GPU_widget)
     #--------------------------------
     def start_move(self, event):
         """
@@ -314,9 +330,6 @@ class MainWindow(QWidget):
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setWindowOpacity(0.75)
-
-        GPUstats = get_gpu_stats()
-        print(GPUstats)
 
     def init_ui(self):
         """
