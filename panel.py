@@ -16,28 +16,12 @@ from PyQt5.QtGui import QColor, QBrush, QPainterPath, QPainter
 
 from elements.glitchwidget import GlitchWidget
 from elements.ratio_widgets import PercentageCircleWidget, PercentageBarWidget, HoloDataWidget
+from tasks.usage_worker import UsageThread
 import config
 #--------------------------------
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Device:", device)
-
-def get_gpu_stats():
-    """
-    sniffs out the gpus
-    """
-    # naturally by running shell through python
-    cmd = "Get-WmiObject Win32_VideoController | Select-Object Name, Availability | ConvertTo-Json"
-    result = subprocess.run(
-        ["powershell", "-Command", cmd],
-        capture_output=True,
-        text=True,
-        startupinfo=subprocess.STARTUPINFO()
-    )
-    gpu_info = json.loads(result.stdout)
-    gpus = GPUtil.getGPUs()
-
-    return gpu_info, gpus
 
 def get_coordinates():
     """
@@ -91,14 +75,9 @@ class TopInfoPanel(QWidget):
         outline_frame = QFrame(self)
         outer_layout.addWidget(outline_frame)
 
-        # content frame
-        content_layout = QVBoxLayout(outline_frame)
-        self.content_frame = QFrame(outline_frame)
-        content_layout.addWidget(self.content_frame)
+        # layout
+        self.content_layout = QVBoxLayout(outline_frame)
         title_bar = QHBoxLayout()
-        self.content_frame.setLayout(QVBoxLayout())
-        self.content_frame.layout().addLayout(title_bar)
-
         title_label = QLabel("INFO")
         title_label.setStyleSheet("color: hotpink; font: bold 10pt OCR A Extended;")
         title_bar.addWidget(title_label)
@@ -119,51 +98,46 @@ class TopInfoPanel(QWidget):
         used_gb = used / (1024 ** 3)
         self.space_widget = PercentageBarWidget(total_gb, used_gb, "GB")
 
-        self.content_frame.layout().addWidget(self.space_widget)
-        self.content_frame.layout().addWidget(self.CPU_widget)
-        self.content_frame.layout().addWidget(self.RAM_widget)
-        self.content_frame.layout().addWidget(self.GPU_widget)
+        self.circles_layout = QHBoxLayout()
+        self.content_layout.addWidget(self.space_widget)
+        self.content_layout.addWidget(self.CPU_widget)
+        self.content_layout.addWidget(self.RAM_widget)
+        self.content_layout.addWidget(self.GPU_widget)
 
-        # Timer to update displays
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.update_usage)
-        self.timer.start(1000)
+        # Background worker thread to update stats
+        self.worker = UsageThread()
+        self.worker.data_updated.connect(self.update_stats)
+        self.worker.start()
 
     # Functions
     #--------------------------------
-    def update_usage(self):
+    def update_stats(self, data):
         """
-        constantly updated CPU and RAM usage displays
+        constantly update info displays
         """
-        cpu_percent = psutil.cpu_percent(interval=0)
-
         if self.CPU_widget:
             # remove the previous and add the updated widget
-            old_widget = self.content_frame.layout().takeAt(self.content_frame.layout().indexOf(self.CPU_widget))
+            old_widget = self.content_layout.takeAt(self.content_layout.indexOf(self.CPU_widget))
             if old_widget:
                 old_widget.widget().deleteLater()
-            self.CPU_widget = PercentageCircleWidget(cpu_percent, "CPU")
-            self.content_frame.layout().addWidget(self.CPU_widget)
-
-        ram_percent = psutil.virtual_memory().percent
+            self.CPU_widget = PercentageCircleWidget(data['cpu'], "CPU")
+            self.content_layout.addWidget(self.CPU_widget)
 
         if self.RAM_widget:
             # remove the previous and add the updated widget
-            old_widget = self.content_frame.layout().takeAt(self.content_frame.layout().indexOf(self.RAM_widget))
+            old_widget = self.content_layout.takeAt(self.content_layout.indexOf(self.RAM_widget))
             if old_widget:
                 old_widget.widget().deleteLater()
-            self.RAM_widget = PercentageCircleWidget(ram_percent, "RAM")
-            self.content_frame.layout().addWidget(self.RAM_widget)
-
-        GPUinfo, GPUstats = get_gpu_stats()
+            self.RAM_widget = PercentageCircleWidget(data['ram'], "RAM")
+            self.content_layout.addWidget(self.RAM_widget)
 
         if self.GPU_widget:
             # remove the previous and add the updated widget
-            old_widget = self.content_frame.layout().takeAt(self.content_frame.layout().indexOf(self.GPU_widget))
+            old_widget = self.content_layout.takeAt(self.content_layout.indexOf(self.GPU_widget))
             if old_widget:
                 old_widget.widget().deleteLater()
-            self.GPU_widget = HoloDataWidget(str(GPUstats[0].temperature)+"°C", GPUinfo["Name"])
-            self.content_frame.layout().addWidget(self.GPU_widget)
+            self.GPU_widget = HoloDataWidget(data['temp'], data['gpu'])
+            self.content_layout.addWidget(self.GPU_widget)
     #--------------------------------
     def start_move(self, event):
         """
@@ -205,11 +179,6 @@ class TopInfoPanel(QWidget):
         painter.drawPath(path)
         
         painter.end()
-    #--------------------------------
-    def stop_timer(self):
-        if self.timer.isActive():
-            self.timer.stop()
-        self.close()
 #--------------------------------
 
 class BottomInfoPanel(QWidget):
@@ -400,7 +369,6 @@ class MainWindow(QWidget):
         """
         shut down both timers and close app
         """
-        self.top_panel.stop_timer()
         self.bottom_panel.stop_timer()
         self.close()
 #--------------------------------
