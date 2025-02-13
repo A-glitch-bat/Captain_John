@@ -1,13 +1,9 @@
 #--------------------------------
 
 # Imports
-import psutil
 import shutil
 import requests
-import subprocess
-import json
 import torch
-import GPUtil
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QRect
@@ -22,43 +18,6 @@ import config
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Device:", device)
-
-def get_coordinates():
-    """
-    IP based latitude and longitude
-    """
-    try:
-        response = requests.get("https://ipinfo.io/json")
-        if response.status_code == 200:
-            data = response.json()
-            if "loc" in data:
-                latitude, longitude = map(float, data["loc"].split(","))
-                return [latitude, longitude]
-        return None
-    except Exception as e:
-        print(f"Error fetching coordinates: {e}")
-        return None
-
-def get_weather_from_open_meteo(lat, lon):
-    """
-    weather data from Open-Meteo API
-    """
-    try:
-        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true"
-        response = requests.get(url)
-        if response.status_code == 200:
-            data = response.json()
-            if "current_weather" in data:
-                weather = {
-                    "temperature": data["current_weather"]["temperature"],
-                    "wind_speed": "%.2f" % (data["current_weather"]["windspeed"]/3.6),
-                    "description": "Current weather data"
-                }
-                return weather
-        return {"error": f"Could not retrieve weather information. Error code: {response.status_code}"}
-    except Exception as e:
-        print(f"Error fetching weather: {e}")
-        return {"error": "An unexpected error occurred."}
 
 # Classes for separate parts of an L-shaped panel component
 #--------------------------------
@@ -99,10 +58,14 @@ class TopInfoPanel(QWidget):
         self.space_widget = PercentageBarWidget(total_gb, used_gb, "GB")
 
         self.circles_layout = QHBoxLayout()
+        self.stats_layout = QHBoxLayout()
+        self.content_layout.addLayout(self.circles_layout)
+        self.content_layout.addLayout(self.stats_layout)
         self.content_layout.addWidget(self.space_widget)
-        self.content_layout.addWidget(self.CPU_widget)
-        self.content_layout.addWidget(self.RAM_widget)
-        self.content_layout.addWidget(self.GPU_widget)
+
+        self.stats_layout.addWidget(self.GPU_widget)
+        self.circles_layout.addWidget(self.CPU_widget)
+        self.circles_layout.addWidget(self.RAM_widget)
 
         # Background worker thread to update stats
         self.worker = UsageThread()
@@ -115,29 +78,31 @@ class TopInfoPanel(QWidget):
         """
         constantly update info displays
         """
+        if self.GPU_widget:
+            # remove the previous and add the updated widget
+            old_widget = self.stats_layout.takeAt(self.stats_layout.indexOf(self.GPU_widget))
+            if old_widget:
+                old_widget.widget().deleteLater()
+            words = data['gpu'].rsplit(" ", 2)  # Split only the last two spaces
+            disp_gpu = " ".join(words[-2:]) if len(words) >= 2 else data['gpu']
+            self.GPU_widget = HoloDataWidget(disp_gpu, data['temp'])
+            self.stats_layout.addWidget(self.GPU_widget)
+
         if self.CPU_widget:
             # remove the previous and add the updated widget
-            old_widget = self.content_layout.takeAt(self.content_layout.indexOf(self.CPU_widget))
+            old_widget = self.circles_layout.takeAt(self.circles_layout.indexOf(self.CPU_widget))
             if old_widget:
                 old_widget.widget().deleteLater()
             self.CPU_widget = PercentageCircleWidget(data['cpu'], "CPU")
-            self.content_layout.addWidget(self.CPU_widget)
+            self.circles_layout.addWidget(self.CPU_widget)
 
         if self.RAM_widget:
             # remove the previous and add the updated widget
-            old_widget = self.content_layout.takeAt(self.content_layout.indexOf(self.RAM_widget))
+            old_widget = self.circles_layout.takeAt(self.circles_layout.indexOf(self.RAM_widget))
             if old_widget:
                 old_widget.widget().deleteLater()
             self.RAM_widget = PercentageCircleWidget(data['ram'], "RAM")
-            self.content_layout.addWidget(self.RAM_widget)
-
-        if self.GPU_widget:
-            # remove the previous and add the updated widget
-            old_widget = self.content_layout.takeAt(self.content_layout.indexOf(self.GPU_widget))
-            if old_widget:
-                old_widget.widget().deleteLater()
-            self.GPU_widget = HoloDataWidget(data['temp'], data['gpu'])
-            self.content_layout.addWidget(self.GPU_widget)
+            self.circles_layout.addWidget(self.RAM_widget)
     #--------------------------------
     def start_move(self, event):
         """
@@ -187,7 +152,6 @@ class BottomInfoPanel(QWidget):
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setWindowTitle("INFO_2")
-        self.got_coords = get_coordinates()
         #--------------------------------
         main_layout = QVBoxLayout(self)
         self.setLayout(main_layout)
@@ -222,22 +186,8 @@ class BottomInfoPanel(QWidget):
         def resize_glitch():
             glitch_overlay.setGeometry(self.text_field.geometry())
         glitch_container.resizeEvent = lambda event: resize_glitch()
-        
-        if self.got_coords is not None:
-            weather_info = get_weather_from_open_meteo(self.got_coords[0], self.got_coords[1])
-            if "error" in weather_info:
-                print(weather_info["error"])
-            else:
-                self.text_field.setText(f"Temperature: {weather_info['temperature']}°C \nWind Speed: {weather_info['wind_speed']} m/s")
-        else:
-            print("Could not determine your location.")
-        main_layout.addWidget(glitch_container)
-        #--------------------------------
 
-        # Timer to update displays
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.update_weather)
-        self.timer.start(10000)
+        main_layout.addWidget(glitch_container)
         #--------------------------------
 
     # Functions
@@ -267,24 +217,6 @@ class BottomInfoPanel(QWidget):
         painter.drawPath(path)
         
         painter.end()
-    #--------------------------------
-    def update_weather(self):
-        """
-        weather update every 10 seconds
-        """
-        if self.got_coords is not None:
-            weather_info = get_weather_from_open_meteo(self.got_coords[0], self.got_coords[1])
-            if "error" in weather_info:
-                print(weather_info["error"])
-            else:
-                self.text_field.setText(f"Temperature: {weather_info['temperature']}°C \nWind Speed: {weather_info['wind_speed']} m/s")
-        else:
-            print("Could not determine your location.")
-    #--------------------------------
-    def stop_timer(self):
-        if self.timer.isActive():
-            self.timer.stop()
-        self.close()
 #--------------------------------
 
 # Main window class and file main
@@ -369,7 +301,6 @@ class MainWindow(QWidget):
         """
         shut down both timers and close app
         """
-        self.bottom_panel.stop_timer()
         self.close()
 #--------------------------------
 
