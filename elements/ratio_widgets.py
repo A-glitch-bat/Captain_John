@@ -25,10 +25,15 @@ class PercentageCircleWidget(QWidget):
         center = rect.center()
 
         # Draw arc and text
+        painter.setPen(QPen(QColor(255, 105, 180, 100), 16)) # colour & thickness
+        painter.drawArc(
+            center.x() - radius, center.y() - radius, int(2*radius), int(2*radius), 90 * 16, -(360 * 16)
+        )
+
         painter.setPen(QPen(QColor("#FF69B4"), 16)) # colour & thickness
         span_angle = int(360 * 16 * (self.percentage / 100))
         painter.drawArc(
-            center.x() - radius, center.y() - radius, int(2.15*radius), int(2.15*radius), 90 * 16, -span_angle
+            center.x() - radius, center.y() - radius, int(2*radius), int(2*radius), 90 * 16, -span_angle
         )
         painter.setPen(QColor("#FF69B4")) # colour
         painter.setFont(QFont("OCR A Extended", 10, QFont.Bold)) # text properties
