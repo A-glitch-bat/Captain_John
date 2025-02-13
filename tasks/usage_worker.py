@@ -2,19 +2,33 @@
 
 # Imports
 import psutil
-import subprocess
-import json
+import wmi
 import requests
 import time
-import GPUtil
+import pythoncom
+from pynvml import nvmlInit, nvmlDeviceGetHandleByIndex, nvmlDeviceGetTemperature, NVML_TEMPERATURE_GPU, nvmlShutdown
 from PyQt5.QtCore import QThread, pyqtSignal
 
 #--------------------------------
 
-class UsageThread(QThread):
-    data_updated = pyqtSignal(dict)  # Signal to send back data
-    #--------------------------------
+# Optimized GPU handle
+class GPUInfo:
+    def __init__(self):
+        nvmlInit()
+        self.handle = nvmlDeviceGetHandleByIndex(0) # index NVIDIA
 
+    def get_temperature(self):
+        return nvmlDeviceGetTemperature(self.handle, NVML_TEMPERATURE_GPU)
+
+    def close(self):
+        nvmlShutdown() # cleanup
+#--------------------------------
+
+# Info worker updated every second
+class UsageThread(QThread):
+    data_updated = pyqtSignal(dict) # data signal
+    #--------------------------------
+    
     # IP based latitude and longitude
     def get_coordinates(self):
         try:
@@ -29,7 +43,7 @@ class UsageThread(QThread):
             print(f"Error fetching coordinates: {e}")
             return None
     #--------------------------------
-
+    
     # Weather info API call
     def get_weather_from_open_meteo(self, lat, lon):
         """
@@ -53,39 +67,37 @@ class UsageThread(QThread):
             return {"error": "An unexpected error occurred."}
     #--------------------------------
 
-    # Get GPU stats
+    # GPU stats for integrated and NVIDIA
+    def gpu_info(self):
+        pythoncom.CoInitialize() # COM init for wmi in separate thread
+        try:
+            gpu_info = []
+            w = wmi.WMI()
+            
+            for gpu in w.Win32_VideoController():
+                gpu_info.append({
+                    "Name": gpu.Name,
+                    "Availability": gpu.Availability,
+                    "DriverVersion": gpu.DriverVersion,
+                    "AdapterRAM": gpu.AdapterRAM,
+                    "VideoProcessor": gpu.VideoProcessor
+                })
+            
+            return gpu_info
+        finally:
+            pythoncom.CoUninitialize() # COM cleanup
+    # sub-function ^
     def get_gpu_stats(self):
-        """
-        sniffs out the gpus
-        """
-        # naturally by running shell through python
-        cmd = "Get-WmiObject Win32_VideoController | Select-Object Name, Availability | ConvertTo-Json"
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        process = subprocess.Popen(
-            ["powershell", "-Command", cmd],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            startupinfo=startupinfo
-        )
+        gpu_info = self.gpu_info()
         
-        stdout, stderr = process.communicate()
-        
-        if stderr:
-            print("Error:", stderr)
-            return None, None
-        
-        gpu_info = json.loads(stdout)
-        gpus = GPUtil.getGPUs()
-        
-        return gpu_info, gpus
+        return gpu_info
     #--------------------------------
 
     def run(self):
         self.got_coords = self.get_coordinates()
+        self.gpu_monitor = GPUInfo()
         while True:
-            GPUinfo, GPUstats = self.get_gpu_stats()
+            GPUinfo = self.get_gpu_stats()
             if self.got_coords is not None:
                 weather_info = self.get_weather_from_open_meteo(self.got_coords[0], self.got_coords[1])
                 if "error" in weather_info:
@@ -94,12 +106,12 @@ class UsageThread(QThread):
                 print("Could not determine your location.")
             data = {
                 "cpu": psutil.cpu_percent(interval=0),
-                "gpu": GPUinfo["Name"],
+                "gpu": GPUinfo[0]["Name"],
                 "ram": psutil.virtual_memory().percent,
-                "temp": str(GPUstats[0].temperature)+"°C",
+                "temp": str(self.gpu_monitor.get_temperature())+"°C",
                 "weaTemp": weather_info['temperature'],
                 "weaWind": weather_info['wind_speed']
             }
-            self.data_updated.emit(data)  # Send data back to UI
-            time.sleep(1)  # Wait for 1 second
+            self.data_updated.emit(data) # send data back to UI
+            time.sleep(1) # 1 second refresh timer
 #--------------------------------
