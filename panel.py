@@ -28,42 +28,35 @@ class TopInfoPanel(QWidget):
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setWindowTitle("INFO_1")
         
-        # outer frame
-        outer_layout = QVBoxLayout(self)
-        outer_layout.setSpacing(0)
+        # Layout
+        self.outer_layout = QVBoxLayout(self)
+        self.outer_layout.setSpacing(0)
         outline_frame = QFrame(self)
-        outer_layout.addWidget(outline_frame)
+        self.outer_layout.addWidget(outline_frame)
+        self.content_layout = QHBoxLayout(outline_frame)
 
-        # layout
-        self.content_layout = QVBoxLayout(outline_frame)
-        title_bar = QHBoxLayout()
-        title_label = QLabel("INFO")
-        title_label.setStyleSheet("color: hotpink; font: bold 10pt OCR A Extended;")
-        title_bar.addWidget(title_label)
-
-        # title bar
-        title_bar.addStretch()
-        title_label.mousePressEvent = self.start_move
-        title_label.mouseMoveEvent = self.on_motion
+        self.circles_layout = QVBoxLayout()
+        self.stats_layout = QVBoxLayout()
+        self.content_layout.addLayout(self.stats_layout)
+        self.content_layout.addLayout(self.circles_layout)
         #--------------------------------
-        self.central_widget = QWidget()
 
         # CPU, RAM, GPU, disk usage displays
         self.CPU_widget = PercentageCircleWidget(10, "CPU")
         self.RAM_widget = PercentageCircleWidget(50, "RAM")
-        self.GPU_widget = HoloDataWidget("temp", "GPU")
+        self.GPU1_widget = HoloDataWidget("Integrated GPU", "not found")
+        self.GPU2_widget = HoloDataWidget("NVIDIA GPU", "not found")
+        self.temp_widget = HoloDataWidget("Temperature:", "not found")
+
         total, used, _ = shutil.disk_usage("C:/")
         total_gb = total / (1024 ** 3)
         used_gb = used / (1024 ** 3)
         self.space_widget = PercentageBarWidget(total_gb, used_gb, "GB")
+        self.outer_layout.addWidget(self.space_widget)
 
-        self.circles_layout = QHBoxLayout()
-        self.stats_layout = QHBoxLayout()
-        self.content_layout.addLayout(self.circles_layout)
-        self.content_layout.addLayout(self.stats_layout)
-        self.content_layout.addWidget(self.space_widget)
-
-        self.stats_layout.addWidget(self.GPU_widget)
+        self.stats_layout.addWidget(self.GPU1_widget)
+        self.stats_layout.addWidget(self.GPU2_widget)
+        self.stats_layout.addWidget(self.temp_widget)
         self.circles_layout.addWidget(self.CPU_widget)
         self.circles_layout.addWidget(self.RAM_widget)
 
@@ -78,15 +71,28 @@ class TopInfoPanel(QWidget):
         """
         constantly update info displays
         """
-        if self.GPU_widget:
+        if len(data['gpus']) == 2:
             # remove the previous and add the updated widget
-            old_widget = self.stats_layout.takeAt(self.stats_layout.indexOf(self.GPU_widget))
-            if old_widget:
-                old_widget.widget().deleteLater()
-            words = data['gpu'].rsplit(" ", 2)  # Split only the last two spaces
+            old_widget1 = self.stats_layout.takeAt(self.stats_layout.indexOf(self.GPU1_widget))
+            old_widget2 = self.stats_layout.takeAt(self.stats_layout.indexOf(self.GPU2_widget))
+            old_widget1.widget().deleteLater()
+            old_widget2.widget().deleteLater()
+            gpu1_words = data['gpus'][0]['Name'].rsplit(" ")
+            gpu2_words = data['gpus'][1]['Name'].rsplit(" ") 
+            disp_gpu1 = " ".join(gpu1_words[-4:-2]) if len(gpu1_words) >= 2 else data[0]['Name']
+            disp_gpu2 = " ".join(gpu2_words[-4:-2]) if len(gpu2_words) >= 2 else data[1]['Name']
+            self.GPU1_widget = HoloDataWidget(disp_gpu1, "Status: "+data['gpus'][0]['Status'])
+            self.GPU2_widget = HoloDataWidget(disp_gpu2, "Status: "+data['gpus'][1]['Status'])
+            self.stats_layout.addWidget(self.GPU1_widget)
+            self.stats_layout.addWidget(self.GPU2_widget)
+        elif len(data['gpus']) == 1:
+            # remove the previous and add the updated widget
+            old_widget2 = self.stats_layout.takeAt(self.stats_layout.indexOf(self.GPU2_widget))
+            old_widget2.widget().deleteLater()
+            words = data['gpus'][1]['Name'].rsplit(" ")
             disp_gpu = " ".join(words[-2:]) if len(words) >= 2 else data['gpu']
-            self.GPU_widget = HoloDataWidget(disp_gpu, data['temp'])
-            self.stats_layout.addWidget(self.GPU_widget)
+            self.GPU2_widget = HoloDataWidget(disp_gpu, "Status: "+data['gpus'][1]['Status'])
+            self.stats_layout.addWidget(self.GPU2_widget)
 
         if self.CPU_widget:
             # remove the previous and add the updated widget

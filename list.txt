@@ -4,4 +4,3 @@ connect music to spotify
 text in main to front
 add custom text windows
 Add rust somehow
-add double GPU option
