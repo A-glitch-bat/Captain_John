@@ -37,14 +37,17 @@ class TopInfoPanel(QWidget):
 
         self.circles_layout = QVBoxLayout()
         self.stats_layout = QVBoxLayout()
+        self.stats_layout.setAlignment(Qt.AlignLeft)
         self.content_layout.addLayout(self.stats_layout)
         self.content_layout.addLayout(self.circles_layout)
+        self.outer_layout.setAlignment(Qt.AlignTop)
         #--------------------------------
 
         # CPU, RAM, GPU, disk usage displays
         self.CPU_widget = PercentageCircleWidget(10, "CPU")
         self.RAM_widget = PercentageCircleWidget(50, "RAM")
         self.GPU1_widget = HoloDataWidget("Integrated GPU", "not found")
+        #self.GPU1_widget.
         self.GPU2_widget = HoloDataWidget("NVIDIA GPU", "not found")
         self.temp_widget = HoloDataWidget("Temperature:", "not found")
 
@@ -72,27 +75,19 @@ class TopInfoPanel(QWidget):
         constantly update info displays
         """
         if len(data['gpus']) == 2:
-            # remove the previous and add the updated widget
-            old_widget1 = self.stats_layout.takeAt(self.stats_layout.indexOf(self.GPU1_widget))
-            old_widget2 = self.stats_layout.takeAt(self.stats_layout.indexOf(self.GPU2_widget))
-            old_widget1.widget().deleteLater()
-            old_widget2.widget().deleteLater()
             gpu1_words = data['gpus'][0]['Name'].rsplit(" ")
             gpu2_words = data['gpus'][1]['Name'].rsplit(" ") 
             disp_gpu1 = " ".join(gpu1_words[-4:-2]) if len(gpu1_words) >= 2 else data[0]['Name']
             disp_gpu2 = " ".join(gpu2_words[-4:-2]) if len(gpu2_words) >= 2 else data[1]['Name']
-            self.GPU1_widget = HoloDataWidget(disp_gpu1, "Status: "+data['gpus'][0]['Status'])
-            self.GPU2_widget = HoloDataWidget(disp_gpu2, "Status: "+data['gpus'][1]['Status'])
-            self.stats_layout.addWidget(self.GPU1_widget)
-            self.stats_layout.addWidget(self.GPU2_widget)
+            self.GPU1_widget.label_widget.setText(disp_gpu1)
+            self.GPU1_widget.value_widget.setText("Status: "+data['gpus'][0]['Status'])
+            self.GPU2_widget.label_widget.setText(disp_gpu2)
+            self.GPU2_widget.value_widget.setText("Status: "+data['gpus'][1]['Status'])
         elif len(data['gpus']) == 1:
-            # remove the previous and add the updated widget
-            old_widget2 = self.stats_layout.takeAt(self.stats_layout.indexOf(self.GPU2_widget))
-            old_widget2.widget().deleteLater()
             words = data['gpus'][1]['Name'].rsplit(" ")
-            disp_gpu = " ".join(words[-2:]) if len(words) >= 2 else data['gpu']
-            self.GPU2_widget = HoloDataWidget(disp_gpu, "Status: "+data['gpus'][1]['Status'])
-            self.stats_layout.addWidget(self.GPU2_widget)
+            disp_gpu = " ".join(words[-4:-2]) if len(words) >= 2 else data['gpus'][1]['Name']
+            self.GPU2_widget.label_widget.setText(disp_gpu)
+            self.GPU2_widget.value_widget.setText("Status: "+data['gpus'][1]['Status'])
 
         if self.CPU_widget:
             # remove the previous and add the updated widget
@@ -109,6 +104,8 @@ class TopInfoPanel(QWidget):
                 old_widget.widget().deleteLater()
             self.RAM_widget = PercentageCircleWidget(data['ram'], "RAM")
             self.circles_layout.addWidget(self.RAM_widget)
+
+        self.temp_widget.value_widget.setText(data['temp'])
     #--------------------------------
     def start_move(self, event):
         """
