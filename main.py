@@ -220,9 +220,10 @@ class CustomWindow(QtWidgets.QMainWindow):
         glitch_container.resizeEvent = lambda event: resize_glitch()
         #--------------------------------
 
-        # Automatically start main two panels
+        # Start the panels
         self.start_AI()
         self.start_ttshead()
+        self.open_info_panel()
         #--------------------------------
 
         # Create a vertical layout for the list on the right
