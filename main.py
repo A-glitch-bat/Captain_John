@@ -14,6 +14,7 @@ from aihead import AIhead
 from ttshead import TtS
 from elements.digitrain import DigitalRainPanel
 from elements.glitchwidget import GlitchWidget
+from elements.transparent_img import TransparentImageWidget
 import config
 #--------------------------------
 
@@ -180,44 +181,11 @@ class CustomWindow(QtWidgets.QMainWindow):
         button_layout.addWidget(list_button, alignment=Qt.AlignCenter)
         #--------------------------------
 
-        # Text field
-        self.text_field = QtWidgets.QTextEdit(self)
-        self.text_field.setStyleSheet("""
-            QTextEdit {
-                background: rgba(0, 0, 0, 0);
-                color: hotpink;
-                font-family: OCR A Extended;
-                font-size: 14px;
-                border: none;
-                padding: 0px 35px;
-            }
-        """)
-        self.text_field.setReadOnly(True)
-        self.text_field.setAttribute(Qt.WA_TranslucentBackground, True)
-        neuromancer_text = (
-        "The sky above the port was the color of television, tuned to a dead channel.\n \n"
-        "He jacked out, blinking away the illusion, and stared at the cracked ceiling above him."
-        )
-        self.text_field.setText(neuromancer_text)
-
-        # stacked glitch overlay and text field
-        glitch_overlay = GlitchWidget(self)
-        stacked_layout = QtWidgets.QStackedLayout()
-        stacked_layout.addWidget(self.text_field)
-        stacked_layout.addWidget(glitch_overlay)
-        stacked_layout.setStackingMode(QtWidgets.QStackedLayout.StackAll)
-
-        # container widget for the stacked layout
-        glitch_container = QtWidgets.QWidget()
-        glitch_container.setLayout(stacked_layout)
-        button_layout.addWidget(glitch_container)
+        # Temperature stats
+        self.temp_stats = TransparentImageWidget(button_layout.sizeHint(), os.path.join(config.destination, "skyline.png"))
+        button_layout.addWidget(self.temp_stats)
         button_layout.setAlignment(Qt.AlignHCenter)
         button_layout.addStretch()
-
-        # resize glitch overlay to container
-        def resize_glitch():
-            glitch_overlay.setGeometry(self.text_field.geometry())
-        glitch_container.resizeEvent = lambda event: resize_glitch()
         #--------------------------------
 
         # Start the panels
