@@ -1,7 +1,7 @@
 #--------------------------------
 
 # Imports
-from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget, QTextEdit, QStackedLayout
 from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtCore import Qt, QPoint
 #--------------------------------
@@ -9,7 +9,7 @@ from PyQt5.QtCore import Qt, QPoint
 # Transparent image widget ft. a very clear naming system
 class TransparentImageWidget(QWidget):
     def __init__(self, geometry, image_path):
-        super().__init__()
+        super(TransparentImageWidget, self).__init__()
 
         # prepare image as pixmap
         pixmap = QPixmap(image_path)
@@ -21,22 +21,35 @@ class TransparentImageWidget(QWidget):
         H = geometry.height();W = geometry.width()
         self.image_label.setMaximumSize(H+50, W+50) # size limit
 
-        # QLabel for overlay text
-        self.text_label = QLabel("Overlay Text", self)
-        self.text_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.text_label.setStyleSheet("""
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-            padding: 10px;
+        # text field
+        self.text_field = QTextEdit(self)
+        self.text_field.setReadOnly(True)
+        self.text_field.setAttribute(Qt.WA_TranslucentBackground, True)
+        self.text_field.setMaximumSize(H+50, W+50) # size limit
+        self.text_field.setText("Weather info")
+        self.text_field.setStyleSheet("""
+            QTextEdit {
+                background-color: rgba(0, 0, 0, 0);  
+                color: hotpink;
+                font-family: OCR A Extended;
+                font-size: 14px;
+                border: 4px black;
+                padding: 10px;  
+                padding-top: 50px;
+            }
         """)
+        self.text_field.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Stack text on top of image
+        stacked_layout = QStackedLayout()
+        stacked_layout.addWidget(self.text_field)
+        stacked_layout.addWidget(self.image_label)
+        stacked_layout.setStackingMode(QStackedLayout.StackAll)
+        
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.image_label)
-        p = self.geometry().bottomLeft()
-        self.text_label.move(p)
+
         self.setLayout(layout)
         #--------------------------------
 
