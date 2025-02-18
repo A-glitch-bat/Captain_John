@@ -1,5 +1,5 @@
 consecutive voice commands
 holographic ASCII art
-connect music to spotify
+link spotify
 add custom text windows
 Add rust somehow
