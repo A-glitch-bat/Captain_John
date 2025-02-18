@@ -84,10 +84,10 @@ class TopInfoPanel(QWidget):
             self.GPU2_widget.label_widget.setText(disp_gpu2)
             self.GPU2_widget.value_widget.setText("Status: "+data['gpus'][1]['Status'])
         elif len(data['gpus']) == 1:
-            words = data['gpus'][1]['Name'].rsplit(" ")
-            disp_gpu = " ".join(words[-4:-2]) if len(words) >= 2 else data['gpus'][1]['Name']
+            words = data['gpus'][0]['Name'].rsplit(" ")
+            disp_gpu = " ".join(words[-4:-2]) if len(words) >= 2 else data['gpus'][0]['Name']
             self.GPU2_widget.label_widget.setText(disp_gpu)
-            self.GPU2_widget.value_widget.setText("Status: "+data['gpus'][1]['Status'])
+            self.GPU2_widget.value_widget.setText("Status: "+data['gpus'][0]['Status'])
 
         if self.CPU_widget:
             # remove the previous and add the updated widget
