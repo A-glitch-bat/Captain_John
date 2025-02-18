@@ -6,12 +6,13 @@ import subprocess
 import os
 
 from PyQt5 import QtWidgets
-from PyQt5.QtGui import QBrush, QColor, QPixmap, QIcon
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QColor, QPixmap, QIcon
+from PyQt5.QtCore import Qt, QSize, QTimer
 
 from panel import MainWindow
 from aihead import AIhead
 from ttshead import TtS
+from tasks.weather_api import UsageThread
 from elements.digitrain import DigitalRainPanel
 from elements.glitchwidget import GlitchWidget
 from elements.transparent_img import TransparentImageWidget
@@ -248,6 +249,14 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.background_text.lower() # Widget to background
         #--------------------------------
 
+        # Weather updates
+        self.weather_api = UsageThread()
+        self.coords = self.weather_api.get_coordinates()
+        #--------------------------------
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_weather)
+        self.timer.start(60000)
+
         # Ensure the app works as intended
         self.read_list()
         self.adjust_close_button_position()
@@ -409,6 +418,11 @@ class CustomWindow(QtWidgets.QMainWindow):
                     font.setStrikeOut(False)
                     item_label.setFont(font)
                     item_label.setStyleSheet("color: hotpink;")
+    #--------------------------------
+    def update_weather(self):
+        new_weath = self.weather_api.get_weather_from_open_meteo(self.coords[0], self.coords[1])
+        self.temp_stats.text_field.setText(str(new_weath['temperature'])+"°C \n"+str(new_weath['wind_speed'])+"m/s")
+        self.temp_stats.text_field.setAlignment(Qt.AlignmentFlag.AlignBottom)
     #--------------------------------
 
 #--------------------------------
