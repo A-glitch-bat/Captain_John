@@ -1,5 +1,4 @@
 consecutive voice commands
 holographic ASCII art
-link spotify
 add custom text windows
-Add rust somehow
+spotify API to main task
