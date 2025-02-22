@@ -2,13 +2,13 @@
 
 # Imports
 import shutil
-import requests
+import os
 import torch
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QRect
-from PyQt5.QtWidgets import QLabel, QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, QTextEdit, QFrame, QApplication, QSpacerItem, QSizePolicy
-from PyQt5.QtGui import QColor, QBrush, QPainterPath, QPainter
+from PyQt5.QtWidgets import QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, QTextEdit, QFrame, QApplication, QSpacerItem, QSizePolicy
+from PyQt5.QtGui import QColor, QBrush, QPainterPath, QPainter, QPixmap, QPen
 
 from elements.glitchwidget import GlitchWidget
 from elements.ratio_widgets import PercentageCircleWidget, PercentageBarWidget, HoloDataWidget
@@ -140,12 +140,33 @@ class TopInfoPanel(QWidget):
         path.lineTo(rect.x(), rect.bottom() - radius) # bottom-left corner 
         path.lineTo(rect.x(), rect.y() + radius) # left edge
         path.lineTo(rect.x() + radius, rect.y()) # top-left corner 
+        painter.setClipPath(path)
 
-        # translucent background
-        painter.setBrush(QBrush(QColor(255, 105, 180, 50)))
-        painter.setPen(QtCore.Qt.NoPen)
-        painter.drawPath(path)
+        # place top half of the image into the border
+        pixmap = QPixmap(os.path.join(config.destination, "skyline.png"))
+        img_width = pixmap.width()
+        img_height = pixmap.height() // 2
+        cropped_pixmap = pixmap.copy(0, 0, img_width, img_height) # top half
+        scaled_pixmap = cropped_pixmap.scaled(
+            self.width(), self.height(),
+            QtCore.Qt.KeepAspectRatioByExpanding,
+            QtCore.Qt.SmoothTransformation
+        )
+        painter.setOpacity(0.35)
+        img_x = self.width() - scaled_pixmap.width()
+        img_y = (self.height() - scaled_pixmap.height()) // 2
+        painter.drawPixmap(img_x, img_y, scaled_pixmap)
         
+        # draw neon borrder
+        painter.setOpacity(0.7)
+        glow_color = QColor(255, 20, 147)
+        for i in range(6, 1, -2):
+            glow_color.setAlpha(50 + (i * 10))
+            painter.setPen(QPen(glow_color, i, QtCore.Qt.SolidLine))
+            painter.drawPath(path)
+        painter.setPen(QPen(QColor(255, 20, 147), 2, QtCore.Qt.SolidLine))
+        painter.drawPath(path)
+
         painter.end()
 #--------------------------------
 
@@ -213,12 +234,33 @@ class BottomInfoPanel(QWidget):
         path.lineTo(rect.x() + radius, rect.bottom()) # bottom edge
         path.lineTo(rect.x(), rect.bottom() - radius) # bottom-left corner 
         path.lineTo(rect.x(), rect.y()) # left edge
+        painter.setClipPath(path)
 
-        # translucent background
-        painter.setBrush(QBrush(QColor(255, 105, 180, 50)))
-        painter.setPen(QtCore.Qt.NoPen)
-        painter.drawPath(path)
+        # place bottom half of the image into the border
+        pixmap = QPixmap(os.path.join(config.destination, "skyline.png"))
+        img_width = pixmap.width()
+        img_height = pixmap.height() // 2
+        cropped_pixmap = pixmap.copy(0, pixmap.height() // 2, img_width, img_height) # bottom half
+        scaled_pixmap = cropped_pixmap.scaled(
+            self.width(), self.height(),
+            QtCore.Qt.KeepAspectRatioByExpanding,
+            QtCore.Qt.SmoothTransformation
+        )
+        painter.setOpacity(0.35)
+        img_x = self.width() - scaled_pixmap.width()
+        img_y = (self.height() - scaled_pixmap.height()) // 2
+        painter.drawPixmap(img_x, img_y, scaled_pixmap)
         
+        # draw neon borrder
+        painter.setOpacity(0.7)
+        glow_color = QColor(255, 20, 147)
+        for i in range(6, 1, -2):
+            glow_color.setAlpha(50 + (i * 10))
+            painter.setPen(QPen(glow_color, i, QtCore.Qt.SolidLine))
+            painter.drawPath(path)
+        painter.setPen(QPen(QColor(255, 20, 147), 2, QtCore.Qt.SolidLine))
+        painter.drawPath(path)
+
         painter.end()
 #--------------------------------
 
@@ -229,7 +271,7 @@ class MainWindow(QWidget):
         self.init_ui()
         self.setGeometry(int(config.scale*565) + int((config.scale-0.45)*200), # W pos,
                          int((config.scale-0.40)*135), # H pos,
-                         int(config.scale*450), int(config.scale*800))  # W size, H size
+                         int(config.scale*500), int(config.scale*800))  # W size, H size
         
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
