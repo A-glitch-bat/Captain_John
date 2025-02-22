@@ -22,6 +22,10 @@ class SpotifyAPI():
             redirect_uri="http://localhost:5000",
             scope="user-read-playback-state,user-modify-playback-state,user-read-currently-playing"
         ))
+        # select first computer with active spotify
+        devices = self.sp.devices()
+        computer_device = next((d for d in devices["devices"] if d["type"] == "Computer"), None)
+        self.device_ID = computer_device["id"]
     #--------------------------------
     # Functions
 
@@ -45,7 +49,7 @@ class SpotifyAPI():
         # get URI and play
         if results["tracks"]["items"]:
             track_uri = results["tracks"]["items"][0]["uri"]
-            self.sp.start_playback(uris=[track_uri])
+            self.sp.start_playback(device_id=self.device_ID, uris=[track_uri])
             print(f"Playing: {results['tracks']['items'][0]['name']}")
         else:
             print("No track found.")
