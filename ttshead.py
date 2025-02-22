@@ -11,9 +11,10 @@ from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPainter, QPen, QColor, QPixmap, QMovie
 from PyQt5.QtCore import Qt, QTimer, QSize, QThread
 
-from elements.glitchwidget import GlitchWidget
 from AI_heads.speech_head import SpeechHead
 from audio.audioplayer import AmbientPlayer
+from tasks.spotifyauth import SpotifyAPI
+from elements.glitchwidget import GlitchWidget
 from elements.status_button import StatusButton
 import config
 #--------------------------------
@@ -35,6 +36,7 @@ class TtS(QtWidgets.QWidget):
         self.speech_listener = None
         self.tts_engine = pyttsx3.init()
         self.tts_engine.setProperty('rate', 125) # base is 150
+        self.spotify_API = SpotifyAPI()
         #--------------------------------
 
         # Load custom background image
@@ -294,6 +296,12 @@ class TtS(QtWidgets.QWidget):
             self.sound_player.stop()
             self.sound_player = None
             self.audio_onoff.set_status(self.sound_player)
+    #--------------------------------
+    def spotify_start(self, keywords):
+        """
+        main spotify handling function
+        """
+        self.spotify_API.play_track(keywords)
     #--------------------------------
     def closeEvent(self, event):
         self.shutdown_speech()
