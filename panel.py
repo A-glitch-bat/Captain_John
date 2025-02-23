@@ -193,6 +193,17 @@ class BottomInfoPanel(QWidget):
         """)
         self.text_field.setReadOnly(True)
         self.text_field.setAttribute(Qt.WA_TranslucentBackground, True)
+        self.text_field.setText("""
+                     |I|
+                     |:|
+                     |I|
+                     |:|            .____
+             ___    |I I|           |. .|' .--.
+     _    .-' o '-. |:I:|     .--'| |. .| _|::|
+  .-'|  _.|::|...|:| I:I '-__ |:::| |. .||::..|
+  |::'-'.::  '..." "I:I:I -'-' :::-.'   '`..::|
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~""")
+        self.text_field.setAlignment(Qt.AlignCenter)
 
         # Stack glitch over text
         glitch_overlay = GlitchWidget(self)
