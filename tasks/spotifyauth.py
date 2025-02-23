@@ -24,7 +24,7 @@ class SpotifyAPI():
         ))
         # select first computer with active spotify
         devices = self.sp.devices()
-        computer_device = next((d for d in devices["devices"] if d["type"] == "Computer"), None)
+        computer_device = next((d for d in devices["devices"] if d["type"] == "Computer"), {"id": None})
         self.device_ID = computer_device["id"]
     #--------------------------------
     # Functions
@@ -45,6 +45,14 @@ class SpotifyAPI():
         play track from keywords
         """
         results = self.sp.search(q=keywords, type="track", limit=1)
+        
+        # double check for a valid device
+        if not self.device_ID:
+            devices = self.sp.devices()
+            computer_device = next((d for d in devices["devices"] if d["type"] == "Computer"), {"id": None})
+            self.device_ID = computer_device["id"]
+            if not self.device_ID:
+                print("No device found.")
 
         # get URI and play
         if results["tracks"]["items"]:
