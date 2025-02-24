@@ -16,9 +16,9 @@ class GlitchWidget(QtWidgets.QWidget):
         self.glitch_timer.timeout.connect(self.trigger_glitch)
         self.glitch_duration = 100
         self.glitch_timer.start(2000)
+    #--------------------------------
 
     # Functions
-    #--------------------------------
     def trigger_glitch(self):
         """
         enable and disable glitches
@@ -31,6 +31,7 @@ class GlitchWidget(QtWidgets.QWidget):
         self.glitch_active = False
         self.update() # disable
     #--------------------------------
+
     def paintEvent(self, event):
         """
         paint the glitches
@@ -42,11 +43,10 @@ class GlitchWidget(QtWidgets.QWidget):
         pen = QtGui.QPen(QtGui.QColor(255, 105, 180), 2, QtCore.Qt.DashLine)
         painter.setPen(pen)
 
-        for _ in range(7):
+        for _ in range(10):
             x_start = random.randint(0, self.width())
             y_start = random.randint(0, self.height())
-            x_end = x_start
-            y_end = y_start + random.randint(-35, 35)
-            painter.drawLine(x_start, y_start, x_end, y_end)
+            x_end = x_start + random.randint(-25, 25)
+            painter.drawLine(x_start, y_start, x_end, y_start)
         painter.end()
 #--------------------------------
