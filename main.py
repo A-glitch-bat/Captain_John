@@ -201,17 +201,25 @@ class CustomWindow(QtWidgets.QMainWindow):
         main_layout.addLayout(list_layout)
         list_layout.addLayout(input_layout)
 
-        # Terminal display
+        # Display TO-DO list
         self.list_display = QtWidgets.QListWidget(self)
         self.list_display.setStyleSheet("""
             QListWidget {
-                background-color: black;
+                background-color: rgba(0, 0, 0, 125);
                 color: hotpink;
-                font-family: OCR A Extended;
+                font-family: 'OCR A Extended';
                 font-size: 14px;
                 border: 2px solid hotpink;
+                border-radius: 14px;
+                padding: 6px;
             }
         """)
+        effect = QtWidgets.QGraphicsDropShadowEffect()
+        effect.setBlurRadius(50)
+        effect.setColor(QColor(255, 0, 255, 75))
+        effect.setOffset(0, 0)
+        self.list_display.setGraphicsEffect(effect)
+
         self.list_display.setMinimumSize(int(config.scale*128), int(config.scale*128))
         self.list_display.setMaximumSize(int(config.scale*256), int(config.scale*256))
         list_layout.addWidget(self.list_display)
@@ -222,11 +230,12 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.input_field.returnPressed.connect(self.write_input)
         self.input_field.setStyleSheet("""
             QLineEdit {
-                background-color: black;
+                background-color: rgba(0, 0, 0, 125);
                 color: hotpink;
                 font-family: OCR A Extended;
                 font-size: 14px;
                 border: 2px solid hotpink;
+                border-radius: 7px;
             }
         """)
         input_layout.addWidget(self.input_field)
@@ -237,6 +246,8 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.submit_button.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
+                border: 2px solid hotpink;
+                border-radius: 7px;
             }
         """)
         self.submit_button.clicked.connect(self.write_input)        

@@ -75,11 +75,12 @@ class AIhead(QtWidgets.QWidget):
         self.input_field.returnPressed.connect(self.get_reply)
         self.input_field.setStyleSheet("""
             QLineEdit {
-                background-color: black;
+                background-color: rgba(0, 0, 0, 125);
                 color: hotpink;
                 font-family: OCR A Extended;
                 font-size: 14px;
                 border: 2px solid hotpink;
+                border-radius: 7px;
             }
         """)
         input_layout.addWidget(self.input_field)
@@ -89,8 +90,9 @@ class AIhead(QtWidgets.QWidget):
         self.submit_button.setFixedSize(30, 30)
         self.submit_button.setStyleSheet("""
             QPushButton {
-                background-color: black;
+                background-color: transparent;
                 border: 2px solid hotpink;
+                border-radius: 7px;
             }
         """)
         self.submit_button.clicked.connect(self.get_reply)
@@ -103,14 +105,21 @@ class AIhead(QtWidgets.QWidget):
         self.output_display.setReadOnly(True)
         self.output_display.setStyleSheet("""
             QTextEdit {
-                background-color: black;
+                background-color: rgba(0, 0, 0, 125);
                 color: hotpink;
-                font-family: OCR A Extended;
+                font-family: 'OCR A Extended';
                 font-size: 14px;
                 border: 2px solid hotpink;
+                border-radius: 14px;
+                padding: 6px;
             }
         """)
-        
+        effect = QtWidgets.QGraphicsDropShadowEffect()
+        effect.setBlurRadius(50)
+        effect.setColor(QtGui.QColor(255, 0, 255, 75))
+        effect.setOffset(0, 0)
+        self.output_display.setGraphicsEffect(effect)
+
         main_layout.addWidget(self.output_display)
         self.output_display.append(f"B: Hello! How may I help you? \n")
 
