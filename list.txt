@@ -4,5 +4,4 @@ new city and weather images
 day/night toggle
 empty buildings for contrast
 synth audio to "Hey, John"
-fix AI head interface
-fix list interface the same way
+fix speech interface buttons
