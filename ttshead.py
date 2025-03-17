@@ -26,7 +26,7 @@ class TtS(QtWidgets.QWidget):
         #--------------------------------
 
         # Set up main window properties
-        self.setWindowTitle("Make glowy text to speech panel")
+        self.setWindowTitle("Speech interface")
         self.setWindowFlags(Qt.FramelessWindowHint) # remove window border
         self.setAttribute(Qt.WA_TranslucentBackground) # transparent background
         self.setGeometry(int((config.scale-0.45)*200), int((config.scale-0.40)*150 + int(config.scale*400)), 
