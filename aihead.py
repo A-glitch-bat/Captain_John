@@ -16,8 +16,8 @@ class AIhead(QtWidgets.QWidget):
         super().__init__()
         #--------------------------------
 
-        # Set up the main window properties
-        self.setWindowTitle("Base for AI component")
+        # Set up main window properties
+        self.setWindowTitle("Chat interface")
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)  # remove window border
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)  # transparent background
         self.setGeometry(int((config.scale-0.45)*200) + int(config.scale*350), int((config.scale-0.40)*150 + int(config.scale*400)), 

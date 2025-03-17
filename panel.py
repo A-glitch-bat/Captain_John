@@ -279,6 +279,10 @@ class BottomInfoPanel(QWidget):
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
+        #--------------------------------
+
+        # Set up main window properties
+        self.setWindowTitle("Info panels")
         self.init_ui()
         self.setGeometry(int(config.scale*565) + int((config.scale-0.45)*200), # W pos,
                          int((config.scale-0.40)*135), # H pos,

@@ -25,7 +25,8 @@ class CustomWindow(QtWidgets.QMainWindow):
         super().__init__()
         #--------------------------------
 
-        # Set up the main window properties
+        # Set up main window properties
+        self.setWindowTitle("Main interface")
         self.setWindowFlags(Qt.FramelessWindowHint)  # remove window border
         self.setAttribute(Qt.WA_TranslucentBackground)  # transparent background
         Ph = int((config.scale-0.45)*200); Pw = int((config.scale-0.40)*150) # window position
