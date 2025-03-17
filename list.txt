@@ -4,4 +4,3 @@ new city and weather images
 day/night toggle
 empty buildings for contrast
 synth audio to "Hey, John"
-fix speech interface buttons

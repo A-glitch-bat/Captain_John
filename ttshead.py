@@ -77,8 +77,7 @@ class TtS(QtWidgets.QWidget):
         # Buttons and widgets
         self.txt_file = config.txt_file
         B1 = os.path.join(config.destination, "Button1.png")
-        B2 = os.path.join(config.destination, "Button2.png")
-        B2_pressed = os.path.join(config.destination, "Button2_pressed.png")
+        B1_pressed = os.path.join(config.destination, "Button1_pressed.png")
         self.V_check = os.path.join(config.destination, "Vibe_check.png")
         self.V_cancel = os.path.join(config.destination, "Vibe_cancel.png")
         #--------------------------------
@@ -93,18 +92,17 @@ class TtS(QtWidgets.QWidget):
                 font-weight: bold;
                 font-size: 15px;
                 font-family: OCR A Extended;
-                border: 2px solid hotpink;
-                border-radius: 10px;
+                border: none;
                 padding: 12px 24px;
-                text-align: left;
+                text-align: center;
                 background-image: url('{B1}');
             }}
             QPushButton:hover {{
-                background-image: url('{B2_pressed}');
+                background-image: url('{B1_pressed}');
                 color: black;
             }}
             QPushButton:pressed {{
-                background-image: url('{B2_pressed}');
+                background-image: url('{B1_pressed}');
                 color: black;
             }}
         """)
@@ -134,18 +132,17 @@ class TtS(QtWidgets.QWidget):
                 font-weight: bold;
                 font-size: 15px;
                 font-family: OCR A Extended;
-                border: 2px solid hotpink;
-                border-radius: 10px;
+                border: none;
                 padding: 12px 24px;
-                text-align: left;
+                text-align: center;
                 background-image: url('{B1}');
             }}
             QPushButton:hover {{
-                background-image: url('{B2_pressed}');
+                background-image: url('{B1_pressed}');
                 color: black;
             }}
             QPushButton:pressed {{
-                background-image: url('{B2_pressed}');
+                background-image: url('{B1_pressed}');
                 color: black;
             }}
         """)
