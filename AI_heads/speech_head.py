@@ -1,8 +1,11 @@
 #--------------------------------
 
 # Imports
+import os
 import speech_recognition as sr
+import pygame
 from PyQt5.QtCore import QObject, pyqtSignal
+import config
 #--------------------------------
 
 # Speech head class
@@ -14,6 +17,8 @@ class SpeechHead(QObject):
         super(SpeechHead, self).__init__()
         self.voice_recognizer = sr.Recognizer()
         self.running = True
+        self.audio_path = os.path.join(config.base_folder, "audio/synth.mp3")
+        pygame.mixer.init()
 
     def listen(self):
         try:
@@ -28,6 +33,12 @@ class SpeechHead(QObject):
                         
                         print(f"Detected speech: {text}")
                         self.text_detected.emit(text) # signal to main thread
+                        if "John" in text:
+                            print("yupsies")
+                            pygame.mixer.Sound(self.audio_path).set_volume(0.5)
+                            sound = pygame.mixer.Sound(self.audio_path)
+                            sound.play()
+
                     except sr.WaitTimeoutError:
                         # continue listening if not shut down
                         continue
