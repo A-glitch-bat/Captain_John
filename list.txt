@@ -1,5 +1,5 @@
 new city and weather images
-empty buildings for contrast
+empty buildings to skyline
 day/night on weather main
-timer
 search songs on spotify
+timer alarm/number reading

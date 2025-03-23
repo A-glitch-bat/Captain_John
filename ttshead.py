@@ -4,7 +4,8 @@
 import os
 import pyttsx3
 import threading
-import webbrowser
+import subprocess
+import sys
 
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QColor, QPixmap, QMovie
@@ -246,6 +247,8 @@ class TtS(QtWidgets.QWidget):
             self.shutdown_speech()
         elif "play" in detected_speech or "music" in detected_speech:
             self.spotify_start()
+        elif "timer" in detected_speech or "countdown" in detected_speech:
+            self.start_timer(480)
         
         # Answer last spoken command and set status to stopped
         self.speech_active = 1 # set flag before processing
@@ -292,6 +295,16 @@ class TtS(QtWidgets.QWidget):
             self.spotify_API.play_track(keywords)
         else:
             self.spotify_API.playlist()
+
+    def start_timer(self, seconds):
+        """
+        start timer
+        """
+        stopwatch_script = os.path.join(os.path.dirname(__file__), "tasks/timer.py")
+        subprocess.Popen(
+            ["start", "cmd", "/c", f"python {stopwatch_script} {seconds}"],
+            shell=True,
+        )
     #--------------------------------
     def closeEvent(self, event):
         self.shutdown_speech()
