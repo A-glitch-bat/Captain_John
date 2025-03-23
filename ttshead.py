@@ -3,12 +3,11 @@
 # Imports
 import os
 import pyttsx3
-import speech_recognition as sr
 import threading
 import webbrowser
 
 from PyQt5 import QtWidgets
-from PyQt5.QtGui import QPainter, QPen, QColor, QPixmap, QMovie
+from PyQt5.QtGui import QColor, QPixmap, QMovie
 from PyQt5.QtCore import Qt, QTimer, QSize, QThread
 
 from AI_heads.speech_head import SpeechHead
@@ -243,25 +242,16 @@ class TtS(QtWidgets.QWidget):
             self.shutdown_speech()
     # sub-function ^
     def process_detected_command(self, detected_speech):
-        if self.speech_active:
-            self.text_field.append("Speech head is busy. Please wait...")
-            return
-        
-        response = "I don't know how to answer that."
         if "stop" in detected_speech or "shut down" in detected_speech or "error" in detected_speech:
             self.shutdown_speech()
-            response = "Stopping speech module."
         elif "play" in detected_speech or "music" in detected_speech:
-            webbrowser.open("https://youtu.be/RRKJiM9Njr8?si=fvPsyxbmB5MjrE_Q")
-            response = "Playing MCR."
+            self.spotify_start()
         
         # Answer last spoken command and set status to stopped
         self.speech_active = 1 # set flag before processing
-        self.text_field.append(detected_speech)
+        self.text_field.append("Processing: " + detected_speech)
         try:
             self.speech_active = 1
-            #self.tts_engine.say(response)
-            #self.tts_engine.runAndWait()
         finally:
             self.speech_active = None # reset flag
         self.shutdown_speech()
@@ -294,11 +284,14 @@ class TtS(QtWidgets.QWidget):
             self.sound_player = None
             self.audio_onoff.set_status(self.sound_player)
     #--------------------------------
-    def spotify_start(self, keywords):
+    def spotify_start(self, keywords=None):
         """
         main spotify handling function
         """
-        self.spotify_API.play_track(keywords)
+        if keywords:
+            self.spotify_API.play_track(keywords)
+        else:
+            self.spotify_API.playlist()
     #--------------------------------
     def closeEvent(self, event):
         self.shutdown_speech()

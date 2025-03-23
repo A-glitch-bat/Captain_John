@@ -19,7 +19,9 @@ class SpotifyAPI():
         self.sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
             client_id=config.spotify_client_id,
             client_secret=config.spotify_client_secret,
+            # set up local uri
             redirect_uri="http://localhost:5000",
+            # allow playback control
             scope="user-read-playback-state,user-modify-playback-state,user-read-currently-playing"
         ))
         # select first computer with active spotify
@@ -61,4 +63,23 @@ class SpotifyAPI():
             print(f"Playing: {results['tracks']['items'][0]['name']}")
         else:
             print("No track found.")
+#--------------------------------
+
+    def playlist(self):
+        """
+        play basic playlist
+        """        
+        # double check for a valid device
+        if not self.device_ID:
+            devices = self.sp.devices()
+            computer_device = next((d for d in devices["devices"] if d["type"] == "Computer"), {"id": None})
+            self.device_ID = computer_device["id"]
+            if not self.device_ID:
+                print("No device found.")
+
+        # play the playlist
+        playlist_uri = "spotify:playlist:1DrEOtANKVDajkgkuABPAM?si=b2b65d58907247a2"
+
+        self.sp.start_playback(device_id=self.device_ID, context_uri=playlist_uri)
+        print("Playing your default playlist!")
 #--------------------------------
