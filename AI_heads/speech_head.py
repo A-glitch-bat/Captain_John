@@ -17,7 +17,7 @@ class SpeechHead(QObject):
         super(SpeechHead, self).__init__()
         self.voice_recognizer = sr.Recognizer()
         self.running = True
-        self.audio_path = os.path.join(config.base_folder, "audio/synth.mp3")
+        self.audio_path = os.path.join(config.base_folder, "audio/success.mp3")
         pygame.mixer.init()
 
     def listen(self):
@@ -30,14 +30,17 @@ class SpeechHead(QObject):
                         if not self.running:
                             break
                         text = self.voice_recognizer.recognize_google(audio)
-                        
-                        print(f"Detected speech: {text}")
-                        self.text_detected.emit(text) # signal to main thread
+                        #print(f"Detected speech: {text}")
+
                         if "John" in text:
-                            print("yupsies")
                             pygame.mixer.Sound(self.audio_path).set_volume(0.5)
                             sound = pygame.mixer.Sound(self.audio_path)
                             sound.play()
+
+                            command = self.voice_recognizer.listen(source, timeout=5, phrase_time_limit=15)
+                            send = self.voice_recognizer.recognize_google(command)
+                            print(f"Command: {send}")
+                            self.text_detected.emit(send) # signal to main thread
 
                     except sr.WaitTimeoutError:
                         # continue listening if not shut down
