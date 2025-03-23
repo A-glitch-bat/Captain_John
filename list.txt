@@ -1,6 +1,5 @@
-consecutive voice commands
-add custom text windows
 new city and weather images
 empty buildings for contrast
 day/night on weather main
 timer
+search songs on spotify
