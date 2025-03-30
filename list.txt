@@ -1,5 +1,4 @@
-new city and weather images
-empty buildings to skyline
+sky pixelart on weather main
 day/night on weather main
 search songs on spotify
 timer alarm/number reading
