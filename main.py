@@ -150,11 +150,11 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.info_button.setGraphicsEffect(glow_effect)
         button_layout.addWidget(self.info_button, alignment=Qt.AlignCenter)
         #--------------------------------
-        # Testing button
-        list_button = QtWidgets.QPushButton("TEST", self)
-        list_button.setMinimumSize(128, 64)
-        list_button.setMaximumSize(128, 64)
-        list_button.setStyleSheet(f"""
+        # Chat button
+        chat_button = QtWidgets.QPushButton("CHAT", self)
+        chat_button.setMinimumSize(128, 64)
+        chat_button.setMaximumSize(128, 64)
+        chat_button.setStyleSheet(f"""
             QPushButton {{
                 color: black;
                 font-weight: bold;
@@ -172,27 +172,58 @@ class CustomWindow(QtWidgets.QMainWindow):
                 background-image: url('{B2_pressed}');
             }}
         """)
-        list_button.clicked.connect(self.start_ttshead)
+        chat_button.clicked.connect(self.start_chats)
 
         glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
         glow_effect.setBlurRadius(20)
         glow_effect.setColor(QColor("hotpink"))
         glow_effect.setOffset(0, 0)
 
-        list_button.setGraphicsEffect(glow_effect)
-        button_layout.addWidget(list_button, alignment=Qt.AlignCenter)
+        chat_button.setGraphicsEffect(glow_effect)
+        button_layout.addWidget(chat_button, alignment=Qt.AlignCenter)
+        #--------------------------------
+        # Testing button
+        test_button = QtWidgets.QPushButton("TEST", self)
+        test_button.setMinimumSize(128, 64)
+        test_button.setMaximumSize(128, 64)
+        test_button.setStyleSheet(f"""
+            QPushButton {{
+                color: black;
+                font-weight: bold;
+                font-size: 15px;
+                font-family: OCR A Extended;
+                border-radius: 10px;
+                padding: 12px 24px;
+                text-align: left;
+                background-image: url('{B2}');
+            }}
+            QPushButton:hover {{
+                background-image: url('{B2_pressed}');
+            }}
+            QPushButton:pressed {{
+                background-image: url('{B2_pressed}');
+            }}
+        """)
+        test_button.clicked.connect(self.start_chats)
+
+        glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
+        glow_effect.setBlurRadius(20)
+        glow_effect.setColor(QColor("hotpink"))
+        glow_effect.setOffset(0, 0)
+
+        test_button.setGraphicsEffect(glow_effect)
+        button_layout.addWidget(test_button, alignment=Qt.AlignCenter)
         #--------------------------------
 
         # Temperature stats
-        self.temp_stats = TransparentImageWidget(button_layout.sizeHint(), os.path.join(config.destination, "skyline.png"))
+        self.temp_stats = TransparentImageWidget(button_layout.sizeHint(), os.path.join(config.destination, "nightsky.png"))
         button_layout.addWidget(self.temp_stats)
         button_layout.setAlignment(Qt.AlignHCenter)
         button_layout.addStretch()
         #--------------------------------
 
         # Start the panels
-        self.start_AI()
-        self.start_ttshead()
+        self.start_chats()
         self.open_info_panel()
         #--------------------------------
 
@@ -266,6 +297,7 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.coords = self.weather_api.get_coordinates()
         #--------------------------------
         self.timer = QTimer(self)
+        self.update_weather()
         self.timer.timeout.connect(self.update_weather)
         self.timer.start(60000)
 
@@ -296,18 +328,14 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.info_panel = MainWindow() # prevent garbage-collection
         self.info_panel.show()
     #--------------------------------
-    def start_AI(self):
+    def start_chats(self):
         """
-        Open AI head on button click
+        Open chat AIs on button click
         """
-        self.aihead = AIhead() # prevent garbage-collection
+        self.aihead = AIhead()
         self.aihead.show()
-    #--------------------------------
-    def start_ttshead(self):
-        """
-        Open list display on button click
-        """
-        self.listdisplay = TtS() # prevent garbage-collection
+
+        self.listdisplay = TtS()
         self.listdisplay.show()
     #--------------------------------
     def write_input(self):
