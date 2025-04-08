@@ -1,4 +1,4 @@
-sky pixelart on weather main
 day/night on weather main
 search songs on spotify
 timer alarm/number reading
+typing progress to ai head

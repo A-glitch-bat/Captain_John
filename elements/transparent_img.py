@@ -2,8 +2,8 @@
 
 # Imports
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget, QTextEdit, QStackedLayout
-from PyQt5.QtGui import QPixmap, QPainter
-from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtGui import QPixmap, QPainter, QPixmap, QColor, QPen, QPainterPath
+from PyQt5.QtCore import Qt, QRectF
 #--------------------------------
 
 # Transparent image widget ft. a very clear naming system
@@ -13,7 +13,7 @@ class TransparentImageWidget(QWidget):
 
         # prepare image as pixmap
         pixmap = QPixmap(image_path)
-        transparent_pixmap = self.make_transparent(pixmap, 75)
+        transparent_pixmap = self.make_transparent(pixmap, 200)
 
         # QLabel for background image
         self.image_label = QLabel(self)
@@ -61,10 +61,24 @@ class TransparentImageWidget(QWidget):
         transparent = QPixmap(pixmap.size())
         transparent.fill(Qt.GlobalColor.transparent)
 
+        # main image
         painter = QPainter(transparent)
+        painter.setRenderHint(QPainter.Antialiasing)
         painter.setOpacity(opacity / 255)
+        radius = 15
+        path = QPainterPath()
+        path.addRoundedRect(0, 0, pixmap.width(), pixmap.height(), radius, radius)
+        painter.setClipPath(path)
         painter.drawPixmap(0, 0, pixmap)
+
+        # rounded border
+        pen = QPen(QColor("hotpink"))
+        pen.setWidth(2)
+        painter.setPen(pen)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.drawRoundedRect(QRectF(0, 0, pixmap.width(), pixmap.height()), radius, radius)
+
         painter.end()
-        
+
         return transparent
 #--------------------------------
