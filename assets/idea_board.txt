@@ -1,13 +1,9 @@
 ---
-interactive or looping animated backgrounds, like rippling effects or a cityscape
+interactive cybercity landscape with functionalities in buildings
 ---
-widgets or buttons that "pulse" with a glowing effect when hovered or clicked
----
-integrate multiple AI "personalities" (e.g., a helper bot, a sarcastic bot) selectable from a dropdown
+integrate multiple AIs with separate functions
 ---
 display cyberpunk-style pop-up notifications for system events or reminders
----
-include a customizable digital clock or countdown timer
 ---
 a "map" panel where users can explore a fictional cyberpunk city, with areas linked to app features
 ---
