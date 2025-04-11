@@ -1,7 +1,23 @@
 # Ignore Python cache files
 __pycache__/
-.vs/
 .cache
 config.py
-assets/start_john.bat
 try.py
+
+# Rust build
+Cargo.lock
+target/
+**/*.rs.bk
+
+# IDEs and editors
+/.idea/
+/.vscode/
+/*.swp
+.vs/
+
+# Executables
+assets/start_john.bat
+*.exe
+*.dll
+*.so
+*.dylib
