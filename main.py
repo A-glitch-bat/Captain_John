@@ -23,6 +23,16 @@ import config
 class CustomWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
+        """
+        define all the important jazz
+        """
+        self.txt_file = config.txt_file
+        self.r_path = os.path.join(config.base_folder, "rust_console/target/release/rust_console.exe")
+        B1 = os.path.join(config.destination, "Button1.png")
+        B2 = os.path.join(config.destination, "Button2.png")
+        B2_pressed = os.path.join(config.destination, "Button2_pressed.png")
+        self.V_check = os.path.join(config.destination, "Vibe_check.png")
+        self.V_cancel = os.path.join(config.destination, "Vibe_cancel.png")
         #--------------------------------
 
         # Set up main window properties
@@ -77,14 +87,6 @@ class CustomWindow(QtWidgets.QMainWindow):
         button_container.setMinimumWidth(int(config.scale * 150))
         main_layout.addWidget(button_container, alignment=Qt.AlignLeft)
 
-        #--------------------------------
-        # Buttons and widgets
-        self.txt_file = config.txt_file
-        B1 = os.path.join(config.destination, "Button1.png")
-        B2 = os.path.join(config.destination, "Button2.png")
-        B2_pressed = os.path.join(config.destination, "Button2_pressed.png")
-        self.V_check = os.path.join(config.destination, "Vibe_check.png")
-        self.V_cancel = os.path.join(config.destination, "Vibe_cancel.png")
         #--------------------------------
         # VS Code Button
         open_vscode_button = QtWidgets.QPushButton("CODE")
@@ -204,7 +206,7 @@ class CustomWindow(QtWidgets.QMainWindow):
                 background-image: url('{B2_pressed}');
             }}
         """)
-        test_button.clicked.connect(self.start_chats)
+        test_button.clicked.connect(self.open_rwindow)
 
         glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
         glow_effect.setBlurRadius(20)
@@ -323,14 +325,14 @@ class CustomWindow(QtWidgets.QMainWindow):
     #--------------------------------
     def open_info_panel(self):
         """
-        Open InfoPanel on button click
+        open InfoPanel on button click
         """
         self.info_panel = MainWindow() # prevent garbage-collection
         self.info_panel.show()
     #--------------------------------
     def start_chats(self):
         """
-        Open chat AIs on button click
+        open chat AIs on button click
         """
         self.aihead = AIhead()
         self.aihead.show()
@@ -459,7 +461,16 @@ class CustomWindow(QtWidgets.QMainWindow):
                     item_label.setFont(font)
                     item_label.setStyleSheet("color: hotpink;")
     #--------------------------------
+    def open_rwindow(self):
+        """
+        rust console call
+        """
+        subprocess.Popen([self.r_path])
+    #--------------------------------
     def update_weather(self):
+        """
+        called periodically to update weather status
+        """
         new_weath = self.weather_api.get_weather_from_open_meteo(self.coords[0], self.coords[1])
         self.temp_stats.text_field.setText(str(new_weath['temperature'])+"°C \n"+str(new_weath['wind_speed'])+"m/s")
         self.temp_stats.text_field.setAlignment(Qt.AlignmentFlag.AlignBottom)
