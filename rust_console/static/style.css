@@ -1,0 +1,44 @@
+body {
+    background-color: #111;
+    color: hotpink;
+    font-family: 'Courier New', Courier, monospace;
+    padding: 20px;
+}
+
+input[type="text"] {
+    width: 50%;
+    padding: 10px;
+    font-size: 1em;
+    background-color: #222;
+    color: hotpink;
+    font-family: 'Courier New', Courier, monospace;
+    border: 1px solid hotpink;
+    border-radius: 5px;
+}
+
+.container textarea {
+    display: block;
+    margin-top: 12px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 1em;
+    background-color: hotpink;
+    color: #111;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+textarea {
+    width: 80%;
+    height: 300px;
+    resize: vertical;
+    background-color: #222;
+    color: hotpink;
+    font-size: 1em;
+    border: 1px solid hotpink;
+    border-radius: 5px;
+    padding: 10px;
+}
