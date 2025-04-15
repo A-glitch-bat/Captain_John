@@ -16,12 +16,24 @@
     </div>
 
     <script>
+        function typeWriter(text, outputBox, delay = 30) {
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    outputBox.value += text.charAt(i);
+                    i++;
+                    setTimeout(type, delay);
+                }
+            }
+            type();
+        }
+        
         function sendInput() {
             const input = document.getElementById("user-input").value;
             const outputBox = document.getElementById("output");
-            
-            outputBox.value += "> " + input + "\n";
             document.getElementById("user-input").value = "";
+        
+            typeWriter("> " + input + "\n", outputBox);
         }
     </script>
 </body>
