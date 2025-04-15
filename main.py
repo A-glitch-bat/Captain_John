@@ -4,6 +4,7 @@
 import sys
 import subprocess
 import os
+import webbrowser
 
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QColor, QPixmap, QIcon
@@ -465,7 +466,9 @@ class CustomWindow(QtWidgets.QMainWindow):
         """
         rust console call
         """
-        subprocess.Popen([self.r_path])
+        rust_project_dir = os.path.join(config.base_folder, "rust_console")
+        subprocess.Popen([self.r_path], cwd=rust_project_dir)
+        webbrowser.open("http:localhost:3000")
     #--------------------------------
     def update_weather(self):
         """
