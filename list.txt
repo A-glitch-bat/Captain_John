@@ -1,5 +1,6 @@
-day/night on weather main
 search songs on spotify
 timer alarm/number reading
 connect to ARSO
+day/night on weather main
+replace weather API
 web link summarizer
