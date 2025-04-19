@@ -17,6 +17,6 @@ async fn main() {
 }
 
 async fn serve_html() -> Html<String> {
-    let html = fs::read_to_string("index.html").unwrap_or_else(|_| "<h1>Failed to load HTML</h1>".to_string());
+    let html = fs::read_to_string("index.html").unwrap_or_else(|_| "<h1>Error</h1>".to_string());
     Html(html)
 }
