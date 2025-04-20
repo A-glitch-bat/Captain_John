@@ -13,7 +13,7 @@ from PyQt5.QtCore import Qt, QSize, QTimer
 from panel import MainWindow
 from aihead import AIhead
 from ttshead import TtS
-from tasks.weather_api import UsageThread
+from main_init import get_geostats
 from elements.digitrain import DigitalRainPanel
 from elements.glitchwidget import GlitchWidget
 from elements.transparent_img import TransparentImageWidget
@@ -296,11 +296,8 @@ class CustomWindow(QtWidgets.QMainWindow):
         #--------------------------------
 
         # Weather updates
-        self.weather_api = UsageThread()
-        self.coords = self.weather_api.get_coordinates()
-        #--------------------------------
+        self.coords = None
         self.timer = QTimer(self)
-        self.update_weather()
         self.timer.timeout.connect(self.update_weather)
         self.timer.start(60000)
 
@@ -308,6 +305,9 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.read_list()
         self.adjust_close_button_position()
         self.close_button.raise_()
+
+        geostats = get_geostats()
+        print(geostats)
     #--------------------------------
 
     # Functions
@@ -474,9 +474,10 @@ class CustomWindow(QtWidgets.QMainWindow):
         """
         called periodically to update weather status
         """
-        new_weath = self.weather_api.get_weather_from_open_meteo(self.coords[0], self.coords[1])
-        self.temp_stats.text_field.setText(str(new_weath['temperature'])+"°C \n"+str(new_weath['wind_speed'])+"m/s")
-        self.temp_stats.text_field.setAlignment(Qt.AlignmentFlag.AlignBottom)
+        if self.coords:
+            new_weath = self.weather_api.get_weather_from_open_meteo(self.coords[0], self.coords[1])
+            self.temp_stats.text_field.setText(str(new_weath['temperature'])+"°C \n"+str(new_weath['wind_speed'])+"m/s")
+            self.temp_stats.text_field.setAlignment(Qt.AlignmentFlag.AlignBottom)
     #--------------------------------
 
 #--------------------------------
