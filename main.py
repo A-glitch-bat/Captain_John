@@ -5,6 +5,7 @@ import sys
 import subprocess
 import os
 import webbrowser
+import requests
 
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QColor, QPixmap, QIcon
@@ -305,9 +306,8 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.read_list()
         self.adjust_close_button_position()
         self.close_button.raise_()
-
-        geostats = get_geostats()
-        print(geostats)
+        self.coords = get_geostats()
+        self.update_weather()
     #--------------------------------
 
     # Functions
@@ -475,9 +475,34 @@ class CustomWindow(QtWidgets.QMainWindow):
         called periodically to update weather status
         """
         if self.coords:
-            new_weath = self.weather_api.get_weather_from_open_meteo(self.coords[0], self.coords[1])
-            self.temp_stats.text_field.setText(str(new_weath['temperature'])+"°C \n"+str(new_weath['wind_speed'])+"m/s")
+            new_weath = self.get_weather_from_open_meteo(self.coords[0], self.coords[1])
+            self.temp_stats.text_field.setText(
+                f"{new_weath['temperature']}°C\n"
+                f"{new_weath['wind_speed']} m/s\n"
+                f"{self.coords[2]}"
+            )
             self.temp_stats.text_field.setAlignment(Qt.AlignmentFlag.AlignBottom)
+    #--------------------------------
+    def get_weather_from_open_meteo(self, lat, lon):
+        """
+        weather from Open-Meteo API
+        """
+        try:
+            url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true"
+            response = requests.get(url)
+            if response.status_code == 200:
+                data = response.json()
+                if "current_weather" in data:
+                    weather = {
+                        "temperature": data["current_weather"]["temperature"],
+                        "wind_speed": "%.2f" % (data["current_weather"]["windspeed"]/3.6),
+                        "description": "Current weather data"
+                    }
+                    return weather
+            return {"error": f"Could not retrieve weather information. Error code: {response.status_code}"}
+        except Exception as e:
+            print(f"Error fetching weather: {e}")
+            return {"error": "An unexpected error occurred."}
     #--------------------------------
 
 #--------------------------------
