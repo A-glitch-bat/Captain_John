@@ -1,12 +1,21 @@
+#--------------------------------
+
+# Imports
 from flask import Flask, request, render_template_string, jsonify
 import threading
 import webbrowser
 import time
+import pygetwindow as gw
+import win32gui
+import win32con
 from geopy.geocoders import Nominatim
 
+#--------------------------------
+
+# separate this into classes when making separate initialization
 app = Flask(__name__)
 
-# This will store the location from the browser
+# store browser location
 location_data = {}
 
 # HTML + JavaScript served directly by Flask
@@ -33,9 +42,12 @@ HTML_PAGE = """
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(coords)
+        }).then(() => {
+            // Wait a moment and close the window
+            setTimeout(() => window.close(), 1000);
         });
 
-        // Optionally close the tab
+        // display if closing fails
         document.body.innerHTML = "<h2>Location sent. You may now close this tab.</h2>";
       });
     }
@@ -71,6 +83,7 @@ def get_city_name(lat, lon):
         return location.raw["address"].get("town") or location.raw["address"].get("village")
     return "Unknown location"
 
+#--------------------------------
 def get_geostats():
     threading.Thread(target=start_server, daemon=True).start()
     time.sleep(1)
@@ -82,6 +95,14 @@ def get_geostats():
     lat = location_data["latitude"]
     lon = location_data["longitude"]
     city = get_city_name(lat, lon)
-    
-    
+
+    # minimize chrome after timeout
+    time.sleep(2)
+    for window in gw.getWindowsWithTitle('Chrome'):
+        if window.visible and not window.isMinimized:
+            hwnd = window._hWnd
+            win32gui.ShowWindow(hwnd, win32con.SW_MINIMIZE)
+            break
+
     return [lat, lon, city]
+#--------------------------------
