@@ -57,7 +57,6 @@ def index():
 def receive_location():
     global location_data
     location_data = request.json
-    print("📍 Location received:", location_data)
     return jsonify({"status": "ok"})
 
 def start_server():
@@ -77,13 +76,12 @@ def get_geostats():
     time.sleep(1)
     webbrowser.open("http://localhost:5000")
 
-    print("🌐 Waiting for location data...")
     while not location_data:
         time.sleep(0.5)
 
     lat = location_data["latitude"]
     lon = location_data["longitude"]
     city = get_city_name(lat, lon)
-    print(f"📍 City name: {city}")
+    
     
     return [lat, lon, city]
