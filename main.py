@@ -14,9 +14,8 @@ from PyQt5.QtCore import Qt, QSize, QTimer
 from panel import MainWindow
 from aihead import AIhead
 from ttshead import TtS
-from main_init import get_geostats
+from main_init import Initializer
 from elements.digitrain import DigitalRainPanel
-from elements.glitchwidget import GlitchWidget
 from elements.transparent_img import TransparentImageWidget
 import config
 #--------------------------------
@@ -29,6 +28,7 @@ class CustomWindow(QtWidgets.QMainWindow):
         define all the important jazz
         """
         self.txt_file = config.txt_file
+        self.init_class = Initializer()
         self.r_path = os.path.join(config.base_folder, "rust_console/target/release/rust_console.exe")
         B1 = os.path.join(config.destination, "Button1.png")
         B2 = os.path.join(config.destination, "Button2.png")
@@ -306,7 +306,7 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.read_list()
         self.adjust_close_button_position()
         self.close_button.raise_()
-        self.coords = get_geostats()
+        self.coords = self.init_class.get_geostats()
         self.update_weather()
     #--------------------------------
 
