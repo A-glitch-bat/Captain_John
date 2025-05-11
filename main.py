@@ -123,10 +123,10 @@ class CustomWindow(QtWidgets.QMainWindow):
         button_layout.addWidget(open_vscode_button, alignment=Qt.AlignCenter)
         #--------------------------------
         # Info Butoon
-        self.info_button = QtWidgets.QPushButton("INFO", self)
-        self.info_button.setMinimumSize(128, 64)
-        self.info_button.setMaximumSize(128, 64)
-        self.info_button.setStyleSheet(f"""
+        self.init_button = QtWidgets.QPushButton("INIT", self)
+        self.init_button.setMinimumSize(128, 64)
+        self.init_button.setMaximumSize(128, 64)
+        self.init_button.setStyleSheet(f"""
             QPushButton {{
                 color: black;
                 font-weight: bold;
@@ -144,21 +144,21 @@ class CustomWindow(QtWidgets.QMainWindow):
                 background-image: url('{B2_pressed}');
             }}
         """)
-        self.info_button.clicked.connect(self.open_info_panel)
+        self.init_button.clicked.connect(self.set_init)
         
         glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
         glow_effect.setBlurRadius(20)
         glow_effect.setColor(QColor("hotpink"))
         glow_effect.setOffset(0, 0)
 
-        self.info_button.setGraphicsEffect(glow_effect)
-        button_layout.addWidget(self.info_button, alignment=Qt.AlignCenter)
+        self.init_button.setGraphicsEffect(glow_effect)
+        button_layout.addWidget(self.init_button, alignment=Qt.AlignCenter)
         #--------------------------------
-        # Chat button
-        chat_button = QtWidgets.QPushButton("CHAT", self)
-        chat_button.setMinimumSize(128, 64)
-        chat_button.setMaximumSize(128, 64)
-        chat_button.setStyleSheet(f"""
+        # Webpage button --- not working yet, move TEST here later
+        page_button = QtWidgets.QPushButton("PAGE", self)
+        page_button.setMinimumSize(128, 64)
+        page_button.setMaximumSize(128, 64)
+        page_button.setStyleSheet(f"""
             QPushButton {{
                 color: black;
                 font-weight: bold;
@@ -176,15 +176,15 @@ class CustomWindow(QtWidgets.QMainWindow):
                 background-image: url('{B2_pressed}');
             }}
         """)
-        chat_button.clicked.connect(self.start_chats)
+        page_button.clicked.connect(self.start_chats)
 
         glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
         glow_effect.setBlurRadius(20)
         glow_effect.setColor(QColor("hotpink"))
         glow_effect.setOffset(0, 0)
 
-        chat_button.setGraphicsEffect(glow_effect)
-        button_layout.addWidget(chat_button, alignment=Qt.AlignCenter)
+        page_button.setGraphicsEffect(glow_effect)
+        button_layout.addWidget(page_button, alignment=Qt.AlignCenter)
         #--------------------------------
         # Testing button
         test_button = QtWidgets.QPushButton("TEST", self)
@@ -323,6 +323,9 @@ class CustomWindow(QtWidgets.QMainWindow):
     def open_vscode(self):
         folder_path = "C:/John"
         subprocess.Popen(["code", folder_path], shell=True)
+    #--------------------------------
+    def set_init(self):
+        self.init_class.init_button()
     #--------------------------------
     def open_info_panel(self):
         """

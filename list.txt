@@ -3,4 +3,3 @@ timer alarm/number reading
 connect to ARSO
 day/night on weather main
 web link summarizer
-start up button
