@@ -20,22 +20,16 @@ class Initializer():
         """
         self.app = Flask(__name__)
         self.location_data = {}
-        #--------------------------------
-
-        # Route definitions
-        self.app.add_url_rule('/', view_func=self.index)
-        self.app.add_url_rule('/receive-location', view_func=self.receive_location, methods=['POST'])
-
-    def __init__(self):
-        self.app = Flask(__name__)
-        self.location_data = {}
-
-        # Use current directory or specify full path
         self.html_path = os.path.join(os.path.dirname(__file__), "tasks/geohelper.html")
 
+        # Route definitions
         self.app.add_url_rule("/", view_func=self.index)
         self.app.add_url_rule("/receive-location", view_func=self.receive_location, methods=["POST"])
+        #--------------------------------
 
+    def init_button(self):
+        return "todo"
+    
     def index(self):
         with open(self.html_path, "r", encoding="utf-8") as file:
             html_content = file.read()
