@@ -2,107 +2,79 @@
 
 # Imports
 from flask import Flask, request, render_template_string, jsonify
+from geopy.geocoders import Nominatim
+import os
 import threading
 import webbrowser
 import time
 import pygetwindow as gw
 import win32gui
 import win32con
-from geopy.geocoders import Nominatim
-
 #--------------------------------
 
-# separate this into classes when making separate initialization
-app = Flask(__name__)
+# Init task class
+class Initializer():
+    def __init__(self):
+        """
+        define all the important jazz
+        """
+        self.app = Flask(__name__)
+        self.location_data = {}
+        #--------------------------------
 
-# store browser location
-location_data = {}
+        # Route definitions
+        self.app.add_url_rule('/', view_func=self.index)
+        self.app.add_url_rule('/receive-location', view_func=self.receive_location, methods=['POST'])
 
-# HTML + JavaScript served directly by Flask
-HTML_PAGE = """
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Geo Helper</title>
-  <script>
-    async function sendLocation() {
-      if (!navigator.geolocation) {
-        alert("Geolocation not supported.");
-        return;
-      }
+    def __init__(self):
+        self.app = Flask(__name__)
+        self.location_data = {}
 
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const coords = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
-        };
+        # Use current directory or specify full path
+        self.html_path = os.path.join(os.path.dirname(__file__), "tasks/geohelper.html")
 
-        // Send to backend
-        await fetch("/receive-location", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(coords)
-        }).then(() => {
-            // Wait a moment and close the window
-            setTimeout(() => window.close(), 1000);
-        });
+        self.app.add_url_rule("/", view_func=self.index)
+        self.app.add_url_rule("/receive-location", view_func=self.receive_location, methods=["POST"])
 
-        // display if closing fails
-        document.body.innerHTML = "<h2>Location sent. You may now close this tab.</h2>";
-      });
-    }
+    def index(self):
+        with open(self.html_path, "r", encoding="utf-8") as file:
+            html_content = file.read()
+        return render_template_string(html_content)
 
-    window.onload = sendLocation;
-  </script>
-</head>
-<body>
-  <h1>Fetching location...</h1>
-</body>
-</html>
-"""
+    def receive_location(self):
+        self.location_data = request.json
+        return jsonify({"status": "ok"})
 
-@app.route('/')
-def index():
-    return render_template_string(HTML_PAGE)
+    def start_server(self):
+        self.app.run(port=5000, debug=False)
 
-@app.route('/receive-location', methods=['POST'])
-def receive_location():
-    global location_data
-    location_data = request.json
-    return jsonify({"status": "ok"})
+    def get_city_name(self, lat, lon):
+        geolocator = Nominatim(user_agent="geo_locator_app")
+        location = geolocator.reverse((lat, lon), language='en')
+        if location and "city" in location.raw["address"]:
+            return location.raw["address"]["city"]
+        elif location:
+            return location.raw["address"].get("town") or location.raw["address"].get("village")
+        return "Unknown location"
 
-def start_server():
-    app.run(port=5000, debug=False)
+    def get_geostats(self):
+        threading.Thread(target=self.start_server, daemon=True).start()
+        time.sleep(1)
+        webbrowser.open("http://localhost:5000")
 
-def get_city_name(lat, lon):
-    geolocator = Nominatim(user_agent="geo_locator_app")
-    location = geolocator.reverse((lat, lon), language='en')
-    if location and "city" in location.raw["address"]:
-        return location.raw["address"]["city"]
-    elif location:
-        return location.raw["address"].get("town") or location.raw["address"].get("village")
-    return "Unknown location"
+        while not self.location_data:
+            time.sleep(0.5)
 
-#--------------------------------
-def get_geostats():
-    threading.Thread(target=start_server, daemon=True).start()
-    time.sleep(1)
-    webbrowser.open("http://localhost:5000")
+        lat = self.location_data["latitude"]
+        lon = self.location_data["longitude"]
+        city = self.get_city_name(lat, lon)
 
-    while not location_data:
-        time.sleep(0.5)
+        # minimize Chrome
+        time.sleep(2)
+        for window in gw.getWindowsWithTitle('Chrome'):
+            if window.visible and not window.isMinimized:
+                hwnd = window._hWnd
+                win32gui.ShowWindow(hwnd, win32con.SW_MINIMIZE)
+                break
 
-    lat = location_data["latitude"]
-    lon = location_data["longitude"]
-    city = get_city_name(lat, lon)
-
-    # minimize chrome after timeout
-    time.sleep(2)
-    for window in gw.getWindowsWithTitle('Chrome'):
-        if window.visible and not window.isMinimized:
-            hwnd = window._hWnd
-            win32gui.ShowWindow(hwnd, win32con.SW_MINIMIZE)
-            break
-
-    return [lat, lon, city]
-#--------------------------------
+        return [lat, lon, city]

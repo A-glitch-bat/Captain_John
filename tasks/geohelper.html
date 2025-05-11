@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Geo Helper</title>
+  <script>
+    async function sendLocation() {
+      if (!navigator.geolocation) {
+        alert("Geolocation not supported.");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const coords = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        };
+
+        // Send to backend
+        await fetch("/receive-location", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(coords)
+        }).then(() => {
+            // Wait a moment and close the window
+            setTimeout(() => window.close(), 1000);
+        });
+
+        // display if closing fails
+        document.body.innerHTML = "<h2>Location sent. You may now close this tab.</h2>";
+      });
+    }
+
+    window.onload = sendLocation;
+  </script>
+</head>
+<body>
+  <h1>Fetching location...</h1>
+</body>
+</html>
