@@ -1,12 +1,14 @@
 #--------------------------------
 
 # Imports
+import os
 from flask import Flask, request, render_template_string, jsonify
 from geopy.geocoders import Nominatim
-import os
+from datetime import datetime, timedelta, timezone
+import time
+import math
 import threading
 import webbrowser
-import time
 import pygetwindow as gw
 import win32gui
 import win32con
@@ -29,7 +31,37 @@ class Initializer():
 
     def init_button(self):
         return "todo"
-    
+
+    def daytime_calculator(self, latitude, longitude, date):
+        # solar angle on given date, constrained by summer and winter solstice (+23.44° and −23.44°)
+        day = date.timetuple().tm_yday
+        decl = math.radians(-23.44 * math.cos(math.radians((360 / 365) * (day + 10))))
+
+        # hour angle (in radians)
+        lat_rad = math.radians(latitude)
+        zenith = math.radians(90.833)
+        cosH = (math.cos(zenith) - math.sin(lat_rad) * math.sin(decl)) / (math.cos(lat_rad) * math.cos(decl))
+        
+        # check for edge cases (polar night or day)
+        if abs(cosH) > 1:
+            return None, None
+
+        # time difference from midday
+        H = math.acos(cosH)
+        time_diff = math.degrees(H) / 15
+
+        # solar noon according to longitude, adjusted for timezone difference
+        timezone_offset = datetime.now().astimezone().utcoffset().total_seconds() / 3600
+        solar_noon = 12 - (longitude / 15) + timezone_offset
+
+        # sunrise and sunset according to local solar noon and time difference
+        sunrise = solar_noon - time_diff
+        sunset = solar_noon + time_diff
+        sunrise_time = datetime.combine(date, datetime.min.time()) + timedelta(hours=sunrise)
+        sunset_time = datetime.combine(date, datetime.min.time()) + timedelta(hours=sunset)
+
+        return sunrise_time.strftime("%H:%M:%S"), sunset_time.strftime("%H:%M:%S")
+
     def index(self):
         with open(self.html_path, "r", encoding="utf-8") as file:
             html_content = file.read()
@@ -72,3 +104,15 @@ class Initializer():
                 break
 
         return [lat, lon, city]
+
+# Temporary main
+if __name__ == "__main__":
+    initTest = Initializer()
+
+    # get UTC sunrise/sunset for today's date
+    lat = 46.04887; lon = 14.48018
+    todays_date = datetime.now().date()
+    sunrise, sunset = initTest.daytime_calculator(lat, lon, todays_date)
+
+    # check it out
+    print(sunrise); print(sunset)
