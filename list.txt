@@ -1,5 +1,5 @@
 search songs on spotify
 timer alarm/number reading
-connect to ARSO
 day/night on weather main
 web link summarizer
+numbered voice commands
