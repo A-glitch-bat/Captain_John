@@ -33,8 +33,8 @@ class CustomWindow(QtWidgets.QMainWindow):
         B1 = os.path.join(config.destination, "Button1.png")
         B2 = os.path.join(config.destination, "Button2.png")
         B2_pressed = os.path.join(config.destination, "Button2_pressed.png")
-        self.V_check = os.path.join(config.destination, "Vibe_check.png")
-        self.V_cancel = os.path.join(config.destination, "Vibe_cancel.png")
+        self.V_check = os.path.join(config.destination, "icons/confirm.png")
+        self.V_cancel = os.path.join(config.destination, "icons/cancel.png")
         #--------------------------------
 
         # Set up main window properties

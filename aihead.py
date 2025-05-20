@@ -1,8 +1,6 @@
 #--------------------------------
 
 # Imports
-import sys
-import subprocess
 import os
 from PyQt5 import QtWidgets, QtGui, QtCore
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -57,10 +55,10 @@ class AIhead(QtWidgets.QWidget):
         self.close_button.clicked.connect(self.close)
         #--------------------------------
         # Buttons and emblems
-        B2 = os.path.join(config.destination, "Button2.png")
-        B2_pressed = os.path.join(config.destination, "Button2_pressed.png")
-        V_check = os.path.join(config.destination, "Vibe_check.png")
-        V_cancel = os.path.join(config.destination, "Vibe_cancel.png")
+        self.B2 = os.path.join(config.destination, "Button2.png")
+        self.B2_pressed = os.path.join(config.destination, "Button2_pressed.png")
+        self.V_check = os.path.join(config.destination, "icons/confirm.png")
+        self.V_cancel = os.path.join(config.destination, "icons/cancel.png")
         #--------------------------------
 
         # Layout
@@ -86,7 +84,7 @@ class AIhead(QtWidgets.QWidget):
         input_layout.addWidget(self.input_field)
         
         self.submit_button = QtWidgets.QPushButton()
-        self.submit_button.setIcon(QtGui.QIcon.fromTheme(V_check))
+        self.submit_button.setIcon(QtGui.QIcon.fromTheme(self.V_check))
         self.submit_button.setFixedSize(30, 30)
         self.submit_button.setStyleSheet("""
             QPushButton {

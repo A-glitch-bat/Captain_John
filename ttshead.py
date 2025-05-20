@@ -5,11 +5,10 @@ import os
 import pyttsx3
 import threading
 import subprocess
-import sys
 
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QColor, QPixmap, QMovie
-from PyQt5.QtCore import Qt, QTimer, QSize, QThread
+from PyQt5.QtCore import Qt, QSize
 
 from AI_heads.speech_head import SpeechHead
 from audio.audioplayer import AmbientPlayer
@@ -76,10 +75,10 @@ class TtS(QtWidgets.QWidget):
 
         # Buttons and widgets
         self.txt_file = config.txt_file
-        B1 = os.path.join(config.destination, "Button1.png")
-        B1_pressed = os.path.join(config.destination, "Button1_pressed.png")
-        self.V_check = os.path.join(config.destination, "Vibe_check.png")
-        self.V_cancel = os.path.join(config.destination, "Vibe_cancel.png")
+        self.B1 = os.path.join(config.destination, "Button1.png")
+        self.B1_pressed = os.path.join(config.destination, "Button1_pressed.png")
+        self.V_check = os.path.join(config.destination, "icons/confirm.png")
+        self.V_cancel = os.path.join(config.destination, "icons/cancel.png")
         #--------------------------------
 
         # Text-To-Speech button
@@ -95,14 +94,14 @@ class TtS(QtWidgets.QWidget):
                 border: none;
                 padding: 12px 24px;
                 text-align: center;
-                background-image: url('{B1}');
+                background-image: url('{self.B1}');
             }}
             QPushButton:hover {{
-                background-image: url('{B1_pressed}');
+                background-image: url('{self.B1_pressed}');
                 color: black;
             }}
             QPushButton:pressed {{
-                background-image: url('{B1_pressed}');
+                background-image: url('{self.B1_pressed}');
                 color: black;
             }}
         """)
@@ -135,14 +134,14 @@ class TtS(QtWidgets.QWidget):
                 border: none;
                 padding: 12px 24px;
                 text-align: center;
-                background-image: url('{B1}');
+                background-image: url('{self.B1}');
             }}
             QPushButton:hover {{
-                background-image: url('{B1_pressed}');
+                background-image: url('{self.B1_pressed}');
                 color: black;
             }}
             QPushButton:pressed {{
-                background-image: url('{B1_pressed}');
+                background-image: url('{self.B1_pressed}');
                 color: black;
             }}
         """)
