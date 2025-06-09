@@ -7,6 +7,7 @@ import os
 import webbrowser
 import requests
 
+from datetime import datetime
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QColor, QPixmap, QIcon
 from PyQt5.QtCore import Qt, QSize, QTimer
@@ -298,6 +299,8 @@ class CustomWindow(QtWidgets.QMainWindow):
 
         # Weather updates
         self.coords = None
+        self.suntime = None
+        self.today = datetime.now().date()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_weather)
         self.timer.start(60000)
@@ -307,6 +310,7 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.adjust_close_button_position()
         self.close_button.raise_()
         self.coords = self.init_class.get_geostats()
+        self.suntime = self.init_class.daytime_calculator(self.coords[0], self.coords[1], self.today)
         self.update_weather()
     #--------------------------------
 
@@ -478,6 +482,20 @@ class CustomWindow(QtWidgets.QMainWindow):
         called periodically to update weather status
         """
         if self.coords:
+            # compare sundown and sunrise times and update when needed
+            self.today = datetime.now().date()
+            if self.today > self.suntime[0]:
+                self.suntime = self.init_class.daytime_calculator(self.coords[0], self.coords[1], self.today)
+            if self.suntime[1] < datetime.now() and datetime.now() < self.suntime[2]:
+                text = "Sunset\nat "+self.suntime[2].strftime("%H:%M")
+                if self.temp_stats.caption_label.text() != text:
+                    self.temp_stats.swap_daytime_png("day", text)
+            else:
+                text = "Sunrise\nat "+self.suntime[1].strftime("%H:%M")
+                if self.temp_stats.caption_label.text() != text:
+                    self.temp_stats.swap_daytime_png("night", text)
+
+            # get and display new nurrent weather
             new_weath = self.get_weather_from_open_meteo(self.coords[0], self.coords[1])
             self.temp_stats.text_field.setText(
                 f"{new_weath['temperature']}°C\n"

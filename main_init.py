@@ -2,13 +2,14 @@
 
 # Imports
 import os
-from flask import Flask, request, render_template_string, jsonify
-from geopy.geocoders import Nominatim
-from datetime import datetime, timedelta, timezone
 import time
 import math
 import threading
 import webbrowser
+
+from flask import Flask, request, render_template_string, jsonify
+from geopy.geocoders import Nominatim
+from datetime import datetime, timedelta
 import pygetwindow as gw
 import win32gui
 import win32con
@@ -60,7 +61,7 @@ class Initializer():
         sunrise_time = datetime.combine(date, datetime.min.time()) + timedelta(hours=sunrise)
         sunset_time = datetime.combine(date, datetime.min.time()) + timedelta(hours=sunset)
 
-        return sunrise_time.strftime("%H:%M:%S"), sunset_time.strftime("%H:%M:%S")
+        return [date, sunrise_time, sunset_time]
 
     def index(self):
         with open(self.html_path, "r", encoding="utf-8") as file:
@@ -112,7 +113,7 @@ if __name__ == "__main__":
     # get UTC sunrise/sunset for today's date
     lat = 46.04887; lon = 14.48018
     todays_date = datetime.now().date()
-    sunrise, sunset = initTest.daytime_calculator(lat, lon, todays_date)
+    dayStats = initTest.daytime_calculator(lat, lon, todays_date)
 
     # check it out
-    print(sunrise); print(sunset)
+    print(dayStats[0]); print(dayStats[1]); print(dayStats[2])
