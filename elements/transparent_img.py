@@ -31,7 +31,7 @@ class TransparentImageWidget(QWidget):
         self.bg_label.setPixmap(transparent_pixmap)
         self.bg_label.setGeometry(0, 0, self.width(), self.height())
 
-        # --- Overlay Text (Left side) ---
+        # Weather stats text field
         self.text_field = QTextEdit(self)
         self.text_field.setText(self.overlay_text)
         self.text_field.setStyleSheet("""
@@ -57,14 +57,14 @@ class TransparentImageWidget(QWidget):
         layout.setSpacing(5)
 
         # Daytime/nighttime png with subtext
-        image_label = QLabel()
-        pixmap = QPixmap(self.png_nighttime).scaled(self.image_container.width(),
+        self.image_label = QLabel()
+        pixmap = QPixmap(self.png_daytime).scaled(self.image_container.width(),
                                                     self.image_container.height()-25,
                                                     Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        image_label.setPixmap(pixmap)
-        image_label.setAlignment(Qt.AlignCenter)
-        caption_label = QLabel("Sunrise\ntime")
-        caption_label.setStyleSheet("""
+        self.image_label.setPixmap(pixmap)
+        self.image_label.setAlignment(Qt.AlignCenter)
+        self.caption_label = QLabel("Sunrise\ntime")
+        self.caption_label.setStyleSheet("""
                 QLabel {
                     background-color: rgba(0, 0, 0, 0);  
                     color: hotpink;
@@ -73,15 +73,28 @@ class TransparentImageWidget(QWidget):
                     font-size: 14px;
                 }
             """)
-        caption_label.setAlignment(Qt.AlignCenter)
+        self.caption_label.setAlignment(Qt.AlignCenter)
 
         # Add to layout and reposition
-        layout.addWidget(image_label)
-        layout.addWidget(caption_label)
+        layout.addWidget(self.image_label)
+        layout.addWidget(self.caption_label)
         self.image_container.move(self.width() - self.image_container.width(),
                                   self.height() // 2 - self.image_container.height() // 2)
 
     # Functions
+    def swap_daytime_png(self, newPng, newLabel):
+        """
+        swaps from day to night, or the other way around
+        """
+        newPix = self.png_nighttime
+        if newPng == "day":
+            newPix = self.png_daytime
+        pixmap = QPixmap(newPix).scaled(self.image_container.width(),
+                                        self.image_container.height()-25,
+                                        Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.image_label.setPixmap(pixmap)
+        self.caption_label.setText(newLabel)
+
     def make_transparent(self, pixmap, opacity):
         """
         alter pixmap opacity
