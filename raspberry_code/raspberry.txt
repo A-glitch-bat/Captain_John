@@ -1,0 +1,6 @@
+Remote SSH through Tailscale with VS Code
+tailscale status
+Ctrl+Shift+P
+Remote-SSH: Connect to Host...
+[SSH: <username>@<tailscale-ip>]
+ssh <username>@<tailscale-ip>
