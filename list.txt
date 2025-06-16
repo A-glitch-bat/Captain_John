@@ -2,5 +2,5 @@ search songs on spotify
 timer alarm/number reading
 web link summarizer
 numbered voice commands
-set up raspberry pi db
 connect to external db
+chat bot to external server
