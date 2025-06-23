@@ -155,11 +155,11 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.init_button.setGraphicsEffect(glow_effect)
         button_layout.addWidget(self.init_button, alignment=Qt.AlignCenter)
         #--------------------------------
-        # Webpage button --- not working yet, move TEST here later
-        page_button = QtWidgets.QPushButton("PAGE", self)
-        page_button.setMinimumSize(128, 64)
-        page_button.setMaximumSize(128, 64)
-        page_button.setStyleSheet(f"""
+        # SSH connection to Raspberry PI
+        ssh_button = QtWidgets.QPushButton("RPI", self)
+        ssh_button.setMinimumSize(128, 64)
+        ssh_button.setMaximumSize(128, 64)
+        ssh_button.setStyleSheet(f"""
             QPushButton {{
                 color: black;
                 font-weight: bold;
@@ -177,15 +177,15 @@ class CustomWindow(QtWidgets.QMainWindow):
                 background-image: url('{B2_pressed}');
             }}
         """)
-        page_button.clicked.connect(self.start_chats)
+        ssh_button.clicked.connect(self.ssh_to_rpi)
 
         glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
         glow_effect.setBlurRadius(20)
         glow_effect.setColor(QColor("hotpink"))
         glow_effect.setOffset(0, 0)
 
-        page_button.setGraphicsEffect(glow_effect)
-        button_layout.addWidget(page_button, alignment=Qt.AlignCenter)
+        ssh_button.setGraphicsEffect(glow_effect)
+        button_layout.addWidget(ssh_button, alignment=Qt.AlignCenter)
         #--------------------------------
         # Testing button
         test_button = QtWidgets.QPushButton("TEST", self)
@@ -347,6 +347,9 @@ class CustomWindow(QtWidgets.QMainWindow):
 
         self.listdisplay = TtS()
         self.listdisplay.show()
+    #--------------------------------
+    def ssh_to_rpi(self):
+        subprocess.Popen(["start", "cmd", "/k", "ssh raspberrypi"], shell=True)
     #--------------------------------
     def write_input(self):
         """
