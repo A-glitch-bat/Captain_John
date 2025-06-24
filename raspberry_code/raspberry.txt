@@ -1,6 +1,36 @@
-Remote SSH through Tailscale with VS Code
-tailscale status
-Ctrl+Shift+P
-Remote-SSH: Connect to Host...
-[SSH: <username>@<tailscale-ip>]
-ssh <username>@<tailscale-ip>
+# Remote SSH through Tailscale with VS Code
+	tailscale status
+	Ctrl+Shift+P
+	Remote-SSH: Connect to Host...
+	[SSH: <username>@<tailscale-ip>]
+	ssh <username>@<tailscale-ip>
+
+# Start Gunicorn:
+	gunicorn --bind 127.0.0.1:8000 wsgi:server
+	pkill gunicorn
+
+# Check CPU Temperature:
+	vcgencmd measure_temp
+
+# Service management:
+	sudo systemctl start server.service
+	sudo systemctl stop server.service
+	sudo systemctl restart server.service
+	sudo systemctl status server.service
+	sudo systemctl enable server.service
+
+# Check disk usage:
+	df -h
+
+# Check open ports:
+	sudo lsof -i -P -n | grep LISTEN
+
+# NGINX config:
+	sudo nginx -t
+	sudo systemctl reload nginx
+
+# Python virtual environment:
+	source venv/bin/activate
+
+# Available disk space:
+	df -h

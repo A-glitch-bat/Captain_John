@@ -1,7 +1,7 @@
 #--------------------------------
 
 # Imports
-from flask import Flask, request, jsonify
+from flask import Flask, render_template, request, jsonify
 """rom database import (
     init_db,
     log_error,
@@ -15,14 +15,33 @@ server = Flask(__name__)
 #--------------------------------
 """
 
-# Basic homepage
-@server.route("/")
-def home():
-    return "Pipeline server running."
+# Different requests
+@server.route('/', methods=['GET', 'POST'])
+def index():
+    message = ""
+    if request.method == 'POST':
+        user_input = request.form.get('user_input')
+        message = f"Received: {user_input}"
+    return render_template('index.html', message=message)
 #--------------------------------
+
+@server.route('/bigbot', methods=['POST'])
+def ask_bigbot():
+    msg = request.form['message']
+    reply = msg # ask an actual AI
+    return reply
+
+@server.route('/schizobot', methods=['POST'])
+def ask_schizobot():
+    msg = request.form['message']
+    reply = msg # ask an avtual AI vol. 2
+    return reply
+
+#--------------------------------
+
+# Database related methods
 """
-# App methods
-@app.route("/log", methods=["POST"])
+@server.route("/log", methods=["POST"])
 def log_entry():
     data = request.get_json()
     message = data.get("message")
@@ -35,7 +54,7 @@ def log_entry():
         log_error(type(e).__name__, str(e))
         return jsonify({"error": "Failed to log entry"}), 500
 
-@app.route("/logs", methods=["GET"])
+@server.route("/logs", methods=["GET"])
 def list_logs():
     try:
         logs = get_all_logs()
@@ -44,9 +63,5 @@ def list_logs():
         log_error(type(e).__name__, str(e))
         return jsonify({"error": "Failed to retrieve logs"}), 500
 #--------------------------------
-
-# Temporary main
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000)
 """
 
