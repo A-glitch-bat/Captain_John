@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RPI5 Task Server</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Raspberry PI Control Page</h1>
+    
+    <form class="chatbox" id="bigbot-form">
+        <label>Bigbot:</label><br>
+        <div>
+            <input type="text" name="message" id="bigbot-input">
+            <button type="submit">Ask</button>
+        </div>
+        
+        <div class="response-box" id="bigbot-response" readonly></div>
+    </form>
+
+    <form class="chatbox" id="schizobot-form">
+        <label>Schizobot:</label><br>
+        <div>
+            <input type="text" name="message" id="schizobot-input">
+            <button type="submit">Ask</button>
+        </div>
+        
+        <div class="response-box" id="schizobot-response"></div>
+    </form>
+
+<script>
+document.getElementById("bigbot-form").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const msg = document.getElementById("bigbot-input").value;
+    const response = await fetch("/bigbot", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ message: msg })
+    });
+    const text = await response.text();
+    document.getElementById("bigbot-input").value = "";
+    document.getElementById("bigbot-response").innerText = "Q: "+msg+"\n\nA: "+text;
+});
+
+document.getElementById("schizobot-form").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const msg = document.getElementById("schizobot-input").value;
+    const response = await fetch("/schizobot", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ message: msg })
+    });
+    const text = await response.text();
+    document.getElementById("schizobot-input").value = "";
+    document.getElementById("schizobot-response").innerText = "Q: "+msg+"\n\nA: "+text;
+});
+</script>
+
+</body>
+</html>
