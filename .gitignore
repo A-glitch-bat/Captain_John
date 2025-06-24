@@ -1,8 +1,9 @@
-# Ignore Python cache files
+# Python cache and hidden files
 __pycache__/
 .cache
 config.py
 try.py
+models/
 
 # Rust build
 Cargo.lock

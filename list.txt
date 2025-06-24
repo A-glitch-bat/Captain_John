@@ -1,6 +1,7 @@
+replace voice recognition
+HTML with indexed tasks
 search songs on spotify
 timer alarm/number reading
 web link summarizer
-numbered voice commands
-connect to external db
-chat bot to external server
+fix up RPI database
+questions to RPI server
