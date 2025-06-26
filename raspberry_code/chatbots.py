@@ -24,18 +24,10 @@ class Schizobot():
 			self.tokenizer.pad_token = self.tokenizer.eos_token
 
 		# Tokenize input and get reply from model
-		inputs = self.tokenizer(user_input, return_tensors="pt",
-								padding=True, truncation=True)
+		inputs = self.tokenizer(user_input, return_tensors="pt")
 		outputs = self.model.generate(
 			**inputs,
 			pad_token_id=self.tokenizer.eos_token_id,
-			num_beams=2,
-			max_length=75,
-			no_repeat_ngram_size=2,
-			do_sample=True,
-			top_p=0.9,
-			temperature=0.8,
-			early_stopping=True
 			)
 		reply = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
 		return reply

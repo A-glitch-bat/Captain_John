@@ -3,4 +3,4 @@ search songs on spotify
 timer alarm/number reading
 web link summarizer
 fix up RPI database
-typewriter text & filter
+split up ttshead
