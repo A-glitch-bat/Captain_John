@@ -2,6 +2,7 @@
 
 # Imports
 from flask import Flask, render_template, request, jsonify
+from chatbots import Schizobot
 """rom database import (
     init_db,
     log_error,
@@ -11,6 +12,7 @@ from flask import Flask, render_template, request, jsonify
 
 # Init
 server = Flask(__name__)
+schizobot = Schizobot()
 """init_db()
 #--------------------------------
 """
@@ -34,7 +36,7 @@ def ask_bigbot():
 @server.route('/schizobot', methods=['POST'])
 def ask_schizobot():
     msg = request.form['message']
-    reply = msg # ask an avtual AI vol. 2
+    reply = schizobot.get_reply(msg)
     return reply
 
 #--------------------------------
