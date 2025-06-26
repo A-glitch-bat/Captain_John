@@ -13,7 +13,7 @@ from PyQt5.QtGui import QColor, QPixmap, QIcon
 from PyQt5.QtCore import Qt, QSize, QTimer
 
 from panel import MainWindow
-from aihead import AIhead
+from texthead import Chatbot
 from ttshead import TtS
 from main_init import Initializer
 from elements.digitrain import DigitalRainPanel
@@ -342,7 +342,7 @@ class CustomWindow(QtWidgets.QMainWindow):
         """
         open chat AIs on button click
         """
-        self.aihead = AIhead()
+        self.aihead = Chatbot()
         self.aihead.show()
 
         self.listdisplay = TtS()
