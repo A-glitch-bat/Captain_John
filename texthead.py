@@ -2,14 +2,14 @@
 
 # Imports
 import os
+import requests
 from PyQt5 import QtWidgets, QtGui, QtCore
-from transformers import AutoModelForCausalLM, AutoTokenizer
 from AI_heads.chat_head import JohnsNN
 import config
 #--------------------------------
 
-# AI head class
-class AIhead(QtWidgets.QWidget):
+# Chatbot class
+class Chatbot(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         #--------------------------------
@@ -20,10 +20,6 @@ class AIhead(QtWidgets.QWidget):
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)  # transparent background
         self.setGeometry(int((config.scale-0.45)*200) + int(config.scale*350), int((config.scale-0.40)*150 + int(config.scale*400)), 
                          int(config.scale*350), int(config.scale*450))  # window position, size
-        
-        self.tokenizer = None
-        self.model = None
-        self.chat_history_ids = None
         #--------------------------------
 
         # Load and set the custom background image
@@ -119,7 +115,8 @@ class AIhead(QtWidgets.QWidget):
         self.output_display.setGraphicsEffect(effect)
 
         main_layout.addWidget(self.output_display)
-        self.output_display.append(f"B: Hello! How may I help you? \n")
+        self.output_display.append(f"B: Systems online. Standing by.\n")
+        self.output_display.append(f"---------------------- \n")
 
         self.setLayout(main_layout)
         #--------------------------------
@@ -138,54 +135,45 @@ class AIhead(QtWidgets.QWidget):
         self.close_button.setGeometry(self.width() - int(config.scale*60), int(config.scale*30),
                                       int(config.scale*50), int(config.scale*30)) # L, H, R, W
     #--------------------------------
-    def launch_AI(self):
-        """
-        load model and tokenizer when needed
-        """
-        model_name = "gpt2"
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForCausalLM.from_pretrained(model_name)
-    #--------------------------------
     def get_reply(self):
+        """
+        send request to capnjohn on RPI and display it
+        """
         user_input = self.input_field.text()
         if user_input == "":
             return
-        elif self.model == None:
-            self.launch_AI()
-
-        # Ensure the tokenizer has a padding token
-        if self.tokenizer.pad_token is None:
-            self.tokenizer.pad_token = self.tokenizer.eos_token
-        
-        # Tokenize input and get reply from model
-        inputs = self.tokenizer(user_input, return_tensors="pt",
-                                padding=True, truncation=True)
-        outputs = self.model.generate(
-            **inputs,
-            pad_token_id=self.tokenizer.eos_token_id,
-            num_beams=2,
-            max_length=75,
-            no_repeat_ngram_size=2,
-            do_sample=True,
-            top_p=0.9,
-            temperature=0.8,
-            early_stopping=True
-        )
-        reply = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-
-        # Display the conversation
-        self.output_display.append(f"Q: {user_input}\n")
-        if reply.startswith(user_input):
-            reply = reply[len(user_input):].strip()
-        self.output_display.append(f"B: {reply}")
-
-        self.output_display.append(f"---------------------- \n")
         self.input_field.clear()
+
+        # Request answer from URL
+        DATA = {'message':user_input}
+        self.reply = requests.post(url = os.path.join(config.URL, "schizobot"), data=DATA).text
+        self.output_display.append(f"Q: {user_input}\n")
+        self.output_display.append(f"B: ")
+
+        # Type the message
+        self.current_index = 0
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.typewriter)
+        self.timer.start(25)
+
+    # sub-function ^
+    def typewriter(self):
+        """
+        type the text into the output display, typewriter style
+        """
+        if self.current_index < len(self.reply):
+            char = self.reply[self.current_index]
+            #self.output_display.moveCursor(QtGui.QTextCursor.End)
+            self.output_display.insertPlainText(char)
+            self.current_index += 1
+        else:
+            self.output_display.append(f"\n---------------------- \n")
+            self.timer.stop()
     #--------------------------------
 
 # Temporary main
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
-    window = AIhead()
+    window = Chatbot()
     window.show()
     app.exec_()
