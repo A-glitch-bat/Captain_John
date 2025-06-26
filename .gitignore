@@ -4,6 +4,7 @@ __pycache__/
 config.py
 try.py
 models/
+venv/
 
 # Rust build
 Cargo.lock

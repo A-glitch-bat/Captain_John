@@ -1,7 +1,7 @@
 replace voice recognition
-HTML with indexed tasks
 search songs on spotify
 timer alarm/number reading
 web link summarizer
 fix up RPI database
 questions to RPI server
+typewriter text & filter
