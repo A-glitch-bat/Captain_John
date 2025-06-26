@@ -37,6 +37,8 @@ def ask_bigbot():
 def ask_schizobot():
     msg = request.form['message']
     reply = schizobot.get_reply(msg)
+    if reply.startswith(msg):
+        reply = reply[len(msg):].strip()
     return reply
 
 #--------------------------------
