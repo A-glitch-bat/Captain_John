@@ -5,6 +5,7 @@ config.py
 try.py
 models/
 venv/
+datasets/
 
 # Rust build
 Cargo.lock
