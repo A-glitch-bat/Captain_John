@@ -2,7 +2,6 @@
 
 # Imports
 import os
-import pyttsx3
 import threading
 import subprocess
 
@@ -10,7 +9,8 @@ from PyQt5 import QtWidgets
 from PyQt5.QtGui import QColor, QPixmap, QMovie
 from PyQt5.QtCore import Qt, QSize
 
-from AI_heads.speech_head import SpeechHead
+from AI_heads.ASR_head import ASRHead
+from AI_heads.TTS_head import TTSHead
 from audio.audioplayer import AmbientPlayer
 from tasks.spotifyauth import SpotifyAPI
 from elements.glitchwidget import GlitchWidget
@@ -19,7 +19,7 @@ import config
 #--------------------------------
 
 # List interaction class
-class TtS(QtWidgets.QWidget):
+class Speechbot(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         #--------------------------------
@@ -30,11 +30,8 @@ class TtS(QtWidgets.QWidget):
         self.setAttribute(Qt.WA_TranslucentBackground) # transparent background
         self.setGeometry(int((config.scale-0.45)*200), int((config.scale-0.40)*150 + int(config.scale*400)), 
                          int(config.scale*350), int(config.scale*450))  # window position, size
-        self.speech_active = None
-        self.sound_player = None
-        self.speech_listener = None
-        self.tts_engine = pyttsx3.init()
-        self.tts_engine.setProperty('rate', 125) # base is 150
+        self.speech_listener = ASRHead()
+        self.text_reader = TTSHead()
         self.spotify_API = SpotifyAPI()
         #--------------------------------
 
@@ -178,7 +175,6 @@ class TtS(QtWidgets.QWidget):
         self.text_field.setAttribute(Qt.WA_TranslucentBackground, True)
         self.text_field.setMinimumSize(int(config.scale*128), int(config.scale*128))
         self.text_field.setMaximumSize(int(config.scale*256), int(config.scale*256))
-        self.text_field.setText("Speech head not active.")
 
         # Stack glitch over text
         glitch_overlay = GlitchWidget(self)
@@ -205,6 +201,7 @@ class TtS(QtWidgets.QWidget):
         gif.start()
         main_layout.addWidget(gif_label)
         #--------------------------------
+        self.launch_speech()
 
         # Ensure the app works as intended
         self.adjust_close_button_position()
@@ -223,55 +220,40 @@ class TtS(QtWidgets.QWidget):
     #--------------------------------
     def launch_speech(self):
         """
-        make the module listen and talk
+        start listener
         """
-        if not self.speech_active:
-            # Start up speech head on separate thread
-            self.speech_active = 1
-            self.tts_onoff.set_status(self.speech_active)
-
-            # Connect signal to slot
-            self.speech_listener = SpeechHead()
-            self.speech_listener.text_detected.connect(self.process_detected_command)
-
-            self.listener_thread = threading.Thread(target=self.speech_listener.listen)
-            self.listener_thread.start()
-            self.text_field.append("Speech head ready.")
+        if self.speech_listener.running: self.shutdown_speech()
         else:
-            # Shut down speech head and close thread
-            self.shutdown_speech()
+            self.speech_listener.text_detected.connect(self.process_detected_command)
+            self.listener_thread = threading.Thread(
+                target=self.speech_listener.listen,
+                daemon=True # terminate thread on main app close
+            )
+            self.listener_thread.start()
+            self.tts_onoff.set_status(1)
+            self.text_field.append("Speech head ready")
+
     # sub-function ^
     def process_detected_command(self, detected_speech):
         if "stop" in detected_speech or "shut down" in detected_speech or "error" in detected_speech:
-            self.shutdown_speech()
+            #self.shutdown_speech()
+            print("shut down")
         elif "play" in detected_speech or "music" in detected_speech:
-            self.spotify_start()
+            #self.spotify_start()
+            print("spotify")
         elif "timer" in detected_speech or "countdown" in detected_speech:
-            self.start_timer(480)
-        
-        # Answer last spoken command and set status to stopped
-        self.speech_active = 1 # set flag before processing
-        self.text_field.append("Processing: " + detected_speech)
-        try:
-            self.speech_active = 1
-        finally:
-            self.speech_active = None # reset flag
-        self.shutdown_speech()
+            print("timer")
+            #self.start_timer(480)
+
     # sub-function ^
     def shutdown_speech(self):
         """
         shut down the speech listener and TTS
         """
-        if self.speech_listener:
-            print("Stopping...")
-            self.text_field.append("Stopping...")
-            self.speech_listener.stop()
-            self.listener_thread.join()
-        self.speech_listener = None
-        self.speech_active = None
-        self.tts_onoff.set_status(self.speech_active)
-        print("Speech head stopped.")
-        self.text_field.append("Speech head stopped.")
+        self.speech_listener.stop()
+        self.listener_thread.join()
+        self.tts_onoff.set_status(None)
+        self.text_field.append("Speech head stopped")
     #--------------------------------
     def launch_audio(self):
         """
@@ -313,6 +295,6 @@ class TtS(QtWidgets.QWidget):
 # Temporary main
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
-    window = TtS()
+    window = Speechbot()
     window.show()
     app.exec_()

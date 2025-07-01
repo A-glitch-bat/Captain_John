@@ -4,7 +4,7 @@
 import os
 import requests
 from PyQt5 import QtWidgets, QtGui, QtCore
-from AI_heads.chat_head import JohnsNN
+from AI_heads.router_head import JohnsNN
 import config
 #--------------------------------
 

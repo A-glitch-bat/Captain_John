@@ -14,7 +14,7 @@ from PyQt5.QtCore import Qt, QSize, QTimer
 
 from panel import MainWindow
 from texthead import Chatbot
-from ttshead import TtS
+from speechhead import Speechbot
 from main_init import Initializer
 from elements.digitrain import DigitalRainPanel
 from elements.transparent_img import TransparentImageWidget
@@ -345,7 +345,7 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.aihead = Chatbot()
         self.aihead.show()
 
-        self.listdisplay = TtS()
+        self.listdisplay = Speechbot()
         self.listdisplay.show()
     #--------------------------------
     def ssh_to_rpi(self):
