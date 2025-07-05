@@ -500,12 +500,26 @@ class CustomWindow(QtWidgets.QMainWindow):
 
             # get and display new nurrent weather
             new_weath = self.get_weather_from_open_meteo(self.coords[0], self.coords[1])
+
             self.temp_stats.text_field.setText(
                 f"{new_weath['temperature']}°C\n"
-                f"{new_weath['wind_speed']} m/s\n"
+                f"{self.wind_description(new_weath['wind_speed'])}\n"
                 f"{self.coords[2]}"
             )
             self.temp_stats.text_field.setAlignment(Qt.AlignmentFlag.AlignBottom)
+    # sub-function ^
+    def wind_description(self, speed_mps):
+        """
+        convert wind speed to description
+        """
+        thresholds = [0.5, 1.6, 5.5, 10.8]
+        labels = ["calm", "light air", "breezy", "windy", "stormy"]
+        print(speed_mps)
+
+        for i, threshold in enumerate(thresholds):
+            if speed_mps < threshold:
+                return labels[i]
+        return labels[-1]
     #--------------------------------
     def get_weather_from_open_meteo(self, lat, lon):
         """
@@ -519,7 +533,7 @@ class CustomWindow(QtWidgets.QMainWindow):
                 if "current_weather" in data:
                     weather = {
                         "temperature": data["current_weather"]["temperature"],
-                        "wind_speed": "%.2f" % (data["current_weather"]["windspeed"]/3.6),
+                        "wind_speed": data["current_weather"]["windspeed"]/3.6,
                         "description": "Current weather data"
                     }
                     return weather
