@@ -13196,407 +13196,179 @@
     "tell_joke"
   ],
   [
-    "give me a joke about horses",
+    "tell me something funny",
     "tell_joke"
   ],
   [
-    "what is your birthday again",
-    "how_old_are_you"
+    "summarize this article for me", 
+    "summarize"
   ],
   [
-    "how many years on the earth",
-    "how_old_are_you"
+    "can you give me a short version of this?", 
+    "summarize"
   ],
   [
-    "what year were you born",
-    "how_old_are_you"
+    "i need a summary of this document", 
+    "summarize"
   ],
   [
-    "how many days old are you",
-    "how_old_are_you"
-  ],
-  [
-    "when were you created",
-    "how_old_are_you"
-  ],
-  [
-    "what date were you created on",
-    "how_old_are_you"
-  ],
-  [
-    "when did you come to exist",
-    "how_old_are_you"
-  ],
-  [
-    "how many years do you have",
-    "how_old_are_you"
-  ],
-  [
-    "i'd like to know how old you are",
-    "how_old_are_you"
-  ],
-  [
-    "can you tell me how old you are",
-    "how_old_are_you"
-  ],
-  [
-    "how long have you been alive for",
-    "how_old_are_you"
-  ],
-  [
-    "how many years ago was al born",
-    "how_old_are_you"
-  ],
-  [
-    "how old is al",
-    "how_old_are_you"
-  ],
-  [
-    "what is al's age",
-    "how_old_are_you"
-  ],
-  [
-    "how many years has al been on earth",
-    "how_old_are_you"
-  ],
-  [
-    "you are how old now",
-    "how_old_are_you"
-  ],
-  [
-    "what is your birth date",
-    "how_old_are_you"
-  ],
-  [
-    "where's your place of birth",
-    "how_old_are_you"
-  ],
-  [
-    "where did you grow up",
-    "how_old_are_you"
-  ],
-  [
-    "how many years are you",
-    "how_old_are_you"
-  ],
-  [
-    "what age are you",
-    "how_old_are_you"
-  ],
+    "what's the gist of this?", "summarize"],
   [
-    "what would your age be",
-    "how_old_are_you"
-  ],
-  [
-    "tell me when you were born",
-    "how_old_are_you"
-  ],
+    "give me a brief summary", "summarize"],
   [
-    "i'd love to hear when you were born",
-    "how_old_are_you"
-  ],
+    "summarize what this text is saying", "summarize"],
   [
-    "i'd like to know when you were born",
-    "how_old_are_you"
-  ],
+    "provide a summary", "summarize"],
   [
-    "lemme know when you were born",
-    "how_old_are_you"
-  ],
+    "shorten this text", "summarize"],
   [
-    "do you know when you were born",
-    "how_old_are_you"
-  ],
+    "can you condense this?", "summarize"],
   [
-    "how many years have you been on",
-    "how_old_are_you"
-  ],
+    "write a quick summary", "summarize"],
   [
-    "how long have you been here",
-    "how_old_are_you"
-  ],
+    "summarize this in a few sentences", "summarize"],
   [
-    "how many years have you been operating",
-    "how_old_are_you"
-  ],
+    "help me understand this in brief", "summarize"],
   [
-    "how old did you just turn",
-    "how_old_are_you"
-  ],
+    "compress this article into a summary", "summarize"],
   [
-    "how old will you be next year",
-    "how_old_are_you"
-  ],
+    "tell me the main points", "summarize"],
   [
-    "how old are you again",
-    "how_old_are_you"
-  ],
+    "extract the key points from this", "summarize"],
   [
-    "i am wanting to know how old you are",
-    "how_old_are_you"
-  ],
+    "reduce this to a summary", "summarize"],
   [
-    "tell me how old youare",
-    "how_old_are_you"
-  ],
+    "turn this into a short summary", "summarize"],
   [
-    "let me know how old you are",
-    "how_old_are_you"
-  ],
+    "give me a TLDR", "summarize"],
   [
-    "let me know when you were born",
-    "how_old_are_you"
-  ],
+    "what's the takeaway here?", "summarize"],
   [
-    "would you tell me your age",
-    "how_old_are_you"
-  ],
+    "explain this in short", "summarize"],
   [
-    "i would like to know when you were born",
-    "how_old_are_you"
-  ],
+    "distill this document", "summarize"],
   [
-    "i want to know how old you are",
-    "how_old_are_you"
-  ],
+    "can you summarize this report?", "summarize"],
   [
-    "i want to know your age",
-    "how_old_are_you"
-  ],
+    "summarize this pdf", "summarize"],
   [
-    "could you let me know how old you are",
-    "how_old_are_you"
-  ],
+    "what's the main idea of this?", "summarize"],
   [
-    "could you tell me when you were born",
-    "how_old_are_you"
-  ],
+    "summarize what this document is about", "summarize"],
   [
-    "i need to know how old you are",
-    "how_old_are_you"
-  ],
+    "boil this down", "summarize"],
   [
-    "i am needing to know when you were born",
-    "how_old_are_you"
-  ],
+    "turn this into bullet points", "summarize"],
   [
-    "tell me your age",
-    "how_old_are_you"
-  ],
+    "summarize this legal document", "summarize"],
   [
-    "your age please",
-    "how_old_are_you"
-  ],
+    "create a summary of this paper", "summarize"],
   [
-    "how long have you been alive",
-    "how_old_are_you"
-  ],
+    "please summarize this for a meeting", "summarize"],
   [
-    "you are how old",
-    "how_old_are_you"
-  ],
+    "write an executive summary of this", "summarize"],
   [
-    "how old are you now",
-    "how_old_are_you"
-  ],
+    "summarize this for a beginner", "summarize"],
   [
-    "how old are you exactly at the moment",
-    "how_old_are_you"
-  ],
+    "summarize this so I can explain it to my boss", "summarize"],
   [
-    "what's your age again",
-    "how_old_are_you"
-  ],
+    "just give me the important bits", "summarize"],
   [
-    "how old are you exactly",
-    "how_old_are_you"
-  ],
+    "summarize the main themes", "summarize"],
   [
-    "how many years old are you",
-    "how_old_are_you"
-  ],
+    "write a synopsis of this", "summarize"],
   [
-    "what is your age",
-    "how_old_are_you"
-  ],
+    "turn this into a paragraph", "summarize"],
   [
-    "how old are you, again",
-    "how_old_are_you"
-  ],
+    "what is this article about?", "summarize"],
   [
-    "tell me how old you are",
-    "how_old_are_you"
-  ],
+    "give me a short explanation", "summarize"],
   [
-    "how old are you",
-    "how_old_are_you"
-  ],
+    "quick overview please", "summarize"],
   [
-    "what is your creation date",
-    "how_old_are_you"
-  ],
+    "summarize in plain English", "summarize"],
   [
-    "do you have a birth date",
-    "how_old_are_you"
-  ],
+    "give me a digest version", "summarize"],
   [
-    "for how long have you existed",
-    "how_old_are_you"
-  ],
+    "extract the summary", "summarize"],
   [
-    "ai, how old are you",
-    "how_old_are_you"
-  ],
+    "what are the key messages here?", "summarize"],
   [
-    "ai, how long have you been alive",
-    "how_old_are_you"
-  ],
+    "condense this into a few lines", "summarize"],
   [
-    "ai, how many months old are you",
-    "how_old_are_you"
-  ],
+    "summarize it like a news brief", "summarize"],
   [
-    "ai, how long have you been working",
-    "how_old_are_you"
-  ],
+    "summarize for a presentation", "summarize"],
   [
-    "how old is the ai",
-    "how_old_are_you"
-  ],
+    "break this down into the essential points", "summarize"],
   [
-    "what is the age of the ai",
-    "how_old_are_you"
-  ],
+    "summarize this without losing the meaning", "summarize"],
   [
-    "can you tell me how old the ai is",
-    "how_old_are_you"
-  ],
+    "turn this into a concise version", "summarize"],
   [
-    "can you tell me the age of the ai",
-    "how_old_are_you"
-  ],
+    "what are the highlights?", "summarize"],
   [
-    "what age is the ai",
-    "how_old_are_you"
-  ],
+    "summarize this essay", "summarize"],
   [
-    "how old are you siri",
-    "how_old_are_you"
-  ],
+    "rewrite this as a summary", "summarize"],
   [
-    "what's your age siri",
-    "how_old_are_you"
-  ],
+    "give me a summarized version", "summarize"],
   [
-    "what's your age alexa",
-    "how_old_are_you"
-  ],
+    "summarize the content", "summarize"],
   [
-    "how old are you alexa",
-    "how_old_are_you"
-  ],
+    "what's the core idea?", "summarize"],
   [
-    "how old are you today",
-    "how_old_are_you"
-  ],
+    "summarize the chapter", "summarize"],
   [
-    "can you tell me when you were born",
-    "how_old_are_you"
-  ],
+    "give me the short version", "summarize"],
   [
-    "are you older than me",
-    "how_old_are_you"
-  ],
+    "summarize this reddit thread", "summarize"],
   [
-    "please tell me your date of birth",
-    "how_old_are_you"
-  ],
+    "summarize the podcast episode", "summarize"],
   [
-    "on what day and date of what year were you born",
-    "how_old_are_you"
-  ],
+    "summarize this transcript", "summarize"],
   [
-    "do you know exactly when you were born",
-    "how_old_are_you"
-  ],
+    "summarize this for school", "summarize"],
   [
-    "what is the exact date of your birth",
-    "how_old_are_you"
-  ],
+    "summarize this news story", "summarize"],
   [
-    "how long have you been around, ai",
-    "how_old_are_you"
-  ],
+    "summarize this like I'm five", "summarize"],
   [
-    "what birthday are you celebrating this year, ai",
-    "how_old_are_you"
-  ],
+    "bullet point summary, please", "summarize"],
   [
-    "what age were you on your last birthday, ai",
-    "how_old_are_you"
-  ],
+    "give me a 2-sentence summary", "summarize"],
   [
-    "how old are you, ai",
-    "how_old_are_you"
-  ],
+    "wrap this up in a short version", "summarize"],
   [
-    "what is your age, ai",
-    "how_old_are_you"
-  ],
+    "overview of this content?", "summarize"],
   [
-    "when was your birth",
-    "how_old_are_you"
-  ],
+    "summarize this paragraph", "summarize"],
   [
-    "you're how old",
-    "how_old_are_you"
-  ],
+    "turn this into a summary email", "summarize"],
   [
-    "what's your birth date",
-    "how_old_are_you"
-  ],
+    "summarize this interview", "summarize"],
   [
-    "how long have you been around",
-    "how_old_are_you"
-  ],
+    "what are the conclusions?", "summarize"],
   [
-    "are you young or old",
-    "how_old_are_you"
-  ],
+    "summarize the blog post", "summarize"],
   [
-    "how long have you been functional",
-    "how_old_are_you"
-  ],
+    "turn this into a TL;DR", "summarize"],
   [
-    "what's your age",
-    "how_old_are_you"
-  ],
+    "summarize this article into 3 key points", "summarize"],
   [
-    "when did you originate",
-    "how_old_are_you"
-  ],
+    "summarize this for my newsletter", "summarize"],
   [
-    "what is the date of your birth",
-    "how_old_are_you"
-  ],
+    "quick summary of the following", "summarize"],
   [
-    "what is your birthday",
-    "how_old_are_you"
-  ],
+    "summarize this explanation", "summarize"],
   [
-    "tell me your date of birth",
-    "how_old_are_you"
-  ],
+    "summarize like it's for a report", "summarize"],
   [
-    "tell me your age please",
-    "how_old_are_you"
-  ],
+    "summarize for an email brief", "summarize"],
   [
-    "tell me your birthday",
-    "how_old_are_you"
-  ],
+    "what's the short takeaway?", "summarize"],
   [
-    "how long ago were you born",
-    "how_old_are_you"
+    "condense this content", 
+    "summarize"
   ]
 ]

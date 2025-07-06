@@ -1,34 +1,64 @@
 #--------------------------------
 
 # Imports
+import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 import torch.nn as nn
+from transformers import DistilBertModel, DistilBertConfig
 #--------------------------------
 
-# AI head class
-class JohnsNN(nn.Module):
-    def __init__(self, embed_dim, num_heads, ff_dim, dropout=0.1):
-        super(JohnsNN, self).__init__()
-        self.attention = nn.MultiheadAttention(embed_dim, num_heads, dropout=dropout)
-        self.norm1 = nn.LayerNorm(embed_dim)
-        self.norm2 = nn.LayerNorm(embed_dim)
-        self.ffn = nn.Sequential(
-            nn.Linear(embed_dim, ff_dim),
-            nn.ReLU(),
-            nn.Linear(ff_dim, embed_dim),
-        )
-        self.dropout = nn.Dropout(dropout)
+# Task classification using DistilBert
+class DistilBertRouter(nn.Module):
+    def __init__(self, num_labels=3, dropout_prob=0.1):
+        super().__init__()
+        # Load DistilBERT with default config
+        self.config = DistilBertConfig.from_pretrained("distilbert-base-uncased")
+        self.bert = DistilBertModel.from_pretrained("distilbert-base-uncased", config=self.config)
 
-    def forward(self, x):
-        # Multi-head attention
-        attn_output, _ = self.attention(x, x, x)
-        x = self.norm1(x + self.dropout(attn_output))
-        
-        # Feedforward network
-        ffn_output = self.ffn(x)
-        x = self.norm2(x + self.dropout(ffn_output))
-        return x
+        # Classification head
+        self.pre_classifier = nn.Linear(self.config.hidden_size, self.config.hidden_size)
+        self.dropout = nn.Dropout(dropout_prob)
+        self.classifier = nn.Linear(self.config.hidden_size, num_labels)
+
+    def forward(self, input_ids, attention_mask=None, labels=None):
+        outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask)
+        hidden_state = outputs.last_hidden_state
+        pooled_output = hidden_state[:, 0]
+        pooled_output = self.pre_classifier(pooled_output)
+        pooled_output = nn.ReLU()(pooled_output)
+        pooled_output = self.dropout(pooled_output)
+        logits = self.classifier(pooled_output)
+
+        loss = None
+        if labels is not None:
+            loss_fn = nn.CrossEntropyLoss()
+            loss = loss_fn(logits, labels)
+
+        return {"loss": loss, "logits": logits} if loss is not None else {"logits": logits}
 #--------------------------------
+
+""" TEST INFERENCE TIME OF THE MODEL MOVED TO GPU
+import time
+# Input
+    text = "Generate a bar chart from this Excel data"
+    inputs = tokenizer(text, return_tensors="pt")
+
+    model = model.to(device).eval()
+    inputs = {k: v.to(device) for k, v in inputs.items()}
+
+    # Warm-up
+    for _ in range(3):
+        _ = model(**inputs)
+
+    # Time the forward pass
+    start = time.time()
+    with torch.no_grad():
+        _ = model(**inputs)
+    end = time.time()
+    print(f"Inference time: {(end - start) * 1000:.2f} ms")
+"""
 
 # Temporary main
 if __name__ == "__main__":
-    encoder = JohnsNN(embed_dim=64, num_heads=4, ff_dim=128)
+    print("This is the main.")
