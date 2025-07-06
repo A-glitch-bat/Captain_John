@@ -53,7 +53,7 @@ if __name__ == "__main__":
     tokenizer = DistilBertTokenizerFast.from_pretrained("distilbert-base-uncased")
     model = DistilBertRouter(num_labels=34, dropout_prob=0.1).to(device)
     model.load_state_dict(torch.load(
-        "distilbert_router_model.pth",
+        "./AI_heads/distilbert_router_model.pth",
         weights_only=True)
         )
     model.to(device).eval()
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     print(f"Inference time: {(end - start) * 1000:.2f} ms")
 
     # Map results back to descriptions
-    with open("label_encoder.pkl", "rb") as f:
+    with open("./AI_heads/label_encoder.pkl", "rb") as f:
         label_encoder = pickle.load(f)
     predicted_label_id = torch.argmax(logits, dim=1).item()
     predicted_class = label_encoder.inverse_transform([predicted_label_id])[0]
