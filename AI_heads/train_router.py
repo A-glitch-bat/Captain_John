@@ -28,7 +28,7 @@ class IntentDataset(Dataset):
         return item
 
 # Load data from json file
-with open("./cleaned_data.json", "r", encoding="utf-8") as f:
+with open("./AI_heads/cleaned_data.json", "r", encoding="utf-8") as f:
     raw_data = json.load(f)
 
 # Split into texts and labels
@@ -101,5 +101,5 @@ for epoch in range(10):
 
     if val_accuracy > best_accuracy:
         best_accuracy = val_accuracy
-        torch.save(model.state_dict(), "distilbert_router_model.pth")
+        torch.save(model.state_dict(), "./AI_heads/distilbert_router_model.pth")
         print(f"Saved new best model at epoch {epoch+1} with accuracy {best_accuracy:.4f}")
