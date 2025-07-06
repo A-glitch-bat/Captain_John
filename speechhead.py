@@ -31,7 +31,7 @@ class Speechbot(QtWidgets.QWidget):
         self.setGeometry(int((config.scale-0.45)*200), int((config.scale-0.40)*150 + int(config.scale*400)), 
                          int(config.scale*350), int(config.scale*450))  # window position, size
         self.speech_listener = ASRHead()
-        self.text_reader = TTSHead()
+        self.speech_engine = TTSHead()
         self.spotify_API = SpotifyAPI()
         #--------------------------------
 
@@ -237,13 +237,16 @@ class Speechbot(QtWidgets.QWidget):
     def process_detected_command(self, detected_speech):
         if "stop" in detected_speech or "shut down" in detected_speech or "error" in detected_speech:
             #self.shutdown_speech()
+            self.speech_engine.speak("shutting down")
             print("shut down")
         elif "play" in detected_speech or "music" in detected_speech:
             #self.spotify_start()
+            self.speech_engine.speak("spotify interaction")
             print("spotify")
         elif "timer" in detected_speech or "countdown" in detected_speech:
-            print("timer")
             #self.start_timer(480)
+            self.speech_engine.speak("set a timer")
+            print("timer")
 
     # sub-function ^
     def shutdown_speech(self):

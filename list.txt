@@ -5,3 +5,5 @@ fix up RPI database
 smoother text head performance
 save RPI performance to db
 ai router johnsNN
+mirror
+text on panel image
