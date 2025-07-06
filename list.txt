@@ -2,8 +2,7 @@ search songs on spotify
 timer alarm/number reading
 web link summarizer
 fix up RPI database
-smoother text head performance
 save RPI performance to db
-ai router johnsNN
+smoother text head performance
 mirror
-text on panel image
+use the router in ASR
