@@ -3,19 +3,18 @@
 # Imports
 from flask import Flask, render_template, request, jsonify
 from chatbots import Schizobot
-"""rom database import (
+from server.database import (
     init_db,
     log_error,
     get_all_error_logs
-)"""
+)
 #--------------------------------
 
 # Init
 server = Flask(__name__)
-schizobot = Schizobot()
-"""init_db()
+#schizobot = Schizobot() RETURN THIS TO RUNNING CODE BEFORE COMMITTING
+init_db()
 #--------------------------------
-"""
 
 # Different requests
 @server.route('/', methods=['GET', 'POST'])
@@ -32,7 +31,7 @@ def ask_bigbot():
     msg = request.form['message']
     reply = msg # ask an actual AI
     return reply
-
+"""
 @server.route('/schizobot', methods=['POST'])
 def ask_schizobot():
     msg = request.form['message']
@@ -40,11 +39,10 @@ def ask_schizobot():
     if reply.startswith(msg):
         reply = reply[len(msg):].strip()
     return reply
-
+"""
 #--------------------------------
 
 # Database related methods
-"""
 @server.route("/log", methods=["POST"])
 def log_entry():
     data = request.get_json()
@@ -52,7 +50,7 @@ def log_entry():
     if not message:
         return jsonify({"error": "Missing 'message' field"}), 400
     try:
-        add_log(message)
+        log_error(message)
         return jsonify({"status": "log added"})
     except Exception as e:
         log_error(type(e).__name__, str(e))
@@ -61,11 +59,9 @@ def log_entry():
 @server.route("/logs", methods=["GET"])
 def list_logs():
     try:
-        logs = get_all_logs()
+        logs = get_all_error_logs()
         return jsonify(logs)
     except Exception as e:
         log_error(type(e).__name__, str(e))
         return jsonify({"error": "Failed to retrieve logs"}), 500
 #--------------------------------
-"""
-
