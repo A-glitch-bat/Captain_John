@@ -6,7 +6,9 @@ from chatbots import Schizobot
 from server.database import (
     init_db,
     log_error,
-    get_all_error_logs
+    get_all_error_logs,
+    log_performance,
+    get_performance
 )
 #--------------------------------
 
@@ -43,8 +45,8 @@ def ask_schizobot():
 #--------------------------------
 
 # Database related methods
-@server.route("/log", methods=["POST"])
-def log_entry():
+@server.route("/logerr", methods=["POST"])
+def log_err():
     data = request.get_json()
     message = data.get("message")
     if not message:
@@ -56,10 +58,32 @@ def log_entry():
         log_error(type(e).__name__, str(e))
         return jsonify({"error": "Failed to log entry"}), 500
 
-@server.route("/logs", methods=["GET"])
-def list_logs():
+@server.route("/geterr", methods=["GET"])
+def list_err_logs():
     try:
         logs = get_all_error_logs()
+        return jsonify(logs)
+    except Exception as e:
+        log_error(type(e).__name__, str(e))
+        return jsonify({"error": "Failed to retrieve logs"}), 500
+
+@server.route("/logsys", methods=["POST"])
+def log_sys_stats():
+    data = request.get_json()
+    message = data.get("message")
+    if not message:
+        return jsonify({"error": "Missing 'message' field"}), 400
+    try:
+        log_performance(message)
+        return jsonify({"status": "log added"})
+    except Exception as e:
+        log_error(type(e).__name__, str(e))
+        return jsonify({"error": "Failed to log entry"}), 500
+
+@server.route("/getsys", methods=["GET"])
+def list_sys_stats():
+    try:
+        logs = get_performance()
         return jsonify(logs)
     except Exception as e:
         log_error(type(e).__name__, str(e))

@@ -5,3 +5,4 @@ save RPI performance to db
 smoother text head performance
 mirror
 use the router in ASR
+mini screen with day & date
