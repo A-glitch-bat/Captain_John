@@ -1,6 +1,8 @@
 #--------------------------------
 
 # Imports
+import time
+import threading
 from flask import Flask, render_template, request, jsonify
 from chatbots import Schizobot
 from server.database import (
@@ -14,7 +16,7 @@ from server.database import (
 
 # Init
 server = Flask(__name__)
-#schizobot = Schizobot() RETURN THIS TO RUNNING CODE BEFORE COMMITTING
+schizobot = Schizobot()
 init_db()
 #--------------------------------
 
@@ -28,12 +30,13 @@ def index():
     return render_template('index.html', message=message)
 #--------------------------------
 
+# The bots
 @server.route('/bigbot', methods=['POST'])
 def ask_bigbot():
     msg = request.form['message']
     reply = msg # ask an actual AI
     return reply
-"""
+
 @server.route('/schizobot', methods=['POST'])
 def ask_schizobot():
     msg = request.form['message']
@@ -41,7 +44,6 @@ def ask_schizobot():
     if reply.startswith(msg):
         reply = reply[len(msg):].strip()
     return reply
-"""
 #--------------------------------
 
 # Database related methods
@@ -66,19 +68,18 @@ def list_err_logs():
     except Exception as e:
         log_error(type(e).__name__, str(e))
         return jsonify({"error": "Failed to retrieve logs"}), 500
+#--------------------------------
 
-@server.route("/logsys", methods=["POST"])
-def log_sys_stats():
-    data = request.get_json()
-    message = data.get("message")
-    if not message:
-        return jsonify({"error": "Missing 'message' field"}), 400
-    try:
-        log_performance(message)
-        return jsonify({"status": "log added"})
-    except Exception as e:
-        log_error(type(e).__name__, str(e))
-        return jsonify({"error": "Failed to log entry"}), 500
+# System stats automatic logging
+def sys_stats_logger():
+    while True:
+        try:
+            log_performance()
+        except Exception as e:
+            log_error("SystemStatsError", str(e))
+        time.sleep(600)  # log every 10 minutes
+
+threading.Thread(target=sys_stats_logger, daemon=True).start()
 
 @server.route("/getsys", methods=["GET"])
 def list_sys_stats():

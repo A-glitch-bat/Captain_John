@@ -45,7 +45,7 @@ def log_error(error_type, message, traceback_str=None):
     """
     log an error
     """
-    timestamp = datetime.utcnow().isoformat()
+    timestamp = datetime.now().isoformat()
     with sqlite3.connect(DB_NAME) as conn:
         c = conn.cursor()
         c.execute("""
@@ -66,11 +66,11 @@ def get_all_error_logs():
 # System performance functions
 def log_performance():
     """
-    save performance stats
+    log performance stats
     """
     timestamp = datetime.now().isoformat()
     temperature = get_temperature()
-    cpu = psutil.cpu_percent()
+    cpu = psutil.cpu_percent(interval=5)
     memory = psutil.virtual_memory().percent
 
     with sqlite3.connect(DB_NAME) as conn:

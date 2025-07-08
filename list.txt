@@ -1,7 +1,6 @@
 search songs on spotify
 timer alarm/number reading
 web link summarizer
-save RPI performance to db
 smoother text head performance
 mirror
 use the router in ASR
