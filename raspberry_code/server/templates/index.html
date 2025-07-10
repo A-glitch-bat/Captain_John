@@ -8,6 +8,16 @@
 <body>
     <h1>Raspberry PI Control Page</h1>
     
+    <form class="chatbox" id="routerbot-form">
+        <label>Routerbot:</label><br>
+        <div>
+            <input type="text" name="message" id="routerbot-input">
+            <button type="submit">Ask</button>
+        </div>
+        
+        <div class="response-box" id="routerbot-response" readonly></div>
+    </form>
+
     <form class="chatbox" id="bigbot-form">
         <label>Bigbot:</label><br>
         <div>
@@ -29,6 +39,19 @@
     </form>
 
 <script>
+document.getElementById("routerbot-form").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const msg = document.getElementById("routerbot-input").value;
+    const response = await fetch("/routerbot", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ message: msg })
+    });
+    const text = await response.text();
+    document.getElementById("routerbot-input").value = "";
+    document.getElementById("routerbot-response").innerText = "Q: "+msg+"\n\nA: "+text;
+});
+
 document.getElementById("bigbot-form").addEventListener("submit", async function(e) {
     e.preventDefault();
     const msg = document.getElementById("bigbot-input").value;

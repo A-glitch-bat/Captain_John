@@ -1,11 +1,16 @@
-# Python cache and hidden files
-__pycache__/
-.cache
+# Local state and database files
+*.db
+*.sqlite3
+*.log
 config.py
 try.py
 models/
 venv/
 datasets/
+
+# Python cache
+__pycache__/
+.cache
 
 # Rust build
 Cargo.lock

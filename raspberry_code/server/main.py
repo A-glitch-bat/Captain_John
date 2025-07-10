@@ -4,8 +4,8 @@
 import time
 import threading
 from flask import Flask, render_template, request, jsonify
-from chatbots import Schizobot
-from server.database import (
+from raspberry_code.chatbots import Routerbot, Schizobot
+from raspberry_code.server.database import (
     init_db,
     log_error,
     get_all_error_logs,
@@ -16,7 +16,8 @@ from server.database import (
 
 # Init
 server = Flask(__name__)
-schizobot = Schizobot()
+routerbot = Routerbot()
+#schizobot = Schizobot()
 init_db()
 #--------------------------------
 
@@ -31,12 +32,17 @@ def index():
 #--------------------------------
 
 # The bots
+@server.route('/routerbot', methods=['POST'])
+def ask_routerbot():
+    msg = request.form['message']
+    return routerbot.classify(msg)
+
 @server.route('/bigbot', methods=['POST'])
 def ask_bigbot():
     msg = request.form['message']
     reply = msg # ask an actual AI
     return reply
-
+"""
 @server.route('/schizobot', methods=['POST'])
 def ask_schizobot():
     msg = request.form['message']
@@ -44,6 +50,7 @@ def ask_schizobot():
     if reply.startswith(msg):
         reply = reply[len(msg):].strip()
     return reply
+"""
 #--------------------------------
 
 # Database related methods
