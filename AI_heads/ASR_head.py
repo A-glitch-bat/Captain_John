@@ -22,7 +22,12 @@ class ASRHead(QObject):
     def __init__(self):
         super(ASRHead, self).__init__()
         wl_path = os.path.join(config.base_folder,"models/vosk-model-small-en-us-0.15")
-        self.wakeword_listener = vosk.Model(wl_path)
+        self.wakeword_listener = None
+        try:
+            self.wakeword_listener = vosk.Model(wl_path)
+        except Exception as e:
+            print(f"Error loading Vosk model: {e}")
+
         self.running = False
         self.q = queue.Queue()
         self.audio_path = os.path.join(config.base_folder, "audio/success.mp3")
@@ -33,6 +38,10 @@ class ASRHead(QObject):
     def listen(self):
         print("Listening for wake word...")
         self.running = True
+
+        if self.wakeword_listener is None:
+            print("Error: Listener not loaded")
+            self.stop()
 
         def callback(indata, frames, time, status):
             if status:

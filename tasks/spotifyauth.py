@@ -2,7 +2,7 @@
 
 # Imports
 import spotipy
-from spotipy.oauth2 import SpotifyOAuth
+from spotipy.oauth2 import SpotifyOAuth, SpotifyOauthError
 import sys
 import os
 
@@ -16,21 +16,32 @@ class SpotifyAPI():
         super(SpotifyAPI, self).__init__()
 
         # Spotify authentication
-        self.sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
-            client_id=config.spotify_client_id,
-            client_secret=config.spotify_client_secret,
-            # set up local uri
-            redirect_uri="http://localhost:5000",
-            # allow playback control
-            scope="user-read-playback-state,user-modify-playback-state,user-read-currently-playing"
-        ))
-        # select first computer with active spotify
-        devices = self.sp.devices()
-        computer_device = next((d for d in devices["devices"] if d["type"] == "Computer"), {"id": None})
-        self.device_ID = computer_device["id"]
+        self.sp = None
+        self.device_ID = None
+        try:
+            self.sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
+                client_id=config.spotify_client_id,
+                client_secret=config.spotify_client_secret,
+                redirect_uri="http://127.0.0.1:5000", # local uri
+                # allow playback control
+                scope="user-read-playback-state,user-modify-playback-state,user-read-currently-playing",
+                # bypass on fail
+                open_browser=False, 
+                show_dialog=False
+            ))
+            token_info = self.sp.get_cached_token()
+            if token_info is None:
+                raise SpotifyOauthError("No cached token; skipping Spotify integration.")
+    
+            # select first computer with active spotify
+            devices = self.sp.devices()
+            computer_device = next((d for d in devices["devices"] if d["type"] == "Computer"), {"id": None})
+            self.device_ID = computer_device["id"]
+        except Exception as e:
+            print(f"Spotify setup failed: {e}")
     #--------------------------------
+    
     # Functions
-
     def get_current_song(self):
         """
         get stats
