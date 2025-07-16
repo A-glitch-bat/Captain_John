@@ -2,5 +2,4 @@ song search through router
 timer number reading through router
 web link summarizer
 smoother text head performance
-mirror
 mini screen with day & date
