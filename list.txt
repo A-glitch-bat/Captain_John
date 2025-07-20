@@ -1,5 +1,6 @@
 song search through router
 timer number reading through router
+fix audio feedback through router
+prove P = NP or P ≠ NP
 web link summarizer
 smoother text head performance
-mini screen with day & date

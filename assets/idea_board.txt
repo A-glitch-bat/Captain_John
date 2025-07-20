@@ -1,23 +1,17 @@
 ---
 interactive cybercity landscape with functionalities in buildings
 ---
-integrate multiple AIs with separate functions
----
 display cyberpunk-style pop-up notifications for system events or reminders
----
-a "map" panel where users can explore a fictional cyberpunk city, with areas linked to app features
----
-add a feature where the chatbot remembers previous conversations and references them dynamically
 ---
 a tool to scan, organize, and tag digital documents in a futuristic interface
 ---
-add audio feedback for interactions, such as clicking buttons or toggling widgets
+bot with memory function and learning
+---
+VR/AR overlays or companion features for headsets
 ---
 make certain widgets or windows appear as holographic projections with fading edges
 ---
 control smart home devices through the app with a cyberpunk-styled interface
----
-explore VR/AR overlays or companion features for headsets
 ---
 swapping between functionalities on main screen
 ---
