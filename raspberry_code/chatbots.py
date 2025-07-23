@@ -22,7 +22,8 @@ class Routerbot():
 		self.model = DistilBertRouter(num_labels=34, dropout_prob=0.1).to(self.device)
 		self.model.load_state_dict(torch.load(
 			"./AI_heads/distilbert_router_model.pth",
-			weights_only=True)
+			map_location=torch.device(self.device),
+			weights_only=False)
 			)
 		self.model.to(self.device).eval()
 	#--------------------------------

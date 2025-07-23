@@ -2,6 +2,7 @@
 *.db
 *.sqlite3
 *.log
+*.pth
 config.py
 try.py
 models/

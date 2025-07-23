@@ -17,7 +17,7 @@ from raspberry_code.server.database import (
 # Init
 server = Flask(__name__)
 routerbot = Routerbot()
-#schizobot = Schizobot()
+schizobot = Schizobot()
 init_db()
 #--------------------------------
 
@@ -42,7 +42,7 @@ def ask_bigbot():
     msg = request.form['message']
     reply = msg # ask an actual AI
     return reply
-"""
+
 @server.route('/schizobot', methods=['POST'])
 def ask_schizobot():
     msg = request.form['message']
@@ -50,7 +50,6 @@ def ask_schizobot():
     if reply.startswith(msg):
         reply = reply[len(msg):].strip()
     return reply
-"""
 #--------------------------------
 
 # Database related methods
