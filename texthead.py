@@ -2,9 +2,8 @@
 
 # Imports
 import os
-import requests
 from PyQt5 import QtWidgets, QtGui, QtCore
-from AI_heads.router_head import DistilBertRouter
+from tasks.request_worker import RequestsThread
 import config
 #--------------------------------
 
@@ -143,12 +142,24 @@ class Chatbot(QtWidgets.QWidget):
         if user_input == "":
             return
         self.input_field.clear()
-
-        # Request answer from URL
-        DATA = {'message':user_input}
-        self.reply = requests.post(url = os.path.join(config.URL, "schizobot"), data=DATA).text
         self.output_display.append(f"Q: {user_input}\n")
         self.output_display.append(f"B: ")
+
+        # Request answer from URL on separate thread
+        DATA = {'message':user_input}
+        self.reqThread = RequestsThread(DATA)
+        self.reqThread.response.connect(self.replyWaiter)
+        self.reqThread.start()
+
+    # sub-function ^
+    def replyWaiter(self, reply):
+        """
+        get the bot reply and type it out
+        """
+        if reply["success"]:
+            self.reply = f"{reply['data']}"
+        else:
+            self.reply = f"Error: {reply['error']}"
 
         # Type the message
         self.current_index = 0
@@ -163,7 +174,6 @@ class Chatbot(QtWidgets.QWidget):
         """
         if self.current_index < len(self.reply):
             char = self.reply[self.current_index]
-            #self.output_display.moveCursor(QtGui.QTextCursor.End)
             self.output_display.insertPlainText(char)
             self.current_index += 1
         else:

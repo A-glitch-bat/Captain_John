@@ -1,6 +1,9 @@
 song search through router
-timer number reading through router
-fix audio feedback through router
+timer number reading on router
+if-else statements on router
+fix audio feedback
 prove P = NP or P ≠ NP
 web link summarizer
-smoother text head performance
+add "that's all thank you"
+Functionality list
+Functionality error log
