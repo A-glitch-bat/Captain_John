@@ -4,14 +4,19 @@
 import shutil
 import os
 import torch
+import json
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QRect
-from PyQt5.QtWidgets import QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, QTextEdit, QFrame, QApplication, QSpacerItem, QSizePolicy
-from PyQt5.QtGui import QColor, QBrush, QPainterPath, QPainter, QPixmap, QPen
+from PyQt5.QtWidgets import (
+    QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, QPlainTextEdit,
+    QFrame, QApplication, QSpacerItem, QSizePolicy, QShortcut)
+from PyQt5.QtGui import (
+    QColor, QPainterPath, QPainter, QPixmap, QPen, QKeySequence)
 
 from elements.glitchwidget import GlitchWidget
-from elements.ratio_widgets import PercentageCircleWidget, PercentageBarWidget, HoloDataWidget
+from elements.ratio_widgets import (
+    PercentageCircleWidget, PercentageBarWidget, HoloDataWidget)
 from tasks.usage_worker import UsageThread
 import config
 #--------------------------------
@@ -168,6 +173,9 @@ class TopInfoPanel(QWidget):
         painter.drawPath(path)
 
         painter.end()
+        #--------------------------------
+    def closeFunction(self):
+        self.close()
 #--------------------------------
 
 class BottomInfoPanel(QWidget):
@@ -177,13 +185,14 @@ class BottomInfoPanel(QWidget):
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setWindowTitle("INFO_2")
         #--------------------------------
+        self.FILENAME = "errlogs.json"
         main_layout = QVBoxLayout(self)
         self.setLayout(main_layout)
 
         # Text field
-        self.text_field = QTextEdit(self)
+        self.text_field = QPlainTextEdit(self)
         self.text_field.setStyleSheet("""
-            QTextEdit {
+            QPlainTextEdit {
                 background: rgba(0, 0, 0, 0);
                 color: hotpink;
                 font-family: OCR A Extended;
@@ -191,19 +200,7 @@ class BottomInfoPanel(QWidget):
                 border: none;
             }
         """)
-        self.text_field.setReadOnly(True)
         self.text_field.setAttribute(Qt.WA_TranslucentBackground, True)
-        self.text_field.setText("""
-                     |I|
-                     |:|
-                     |I|
-                     |:|            .____
-             ___    |I I|           |. .|' .--.
-     _    .-' o '-. |:I:|     .--'| |. .| _|::|
-  .-'|  _.|::|...|:| I:I '-__ |:::| |. .||::..|
-  |::'-'.::  '..." "I:I:I -'-' :::-.'   '`..::|
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~""")
-        self.text_field.setAlignment(Qt.AlignCenter)
 
         # Stack glitch over text
         glitch_overlay = GlitchWidget(self)
@@ -221,12 +218,33 @@ class BottomInfoPanel(QWidget):
         def resize_glitch():
             glitch_overlay.setGeometry(self.text_field.geometry())
         glitch_container.resizeEvent = lambda event: resize_glitch()
-
         main_layout.addWidget(glitch_container)
+
+        # Save error log pairs with Ctrl+S
+        shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
+        shortcut.activated.connect(self.save_errlogs)
         #--------------------------------
 
     # Functions
     #--------------------------------
+    def save_errlogs(self):
+        """
+        error log case saving
+        """
+        # Load existing pairs
+        if os.path.exists(self.FILENAME):
+            with open(self.FILENAME, "r", encoding="utf-8") as f:
+                existing_pairs = json.load(f)
+        else:
+            existing_pairs = []
+        # Get new pairs
+        lines = self.text_field.toPlainText().splitlines()
+        pairs = [line.split(" - ", 1) for line in lines if " - " in line]
+        self.text_field.clear()
+        # Save all pairs
+        with open(self.FILENAME, "w", encoding="utf-8") as f:
+            json.dump(existing_pairs+pairs, f, ensure_ascii=False, indent=2)
+    
     def paintEvent(self, event):
         """
         paint event for holographic visuals
@@ -273,6 +291,10 @@ class BottomInfoPanel(QWidget):
         painter.drawPath(path)
 
         painter.end()
+    #--------------------------------
+    def closeFunction(self):
+        self.save_errlogs()
+        self.close()
 #--------------------------------
 
 # Main window class and file main
@@ -334,14 +356,14 @@ class MainWindow(QWidget):
         self.exit_button.setFixedSize(70, 30)
         self.exit_button.clicked.connect(self.close)
         self.reposition_exit_button()
-#--------------------------------
+    #--------------------------------
     def resizeEvent(self, event):
         """
         reposition close button on resize
         """
         self.reposition_exit_button()
         super().resizeEvent(event)
-#--------------------------------
+    #--------------------------------
     def reposition_exit_button(self):
         """
         position close button at the top-right corner
@@ -356,11 +378,13 @@ class MainWindow(QWidget):
                     self.exit_button.height(),
                 )
             )
-#--------------------------------
+    #--------------------------------
     def closeEvent(self, _):
         """
-        shut down both timers and close app
+        safe app close
         """
+        self.top_panel.closeFunction()
+        self.bottom_panel.closeFunction()
         self.close()
 #--------------------------------
 

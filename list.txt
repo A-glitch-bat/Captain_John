@@ -1,9 +1,8 @@
-song search through router
-timer number reading on router
-if-else statements on router
-fix audio feedback
-prove P = NP or P ≠ NP
-web link summarizer
-add "that's all thank you"
-Functionality list
-Functionality error log
+Song search through router
+Timer number reading on router
+If-else statements on router
+Fix audio feedback
+Prove P = NP or P != NP
+Web link summarizer
+Add "that's all thank you"
+Toggle for bots
