@@ -9,6 +9,8 @@ import requests
 
 from datetime import datetime
 from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import (
+    QRadioButton, QHBoxLayout, QVBoxLayout, QButtonGroup, QWidget)
 from PyQt5.QtGui import QColor, QPixmap, QIcon
 from PyQt5.QtCore import Qt, QSize, QTimer
 
@@ -76,16 +78,16 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.close_button.clicked.connect(self.close)
         
         # Create the central widget and horizontal layout for buttons and list
-        central_widget = QtWidgets.QWidget(self)
+        central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
-        main_layout = QtWidgets.QHBoxLayout()
+        main_layout = QHBoxLayout()
         main_layout.setContentsMargins(int(config.scale*45), int(config.scale*55),
                                        int(config.scale*50), int(config.scale*45)) # L, Up, R, Down
         central_widget.setLayout(main_layout)
 
         # Create a vertical layout for buttons on the left
-        button_container = QtWidgets.QWidget()
-        button_layout = QtWidgets.QVBoxLayout()
+        button_container = QWidget()
+        button_layout = QVBoxLayout()
         button_container.setLayout(button_layout)
         button_container.setMinimumWidth(int(config.scale * 150))
         main_layout.addWidget(button_container, alignment=Qt.AlignLeft)
@@ -122,38 +124,6 @@ class CustomWindow(QtWidgets.QMainWindow):
 
         open_vscode_button.setGraphicsEffect(glow_effect)
         button_layout.addWidget(open_vscode_button, alignment=Qt.AlignCenter)
-        #--------------------------------
-        # Info Butoon
-        self.init_button = QtWidgets.QPushButton("INIT", self)
-        self.init_button.setMinimumSize(128, 64)
-        self.init_button.setMaximumSize(128, 64)
-        self.init_button.setStyleSheet(f"""
-            QPushButton {{
-                color: black;
-                font-weight: bold;
-                font-size: 15px;
-                font-family: OCR A Extended;
-                border-radius: 10px;
-                padding: 12px 24px;
-                text-align: left;
-                background-image: url('{B2}');
-            }}
-            QPushButton:hover {{
-                background-image: url('{B2_pressed}');
-            }}
-            QPushButton:pressed {{
-                background-image: url('{B2_pressed}');
-            }}
-        """)
-        self.init_button.clicked.connect(self.set_init)
-        
-        glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
-        glow_effect.setBlurRadius(20)
-        glow_effect.setColor(QColor("hotpink"))
-        glow_effect.setOffset(0, 0)
-
-        self.init_button.setGraphicsEffect(glow_effect)
-        button_layout.addWidget(self.init_button, alignment=Qt.AlignCenter)
         #--------------------------------
         # SSH connection to Raspberry PI
         ssh_button = QtWidgets.QPushButton("RPI", self)
@@ -219,6 +189,46 @@ class CustomWindow(QtWidgets.QMainWindow):
         test_button.setGraphicsEffect(glow_effect)
         button_layout.addWidget(test_button, alignment=Qt.AlignCenter)
         #--------------------------------
+        # Radio buttons
+        hbox_container = QWidget()
+        radio_layout = QHBoxLayout()
+        radio_layout.setContentsMargins(0, 0, 0, 0)
+        self.radio_main = QRadioButton("R")
+        self.radio_main.setChecked(True)
+        self.radio_one = QRadioButton("S")
+        self.radio_two = QRadioButton("M")
+        hbox_container.setLayout(radio_layout)
+        hbox_container.setFixedSize(128, 64)
+        r_style = """
+        QRadioButton {
+            color: hotpink;
+            font-weight: bold;
+        }
+        QRadioButton::indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 6px;
+            border: 2px solid gray;
+            background: white;
+        }
+        QRadioButton::indicator:checked {
+            background: purple;
+            border: 2px solid hotpink;
+        }
+        """
+        hbox_container.setStyleSheet(r_style)
+
+        group = QButtonGroup(self)
+        group.addButton(self.radio_main)
+        group.addButton(self.radio_one)
+        group.addButton(self.radio_two)
+
+        # Add to layout
+        radio_layout.addWidget(self.radio_main)
+        radio_layout.addWidget(self.radio_one)
+        radio_layout.addWidget(self.radio_two)
+        button_layout.addWidget(hbox_container, alignment=Qt.AlignCenter)
+        #--------------------------------
 
         # Temperature stats
         self.temp_stats = TransparentImageWidget(button_layout.sizeHint(), os.path.join(config.destination, "nightsky.png"))
@@ -233,8 +243,8 @@ class CustomWindow(QtWidgets.QMainWindow):
         #--------------------------------
 
         # Create a vertical layout for the list on the right
-        list_layout = QtWidgets.QVBoxLayout()
-        input_layout = QtWidgets.QHBoxLayout()
+        list_layout = QVBoxLayout()
+        input_layout = QHBoxLayout()
         main_layout.addLayout(list_layout)
         list_layout.addLayout(input_layout)
 
@@ -328,9 +338,6 @@ class CustomWindow(QtWidgets.QMainWindow):
         folder_path = "C:/John"
         subprocess.Popen(["code", folder_path], shell=True)
     #--------------------------------
-    def set_init(self):
-        self.init_class.init_button()
-    #--------------------------------
     def open_info_panel(self):
         """
         open InfoPanel on button click
@@ -412,8 +419,8 @@ class CustomWindow(QtWidgets.QMainWindow):
         """
         add a line of text to the list widget
         """
-        row_widget = QtWidgets.QWidget()
-        row_layout = QtWidgets.QHBoxLayout()
+        row_widget = QWidget()
+        row_layout = QHBoxLayout()
         row_layout.setContentsMargins(2, 2, 2, 2)
         row_layout.setSpacing(5)
 
