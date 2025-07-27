@@ -4,5 +4,3 @@ If-else statements on router
 Fix audio feedback
 Prove P = NP or P != NP
 Web link summarizer
-Add "that's all thank you"
-Speech toggle for bots
