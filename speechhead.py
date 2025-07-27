@@ -20,9 +20,10 @@ import config
 
 # List interaction class
 class Speechbot(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, main_window=None):
         super().__init__()
         #--------------------------------
+        self.main_window = main_window
 
         # Set up main window properties
         self.setWindowTitle("Speech interface")
@@ -258,6 +259,16 @@ class Speechbot(QtWidgets.QWidget):
         self.tts_onoff.set_status(None)
         self.text_field.append("Speech head stopped")
     #--------------------------------
+    def bot_route(self):
+        """
+        bot route based on radio main
+        """
+        if self.main_window.radio_one.isChecked():
+            return "mainbot"
+        elif self.main_window.radio_two.isChecked():
+            return "schizobot"
+        else: return "routerbot"
+    #--------------------------------
     def launch_audio(self):
         """
         start the sound player
@@ -279,7 +290,7 @@ class Speechbot(QtWidgets.QWidget):
             self.spotify_API.play_track(keywords)
         else:
             self.spotify_API.playlist()
-
+    #--------------------------------
     def start_timer(self, seconds):
         """
         start timer

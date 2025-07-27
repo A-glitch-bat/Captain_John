@@ -195,8 +195,8 @@ class CustomWindow(QtWidgets.QMainWindow):
         radio_layout.setContentsMargins(0, 0, 0, 0)
         self.radio_main = QRadioButton("R")
         self.radio_main.setChecked(True)
-        self.radio_one = QRadioButton("S")
-        self.radio_two = QRadioButton("M")
+        self.radio_one = QRadioButton("M")
+        self.radio_two = QRadioButton("S")
         hbox_container.setLayout(radio_layout)
         hbox_container.setFixedSize(128, 64)
         r_style = """
@@ -235,11 +235,6 @@ class CustomWindow(QtWidgets.QMainWindow):
         button_layout.addWidget(self.temp_stats)
         button_layout.setAlignment(Qt.AlignHCenter)
         button_layout.addStretch()
-        #--------------------------------
-
-        # Start the panels
-        self.start_chats()
-        self.open_info_panel()
         #--------------------------------
 
         # Create a vertical layout for the list on the right
@@ -314,7 +309,8 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_weather)
         self.timer.start(60000)
-
+        #--------------------------------
+        
         # Ensure the app works as intended
         self.read_list()
         self.adjust_close_button_position()
@@ -322,6 +318,10 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.coords = self.init_class.get_geostats()
         self.suntime = self.init_class.daytime_calculator(self.coords[0], self.coords[1], self.today)
         self.update_weather()
+
+        # Start other app windows
+        self.start_chats()
+        self.open_info_panel()
     #--------------------------------
 
     # Functions
@@ -349,10 +349,10 @@ class CustomWindow(QtWidgets.QMainWindow):
         """
         open chat AIs on button click
         """
-        self.aihead = Chatbot()
+        self.aihead = Chatbot(main_window=self)
         self.aihead.show()
 
-        self.listdisplay = Speechbot()
+        self.listdisplay = Speechbot(main_window=self)
         self.listdisplay.show()
     #--------------------------------
     def ssh_to_rpi(self):

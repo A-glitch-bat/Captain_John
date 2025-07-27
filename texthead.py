@@ -9,10 +9,11 @@ import config
 
 # Chatbot class
 class Chatbot(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, main_window=None):
         super().__init__()
         #--------------------------------
-
+        self.main_window = main_window
+        
         # Set up main window properties
         self.setWindowTitle("Chat interface")
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)  # remove window border
@@ -180,6 +181,16 @@ class Chatbot(QtWidgets.QWidget):
             self.output_display.append(f"\n---------------------- \n")
             self.timer.stop()
     #--------------------------------
+    def bot_route(self):
+        """
+        bot route based on radio main
+        """
+        if self.main_window.radio_one.isChecked():
+            return "mainbot"
+        elif self.main_window.radio_two.isChecked():
+            return "schizobot"
+        else: return "routerbot"
+#--------------------------------
 
 # Temporary main
 if __name__ == "__main__":
