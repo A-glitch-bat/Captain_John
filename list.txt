@@ -5,4 +5,4 @@ Fix audio feedback
 Prove P = NP or P != NP
 Web link summarizer
 Add "that's all thank you"
-Toggle for bots
+Speech toggle for bots

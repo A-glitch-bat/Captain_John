@@ -148,7 +148,7 @@ class Chatbot(QtWidgets.QWidget):
 
         # Request answer from URL on separate thread
         DATA = {'message':user_input}
-        self.reqThread = RequestsThread(DATA)
+        self.reqThread = RequestsThread(DATA, self.bot_route())
         self.reqThread.response.connect(self.replyWaiter)
         self.reqThread.start()
 
@@ -185,11 +185,12 @@ class Chatbot(QtWidgets.QWidget):
         """
         bot route based on radio main
         """
-        if self.main_window.radio_one.isChecked():
-            return "mainbot"
-        elif self.main_window.radio_two.isChecked():
-            return "schizobot"
-        else: return "routerbot"
+        if self.main_window is not None:
+            if self.main_window.radio_one.isChecked():
+                return "mainbot"
+            elif self.main_window.radio_two.isChecked():
+                return "schizobot"
+        return "routerbot"
 #--------------------------------
 
 # Temporary main

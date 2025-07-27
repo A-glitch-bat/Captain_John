@@ -12,14 +12,18 @@ class RequestsThread(QThread):
     response = pyqtSignal(dict)
     #--------------------------------
 
-    def __init__(self, msg, timeout=5):
+    def __init__(self, msg, bot, timeout=5):
         super().__init__()
         self.arg = msg
+        self.bot = bot
         self.timeout = timeout
 
     def run(self):
+        """
+        send msg to specified bot
+        """
         try:
-            result = requests.post(url = os.path.join(config.URL, "schizobot"), 
+            result = requests.post(url = os.path.join(config.URL, self.bot), 
                                    data=self.arg).text
             self.response.emit({
                 "success": True,
