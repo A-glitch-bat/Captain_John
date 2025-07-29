@@ -10,7 +10,6 @@ from PyQt5.QtGui import QColor, QPixmap, QMovie
 from PyQt5.QtCore import Qt, QSize
 
 from AI_heads.ASR_head import ASRHead
-from AI_heads.TTS_head import TTSHead
 from audio.audioplayer import AmbientPlayer
 from tasks.spotifyauth import SpotifyAPI
 from elements.glitchwidget import GlitchWidget
@@ -32,7 +31,6 @@ class Speechbot(QtWidgets.QWidget):
         self.setGeometry(int((config.scale-0.45)*200), int((config.scale-0.40)*150 + int(config.scale*400)), 
                          int(config.scale*350), int(config.scale*450))  # window position, size
         self.speech_listener = ASRHead()
-        self.speech_engine = TTSHead()
         self.spotify_API = SpotifyAPI()
         #--------------------------------
 
@@ -236,17 +234,16 @@ class Speechbot(QtWidgets.QWidget):
 
     # sub-function ^
     def process_detected_command(self, detected_speech):
+        print(f"""Processing: {detected_speech}""")
+
         if "stop" in detected_speech or "shut down" in detected_speech or "error" in detected_speech:
             #self.shutdown_speech()
-            self.speech_engine.speak("shutting down")
             print("shut down")
         elif "play" in detected_speech or "music" in detected_speech:
             #self.spotify_start()
-            self.speech_engine.speak("spotify interaction")
             print("spotify")
         elif "timer" in detected_speech or "countdown" in detected_speech:
             #self.start_timer(480)
-            self.speech_engine.speak("set a timer")
             print("timer")
 
     # sub-function ^

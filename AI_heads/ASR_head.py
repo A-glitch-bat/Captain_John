@@ -14,6 +14,8 @@ import sounddevice as sd
 import speech_recognition as sr
 import whisper
 from PyQt5.QtCore import QObject, pyqtSignal
+
+from AI_heads.TTS_head import TTSHead
 import config
 #--------------------------------
 
@@ -32,6 +34,7 @@ class ASRHead(QObject):
         except Exception as e:
             print(f"Error loading Vosk model: {e}")
 
+        self.speech_engine = TTSHead()
         self.running = False
         self.q = queue.Queue()
         self.audio_path = os.path.join(config.base_folder, "audio/success.mp3")
@@ -102,6 +105,11 @@ class ASRHead(QObject):
 
                         route_task = requests.post(url = os.path.join(config.URL, "routerbot"),
                                                 data=DATA).text
+                        
+                        if self.speech_engine.free:
+                            print("Reading task route")
+                            self.speech_engine.speak(route_task)
+
                         # Exit if requested
                         if result=="thank_you" or result=="cancel":
                             self.loop = False

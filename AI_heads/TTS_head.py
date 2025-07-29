@@ -11,6 +11,7 @@ class TTSHead(QObject):
         super(TTSHead, self).__init__()
         self.engine = pyttsx3.init()
         self.engine.setProperty('rate', 140)
+        self.free = True
 
         # Adjust properties
         voices = self.engine.getProperty('voices')
@@ -22,8 +23,10 @@ class TTSHead(QObject):
         """
         read the text
         """
+        self.free = False
         self.engine.say(text)
         self.engine.runAndWait()
+        self.free = True
 
     def shutdown(self):
         """
