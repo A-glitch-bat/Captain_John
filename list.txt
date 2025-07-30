@@ -1,6 +1,6 @@
 Song search through router
 Timer number reading on router
 If-else statements on router
+Train router again
 Prove P = NP or P != NP
 Web link summarizer
-Fix pythonw autostart

@@ -1,9 +1,9 @@
 #--------------------------------
 
 # Imports
+import os
 import sys
 import subprocess
-import os
 import webbrowser
 import requests
 
@@ -20,6 +20,8 @@ from speechhead import Speechbot
 from main_init import Initializer
 from elements.digitrain import DigitalRainPanel
 from elements.transparent_img import TransparentImageWidget
+
+os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 import config
 #--------------------------------
 
