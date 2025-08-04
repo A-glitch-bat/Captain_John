@@ -8,6 +8,7 @@ import pickle
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, DistilBertTokenizerFast
 from AI_heads.router_head import DistilBertRouter
+from AI_heads.summarizer import text_sum
 #--------------------------------
 
 # Routerbot interface
@@ -72,4 +73,9 @@ class Schizobot():
 			)
 		reply = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
 		return reply
+#--------------------------------
+
+# Pass the text summarizer
+def summarize(input):
+	return text_sum(input)
 #--------------------------------

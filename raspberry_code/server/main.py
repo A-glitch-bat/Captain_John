@@ -4,7 +4,7 @@
 import time
 import threading
 from flask import Flask, render_template, request, jsonify
-from raspberry_code.chatbots import Routerbot, Schizobot
+from raspberry_code.chatbots import Routerbot, Schizobot, summarize
 from raspberry_code.server.database import (
     init_db,
     log_error,
@@ -37,8 +37,8 @@ def ask_routerbot():
     msg = request.form['message']
     return routerbot.classify(msg)
 
-@server.route('/bigbot', methods=['POST'])
-def ask_bigbot():
+@server.route('/mainbot', methods=['POST'])
+def ask_mainbot():
     msg = request.form['message']
     reply = msg # ask an actual AI
     return reply
@@ -50,6 +50,11 @@ def ask_schizobot():
     if reply.startswith(msg):
         reply = reply[len(msg):].strip()
     return reply
+
+@server.route('/sumbot', methods=['POST'])
+def ask_sumbot():
+    msg = request.form['message']
+    return summarize(msg)
 #--------------------------------
 
 # Database related methods
