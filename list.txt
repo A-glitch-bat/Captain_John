@@ -1,7 +1,7 @@
-Song search through router
-Timer number reading on router
-If-else statements on router
 Train router again
-Prove P = NP or P != NP
 Web link summarizer to rust
 Backgrounds to main app
+Prove P = NP or P != NP
+Client side basics
+Server side spotify & timer
+Client side spotify & timer

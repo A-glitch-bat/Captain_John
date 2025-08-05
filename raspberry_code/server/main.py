@@ -36,12 +36,27 @@ def index():
 def ask_routerbot():
     msg = request.form['message']
     return routerbot.classify(msg)
+#--------------------------------
 
 @server.route('/mainbot', methods=['POST'])
 def ask_mainbot():
     msg = request.form['message']
-    reply = msg # ask an actual AI
-    return reply
+    route = routerbot.classify(msg)
+    taskID = 0
+    response = msg
+    
+    # python does not have a switch
+    if route == "greeting":
+        response = "Hi. Bot on standby."
+    elif route == "yes":
+        response = "Confirmed."
+    
+    # return as json
+    return jsonify({
+        "taskID": taskID,
+        "answer": response
+    })
+#--------------------------------
 
 @server.route('/schizobot', methods=['POST'])
 def ask_schizobot():
@@ -50,6 +65,7 @@ def ask_schizobot():
     if reply.startswith(msg):
         reply = reply[len(msg):].strip()
     return reply
+#--------------------------------
 
 @server.route('/sumbot', methods=['POST'])
 def ask_sumbot():
