@@ -4,4 +4,4 @@ If-else statements on router
 Train router again
 Prove P = NP or P != NP
 Web link summarizer to rust
-Webpage logo of sorts
+Backgrounds to main app
