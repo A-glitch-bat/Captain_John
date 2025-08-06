@@ -1,7 +1,7 @@
 Train router again
-Web link summarizer to rust
 Backgrounds to main app
 Prove P = NP or P != NP
-Client side basics
+Client side basics (+ scrape)
 Server side spotify & timer
 Client side spotify & timer
+Fix sumbot load and limits
