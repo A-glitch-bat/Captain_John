@@ -3,6 +3,8 @@
 # Imports
 import os
 from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap, QImage, QPainter
 from tasks.request_worker import RequestsThread
 import config
 #--------------------------------
@@ -22,11 +24,29 @@ class Chatbot(QtWidgets.QWidget):
                          int(config.scale*350), int(config.scale*450))  # window position, size
         #--------------------------------
 
-        # Load and set the custom background image
+        # Load custom background image
         self.background_label = QtWidgets.QLabel(self)
-        border_location = os.path.join(config.destination, "V_background2.png")
-        pixmap = QtGui.QPixmap(border_location)
-        pixmap = pixmap.scaled(self.width(), self.height(), QtCore.Qt.KeepAspectRatioByExpanding, QtCore.Qt.SmoothTransformation)
+        background_top_path = os.path.join(config.destination, "V_background2.png")
+        background_bottom_path = os.path.join(config.destination, "V2_bb.png")
+        top_pixmap = QPixmap(background_top_path).scaled(
+            self.width(), self.height(), 
+            Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+        bottom_pixmap = QPixmap(background_bottom_path).scaled(
+            self.width(), self.height(),
+            Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+        composed_image = QImage(self.width(), self.height(), QImage.Format_ARGB32)
+        composed_image.fill(Qt.transparent)
+
+        # Overlay backgrounds
+        painter = QPainter(composed_image)
+        painter.setOpacity(0.1)
+        painter.drawPixmap(0, 0, bottom_pixmap)
+        painter.setOpacity(1.0)
+        painter.drawPixmap(0, 0, top_pixmap)
+        painter.end()
+
+        # Convert back to QPixmap and apply to label
+        pixmap = QPixmap.fromImage(composed_image)
         self.background_label.setPixmap(pixmap)
         self.background_label.setGeometry(0, 0, self.width(), self.height())
 

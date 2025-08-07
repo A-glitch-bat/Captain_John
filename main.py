@@ -11,7 +11,7 @@ from datetime import datetime
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (
     QRadioButton, QHBoxLayout, QVBoxLayout, QButtonGroup, QWidget)
-from PyQt5.QtGui import QColor, QPixmap, QIcon
+from PyQt5.QtGui import QColor, QPixmap, QIcon, QImage, QPainter
 from PyQt5.QtCore import Qt, QSize, QTimer
 
 from panel import MainWindow
@@ -51,11 +51,29 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.setGeometry(Ph, Pw, Wh, Ww)
         #--------------------------------
 
-        # Load and set the background image
+        # Load custom background image
         self.background_label = QtWidgets.QLabel(self)
-        border_location = os.path.join(config.destination, "H_background1.png")
-        pixmap = QPixmap(border_location)
-        pixmap = pixmap.scaled(self.width(), self.height(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+        background_top_path = os.path.join(config.destination, "H_background1.png")
+        background_bottom_path = os.path.join(config.destination, "H1_bb.png")
+        top_pixmap = QPixmap(background_top_path).scaled(
+            self.width(), self.height(), 
+            Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+        bottom_pixmap = QPixmap(background_bottom_path).scaled(
+            self.width(), self.height(),
+            Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+        composed_image = QImage(self.width(), self.height(), QImage.Format_ARGB32)
+        composed_image.fill(Qt.transparent)
+
+        # Overlay backgrounds
+        painter = QPainter(composed_image)
+        painter.setOpacity(0.1)
+        painter.drawPixmap(0, 0, bottom_pixmap)
+        painter.setOpacity(1.0)
+        painter.drawPixmap(0, 0, top_pixmap)
+        painter.end()
+
+        # Convert back to QPixmap and apply to label
+        pixmap = QPixmap.fromImage(composed_image)
         self.background_label.setPixmap(pixmap)
         self.background_label.setGeometry(0, 0, self.width(), self.height())
         
