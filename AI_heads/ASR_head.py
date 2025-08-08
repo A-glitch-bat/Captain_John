@@ -21,7 +21,7 @@ import config
 
 # Speech head class
 class ASRHead(QObject):
-    text_detected = pyqtSignal(str)
+    text_detected = pyqtSignal(str, str)
 
     def __init__(self, f_path):
         super(ASRHead, self).__init__()

@@ -24,7 +24,6 @@ class Speechbot(QtWidgets.QWidget):
         #--------------------------------
         self.main_window = main_window
         self.f_path = os.path.dirname(os.path.abspath(__file__))
-        print(self.f_path)
         
         # Set up main window properties
         self.setWindowTitle("Speech interface")
@@ -252,18 +251,18 @@ class Speechbot(QtWidgets.QWidget):
             self.text_field.append("Speech head ready")
 
     # sub-function ^
-    def process_detected_command(self, detected_speech):
-        print(f"""Processing: {detected_speech}""")
+    def process_detected_command(self, task_route: str, text_command: str):
+        print(f"""Processing {task_route} for text: {text_command}""")
 
-        if "stop" in detected_speech or "shut down" in detected_speech or "error" in detected_speech:
+        if "stop" in task_route or "shut down" in task_route or "error" in task_route:
             #self.shutdown_speech()
             print("shut down")
-        elif "play" in detected_speech or "music" in detected_speech:
-            #self.spotify_start()
-            print("spotify")
-        elif "timer" in detected_speech or "countdown" in detected_speech:
-            #self.start_timer(480)
-            print("timer")
+        elif "spotify" in task_route or "music" in task_route or "playlist" in task_route:
+            self.spotify_start()
+            # add other options when the time is right
+        elif "timer" in task_route or "countdown" in task_route:
+            self.start_timer(480)
+            #print("timer")
 
     # sub-function ^
     def shutdown_speech(self):

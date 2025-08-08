@@ -29,9 +29,6 @@ class SpotifyAPI():
                 open_browser=False, 
                 show_dialog=False
             ))
-            token_info = self.sp.get_cached_token()
-            if token_info is None:
-                raise SpotifyOauthError("No cached token; skipping Spotify integration.")
     
             # select first computer with active spotify
             devices = self.sp.devices()
