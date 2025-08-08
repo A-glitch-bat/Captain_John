@@ -4,5 +4,4 @@ Client side basics (+ scrape)
 Server side spotify & timer
 Client side spotify & timer
 Fix sumbot load and limits
-Align main app backgrounds
 Clean up config links

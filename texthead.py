@@ -39,7 +39,7 @@ class Chatbot(QtWidgets.QWidget):
 
         # Overlay backgrounds
         painter = QPainter(composed_image)
-        painter.setOpacity(0.1)
+        painter.setOpacity(config.transbckg)
         painter.drawPixmap(0, 0, bottom_pixmap)
         painter.setOpacity(1.0)
         painter.drawPixmap(0, 0, top_pixmap)
