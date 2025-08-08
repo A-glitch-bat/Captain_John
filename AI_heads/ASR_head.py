@@ -23,11 +23,12 @@ import config
 class ASRHead(QObject):
     text_detected = pyqtSignal(str)
 
-    def __init__(self):
+    def __init__(self, f_path):
         super(ASRHead, self).__init__()
+        self.f_path = f_path
         #--------------------------------
 
-        wl_path = os.path.join(config.base_folder,"models/vosk-model-small-en-us-0.15")
+        wl_path = os.path.join(self.f_path,"models/vosk-model-small-en-us-0.15")
         self.wakeword_listener = None
         try:
             self.wakeword_listener = vosk.Model(wl_path)
@@ -37,7 +38,7 @@ class ASRHead(QObject):
         self.speech_engine = TTSHead()
         self.running = False
         self.q = queue.Queue()
-        self.audio_path = os.path.join(config.base_folder, "audio/success.mp3")
+        self.audio_path = os.path.join(self.f_path, "audio/success.mp3")
         self.recognizer = sr.Recognizer()
         self.transcriber = whisper.load_model("small")
         pygame.mixer.init()

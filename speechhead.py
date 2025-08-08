@@ -23,21 +23,23 @@ class Speechbot(QtWidgets.QWidget):
         super().__init__()
         #--------------------------------
         self.main_window = main_window
-
+        self.f_path = os.path.dirname(os.path.abspath(__file__))
+        print(self.f_path)
+        
         # Set up main window properties
         self.setWindowTitle("Speech interface")
         self.setWindowFlags(Qt.FramelessWindowHint) # remove window border
         self.setAttribute(Qt.WA_TranslucentBackground) # transparent background
         self.setGeometry(int((config.scale-0.45)*200), int((config.scale-0.40)*150 + int(config.scale*400)), 
                          int(config.scale*350), int(config.scale*450))  # window position, size
-        self.speech_listener = ASRHead()
+        self.speech_listener = ASRHead(self.f_path)
         self.spotify_API = SpotifyAPI()
         #--------------------------------
 
         # Load custom background image
         self.background_label = QtWidgets.QLabel(self)
-        background_top_path = os.path.join(config.destination, "V_background1.png")
-        background_bottom_path = os.path.join(config.destination, "V1_bb.png")
+        background_top_path = os.path.join(self.f_path, "visuals/V_background1.png")
+        background_bottom_path = os.path.join(self.f_path, "visuals/V1_bb.png")
         top_pixmap = QPixmap(background_top_path).scaled(
             self.width(), self.height(), 
             Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
@@ -88,11 +90,10 @@ class Speechbot(QtWidgets.QWidget):
         #--------------------------------
 
         # Buttons and widgets
-        self.txt_file = config.txt_file
-        self.B1 = os.path.join(config.destination, "Button1.png")
-        self.B1_pressed = os.path.join(config.destination, "Button1_pressed.png")
-        self.V_check = os.path.join(config.destination, "icons/confirm.png")
-        self.V_cancel = os.path.join(config.destination, "icons/cancel.png")
+        self.B1 = os.path.join(self.f_path, "visuals", "Button1.png").replace("\\", "/")
+        self.B1_pressed = os.path.join(self.f_path, "visuals", "Button1_pressed.png").replace("\\", "/")
+        self.V_check = os.path.join(self.f_path, "visuals", "icons", "confirm.png")
+        self.V_cancel = os.path.join(self.f_path, "visuals", "icons", "cancel.png")
         #--------------------------------
 
         # Text-To-Speech button
@@ -210,7 +211,7 @@ class Speechbot(QtWidgets.QWidget):
         # GIF widget
         gif_label = QtWidgets.QLabel(self)
         gif_label.setAlignment(Qt.AlignCenter)
-        G1 = os.path.join(config.destination, "square_glitch.gif")
+        G1 = os.path.join(self.f_path, "visuals/square_glitch.gif")
         gif = QMovie(G1)
         gif.setScaledSize(QSize(64, 64))
 

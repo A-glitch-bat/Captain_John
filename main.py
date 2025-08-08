@@ -29,17 +29,18 @@ import config
 class CustomWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
+        self.f_path = os.path.dirname(os.path.abspath(__file__))
+        print(self.f_path)
         """
         define all the important jazz
         """
-        self.txt_file = config.txt_file
         self.init_class = Initializer()
-        self.r_path = os.path.join(config.base_folder, "rust_console/target/release/rust_console.exe")
-        B1 = os.path.join(config.destination, "Button1.png")
-        B2 = os.path.join(config.destination, "Button2.png")
-        B2_pressed = os.path.join(config.destination, "Button2_pressed.png")
-        self.V_check = os.path.join(config.destination, "icons/confirm.png")
-        self.V_cancel = os.path.join(config.destination, "icons/cancel.png")
+        self.txt_file = os.path.join(self.f_path, "list.txt")
+        B1 = os.path.join(self.f_path, "visuals/Button1.png").replace("\\", "/")
+        B2 = os.path.join(self.f_path, "visuals/Button2.png").replace("\\", "/")
+        B2_pressed = os.path.join(self.f_path, "visuals/Button2_pressed.png").replace("\\", "/")
+        self.V_check = os.path.join(self.f_path, "visuals/icons/confirm.png")
+        self.V_cancel = os.path.join(self.f_path, "visuals/icons/cancel.png")
         #--------------------------------
 
         # Set up main window properties
@@ -53,8 +54,8 @@ class CustomWindow(QtWidgets.QMainWindow):
 
         # Load custom background image
         self.background_label = QtWidgets.QLabel(self)
-        background_top_path = os.path.join(config.destination, "H_background1.png")
-        background_bottom_path = os.path.join(config.destination, "H1_bb.png")
+        background_top_path = os.path.join(self.f_path, "visuals/H_background1.png")
+        background_bottom_path = os.path.join(self.f_path, "visuals/H1_bb.png")
         top_pixmap = QPixmap(background_top_path).scaled(
             self.width(), self.height(), 
             Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
@@ -251,7 +252,9 @@ class CustomWindow(QtWidgets.QMainWindow):
         #--------------------------------
 
         # Temperature stats
-        self.temp_stats = TransparentImageWidget(button_layout.sizeHint(), os.path.join(config.destination, "nightsky.png"))
+        self.temp_stats = TransparentImageWidget(button_layout.sizeHint(),
+                                                 os.path.join(self.f_path,"visuals/nightsky.png"),
+                                                 self.f_path)
         button_layout.addWidget(self.temp_stats)
         button_layout.setAlignment(Qt.AlignHCenter)
         button_layout.addStretch()
@@ -362,7 +365,7 @@ class CustomWindow(QtWidgets.QMainWindow):
         """
         open InfoPanel on button click
         """
-        self.info_panel = MainWindow() # prevent garbage-collection
+        self.info_panel = MainWindow()
         self.info_panel.show()
     #--------------------------------
     def start_chats(self):

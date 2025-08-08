@@ -15,7 +15,8 @@ class Chatbot(QtWidgets.QWidget):
         super().__init__()
         #--------------------------------
         self.main_window = main_window
-        
+        self.f_path = os.path.dirname(os.path.abspath(__file__))
+
         # Set up main window properties
         self.setWindowTitle("Chat interface")
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)  # remove window border
@@ -26,8 +27,8 @@ class Chatbot(QtWidgets.QWidget):
 
         # Load custom background image
         self.background_label = QtWidgets.QLabel(self)
-        background_top_path = os.path.join(config.destination, "V_background2.png")
-        background_bottom_path = os.path.join(config.destination, "V2_bb.png")
+        background_top_path = os.path.join(self.f_path, "visuals/V_background2.png")
+        background_bottom_path = os.path.join(self.f_path, "visuals/V2_bb.png")
         top_pixmap = QPixmap(background_top_path).scaled(
             self.width(), self.height(), 
             Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
@@ -71,10 +72,10 @@ class Chatbot(QtWidgets.QWidget):
         self.close_button.clicked.connect(self.close)
         #--------------------------------
         # Buttons and emblems
-        self.B2 = os.path.join(config.destination, "Button2.png")
-        self.B2_pressed = os.path.join(config.destination, "Button2_pressed.png")
-        self.V_check = os.path.join(config.destination, "icons/confirm.png")
-        self.V_cancel = os.path.join(config.destination, "icons/cancel.png")
+        self.B2 = os.path.join(self.f_path, "visuals/Button2.png")
+        self.B2_pressed = os.path.join(self.f_path, "visuals/Button2_pressed.png")
+        self.V_check = os.path.join(self.f_path, "visuals/icons/confirm.png")
+        self.V_cancel = os.path.join(self.f_path, "visuals/icons/cancel.png")
         #--------------------------------
 
         # Layout

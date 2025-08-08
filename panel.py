@@ -25,10 +25,11 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Device:", device)
 
 # Classes for separate parts of an L-shaped panel component
-#--------------------------------
 class TopInfoPanel(QWidget):
     def __init__(self):
         super().__init__()
+        #--------------------------------
+        self.f_path = os.path.dirname(os.path.abspath(__file__))
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setWindowTitle("INFO_1")
@@ -148,7 +149,7 @@ class TopInfoPanel(QWidget):
         painter.setClipPath(path)
 
         # place top half of the image into the border
-        pixmap = QPixmap(os.path.join(config.destination, "skyline.png"))
+        pixmap = QPixmap(os.path.join(self.f_path, "visuals/skyline.png"))
         img_width = pixmap.width()
         img_height = pixmap.height() // 2
         cropped_pixmap = pixmap.copy(0, 0, img_width, img_height) # top half
@@ -181,6 +182,7 @@ class TopInfoPanel(QWidget):
 class BottomInfoPanel(QWidget):
     def __init__(self):
         super().__init__()
+        self.f_path = os.path.dirname(os.path.abspath(__file__))
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setWindowTitle("INFO_2")
@@ -266,7 +268,7 @@ class BottomInfoPanel(QWidget):
         painter.setClipPath(path)
 
         # place bottom half of the image into the border
-        pixmap = QPixmap(os.path.join(config.destination, "skyline.png"))
+        pixmap = QPixmap(os.path.join(self.f_path, "visuals/skyline.png"))
         img_width = pixmap.width()
         img_height = pixmap.height() // 2
         cropped_pixmap = pixmap.copy(0, pixmap.height() // 2, img_width, img_height) # bottom half

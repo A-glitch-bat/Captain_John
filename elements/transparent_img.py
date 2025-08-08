@@ -6,18 +6,18 @@ import os
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget, QTextEdit, QStackedLayout
 from PyQt5.QtGui import QPixmap, QPainter, QPixmap, QColor, QPen, QPainterPath
 from PyQt5.QtCore import Qt, QRectF
-import config
 #--------------------------------
 
 # Transparent image widget ft. a very clear naming system
 class TransparentImageWidget(QWidget):
-    def __init__(self, geometry, image_path):
+    def __init__(self, geometry, image_path, f_path):
         super(TransparentImageWidget, self).__init__()
         """
         prepare a layered widget for weather status display
         """
-        self.png_daytime = os.path.join(config.destination, "icons/pixel_sun.png")
-        self.png_nighttime = os.path.join(config.destination, "icons/pixel_moon.png")
+        self.f_path = f_path
+        self.png_daytime = os.path.join(self.f_path, "visuals/icons/pixel_sun.png")
+        self.png_nighttime = os.path.join(self.f_path, "visuals/icons/pixel_moon.png")
         self.overlay_text = "Weather"
 
         # QWidget size
