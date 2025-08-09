@@ -251,18 +251,24 @@ class Speechbot(QtWidgets.QWidget):
             self.text_field.append("Speech head ready")
 
     # sub-function ^
-    def process_detected_command(self, task_route: str, text_command: str):
+    def process_detected_command(self, task_route: int, text_command: str):
         print(f"""Processing {task_route} for text: {text_command}""")
-
-        if "stop" in task_route or "shut down" in task_route or "error" in task_route:
-            #self.shutdown_speech()
+        """
+        0 - shut down
+        1 - spotify task
+        2 - start timer
+        3+ - task finished, skip 
+        """
+        if task_route == 0:
+            self.shutdown_speech()
             print("shut down")
-        elif "spotify" in task_route or "music" in task_route or "playlist" in task_route:
+        elif task_route == 1:
             self.spotify_start()
-            # add other options when the time is right
-        elif "timer" in task_route or "countdown" in task_route:
+            print("spotify task")
+        elif task_route == 2:
             self.start_timer(480)
-            #print("timer")
+            print("start timer")
+        else: print("task finished, skip")
 
     # sub-function ^
     def shutdown_speech(self):

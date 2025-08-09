@@ -21,7 +21,7 @@ import config
 
 # Speech head class
 class ASRHead(QObject):
-    text_detected = pyqtSignal(str, str)
+    text_detected = pyqtSignal(int, str)
 
     def __init__(self, f_path):
         super(ASRHead, self).__init__()
@@ -77,7 +77,7 @@ class ASRHead(QObject):
                 with self.q.mutex:
                     self.q.queue.clear()
 
-                if "john" in text or "captain" in text:
+                if "john" in text or "captain" in text or "wake up" in text or self.loop:
                     print("John listening.")
                     sound.play()
 
@@ -101,21 +101,24 @@ class ASRHead(QObject):
 
                         # Transcribe directly from numpy array
                         result = self.transcriber.transcribe(resampled_audio, language="en")
-                        msg = result["text"]
-                        DATA = {'message':msg}
+                        DATA = {'message':result["text"]}
 
-                        route_task = requests.post(url = os.path.join(config.URL, "routerbot"),
-                                                data=DATA).text
-                        
-                        if self.speech_engine.free:
-                            print("Reading task route")
-                            self.speech_engine.speak(route_task)
+                        route_task = json.loads(requests.post(url = os.path.join(config.URL, "mainbot"),
+                                                data=DATA).text)
+                        tID = route_task["taskID"]
+                        msg = route_task["answer"]
+                        print(tID);print(msg)
 
                         # Exit if requested
-                        if result=="thank_you" or result=="cancel":
+                        if tID==0:
                             self.loop = False
+                            self.speech_engine.speak("Task done")
+                        else:
+                            if self.speech_engine.free:
+                                print("Reading task route")
+                                self.speech_engine.speak(tID)
 
-                        self.text_detected.emit(route_task, msg)
+                        self.text_detected.emit(tID, msg)
     #--------------------------------
 
     def stop(self):
