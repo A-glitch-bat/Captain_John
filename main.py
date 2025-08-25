@@ -114,11 +114,7 @@ class CustomWindow(QtWidgets.QMainWindow):
         main_layout.addWidget(button_container, alignment=Qt.AlignLeft)
 
         #--------------------------------
-        # VS Code Button
-        open_vscode_button = QtWidgets.QPushButton("CODE")
-        open_vscode_button.setMinimumSize(128, 64)
-        open_vscode_button.setMaximumSize(128, 64)
-        open_vscode_button.setStyleSheet(f"""
+        button_stylesheet =f"""
             QPushButton {{
                 color: black;
                 font-weight: bold;
@@ -135,7 +131,12 @@ class CustomWindow(QtWidgets.QMainWindow):
             QPushButton:pressed {{
                 background-image: url('{B2_pressed}');
             }}
-        """)
+        """
+        # VS Code Button
+        open_vscode_button = QtWidgets.QPushButton("CODE")
+        open_vscode_button.setMinimumSize(128, 64)
+        open_vscode_button.setMaximumSize(128, 64)
+        open_vscode_button.setStyleSheet(button_stylesheet)
         open_vscode_button.clicked.connect(self.open_vscode)
 
         glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
@@ -147,27 +148,10 @@ class CustomWindow(QtWidgets.QMainWindow):
         button_layout.addWidget(open_vscode_button, alignment=Qt.AlignCenter)
         #--------------------------------
         # SSH connection to Raspberry PI
-        ssh_button = QtWidgets.QPushButton("RPI", self)
+        ssh_button = QtWidgets.QPushButton("HOST", self)
         ssh_button.setMinimumSize(128, 64)
         ssh_button.setMaximumSize(128, 64)
-        ssh_button.setStyleSheet(f"""
-            QPushButton {{
-                color: black;
-                font-weight: bold;
-                font-size: 15px;
-                font-family: OCR A Extended;
-                border-radius: 10px;
-                padding: 12px 24px;
-                text-align: left;
-                background-image: url('{B2}');
-            }}
-            QPushButton:hover {{
-                background-image: url('{B2_pressed}');
-            }}
-            QPushButton:pressed {{
-                background-image: url('{B2_pressed}');
-            }}
-        """)
+        ssh_button.setStyleSheet(button_stylesheet)
         ssh_button.clicked.connect(self.ssh_to_rpi)
 
         glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
@@ -178,37 +162,20 @@ class CustomWindow(QtWidgets.QMainWindow):
         ssh_button.setGraphicsEffect(glow_effect)
         button_layout.addWidget(ssh_button, alignment=Qt.AlignCenter)
         #--------------------------------
-        # Testing button
-        test_button = QtWidgets.QPushButton("TEST", self)
-        test_button.setMinimumSize(128, 64)
-        test_button.setMaximumSize(128, 64)
-        test_button.setStyleSheet(f"""
-            QPushButton {{
-                color: black;
-                font-weight: bold;
-                font-size: 15px;
-                font-family: OCR A Extended;
-                border-radius: 10px;
-                padding: 12px 24px;
-                text-align: left;
-                background-image: url('{B2}');
-            }}
-            QPushButton:hover {{
-                background-image: url('{B2_pressed}');
-            }}
-            QPushButton:pressed {{
-                background-image: url('{B2_pressed}');
-            }}
-        """)
-        test_button.clicked.connect(self.open_rwindow)
+        # Cyberspace button
+        cyberspace_button = QtWidgets.QPushButton("DECK", self)
+        cyberspace_button.setMinimumSize(128, 64)
+        cyberspace_button.setMaximumSize(128, 64)
+        cyberspace_button.setStyleSheet(button_stylesheet)
+        cyberspace_button.clicked.connect(self.open_cyberspace)
 
         glow_effect = QtWidgets.QGraphicsDropShadowEffect(self)
         glow_effect.setBlurRadius(20)
         glow_effect.setColor(QColor("hotpink"))
         glow_effect.setOffset(0, 0)
 
-        test_button.setGraphicsEffect(glow_effect)
-        button_layout.addWidget(test_button, alignment=Qt.AlignCenter)
+        cyberspace_button.setGraphicsEffect(glow_effect)
+        button_layout.addWidget(cyberspace_button, alignment=Qt.AlignCenter)
         #--------------------------------
         # Radio buttons
         hbox_container = QWidget()
@@ -379,7 +346,16 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.listdisplay.show()
     #--------------------------------
     def ssh_to_rpi(self):
+        """
+        connect to Raspberry PI
+        """
         subprocess.Popen(["start", "cmd", "/k", "ssh raspberrypi"], shell=True)
+    #--------------------------------
+    def open_cyberspace(self):
+        """
+        open cyberspace from its directory
+        """
+        subprocess.Popen(config.cyberspace, shell=True)
     #--------------------------------
     def write_input(self):
         """
@@ -501,14 +477,6 @@ class CustomWindow(QtWidgets.QMainWindow):
                     font.setStrikeOut(False)
                     item_label.setFont(font)
                     item_label.setStyleSheet("color: hotpink;")
-    #--------------------------------
-    def open_rwindow(self):
-        """
-        rust console call
-        """
-        rust_project_dir = os.path.join(config.base_folder, "rust_console")
-        subprocess.Popen([self.r_path], cwd=rust_project_dir)
-        webbrowser.open("http:localhost:3000")
     #--------------------------------
     def update_weather(self):
         """
