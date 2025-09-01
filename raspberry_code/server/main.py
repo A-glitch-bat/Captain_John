@@ -44,12 +44,29 @@ def ask_mainbot():
     route = routerbot.classify(msg)
     taskID = 0
     response = msg
-    
-    # python does not have a switch
+    #--------------------------------
+    # 0 -> task not defined yet
+    # 1 -> task finished
+    # 2 -> short reply, process accordingly
+    # 3 -> timer
+    # 4 -> music
+    # 5 -> idk google it
+    #--------------------------------
     if route == "greeting":
+        taskID = 1
         response = "Hi. Bot on standby."
-    elif route == "yes":
-        response = "Confirmed."
+    elif route == "yes" or route == "no" or route == "maybe":
+        taskID = 2
+        response = route + "2" + msg
+    elif route == "timer":
+        taskID = 3
+        response = msg
+    elif route == "play_music" or route == "what_song" or route == "update_playlist":
+        taskID = 4
+        response = route + "4" + msg
+    elif route == "oos" or route == "definition":
+        taskID = 5
+        response = msg
     
     # return as json
     return jsonify({
