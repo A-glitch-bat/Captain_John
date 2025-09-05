@@ -2,6 +2,7 @@
 
 # Imports
 import os
+import json
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QImage, QPainter
@@ -16,6 +17,7 @@ class Chatbot(QtWidgets.QWidget):
         #--------------------------------
         self.main_window = main_window
         self.f_path = os.path.dirname(os.path.abspath(__file__))
+        self.disect = False
 
         # Set up main window properties
         self.setWindowTitle("Chat interface")
@@ -183,6 +185,31 @@ class Chatbot(QtWidgets.QWidget):
         else:
             self.reply = f"Error: {reply['error']}"
 
+        if self.disect:
+            analyse = json.loads(reply['data'])
+            #--------------------------------
+            # 0 -> task not defined yet
+            # 1 -> task finished
+            # 2 -> short reply, process accordingly
+            # 3 -> timer
+            # 4 -> music
+            # 5 -> idk google it
+            #--------------------------------
+            if analyse["taskID"] == 1:
+                print("task finished") 
+            elif analyse["taskID"] == 2:
+                print("yesno")
+                t, q = analyse["answer"].split(str(analyse["taskID"]), 1)
+                print(t);print(q)
+            elif analyse["taskID"] == 3:
+                print("timer")
+            elif analyse["taskID"] == 4:
+                print("spotify")
+                t, q = analyse["answer"].split(str(analyse["taskID"]), 1)
+                print(t);print(q)
+            else:
+                print("google it")
+
         # Type the message
         self.current_index = 0
         self.timer = QtCore.QTimer(self)
@@ -208,9 +235,12 @@ class Chatbot(QtWidgets.QWidget):
         """
         if self.main_window is not None:
             if self.main_window.radio_one.isChecked():
+                self.disect = True
                 return "mainbot"
             elif self.main_window.radio_two.isChecked():
+                self.disect = False
                 return "schizobot"
+        self.disect = False
         return "routerbot"
 #--------------------------------
 
