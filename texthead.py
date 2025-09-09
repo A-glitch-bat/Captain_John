@@ -7,6 +7,8 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QImage, QPainter
 from tasks.request_worker import RequestsThread
+from AI_heads.summarizer import text_sum
+from tasks.scrape import ask_the_web
 import config
 #--------------------------------
 
@@ -208,7 +210,12 @@ class Chatbot(QtWidgets.QWidget):
                 t, q = analyse["answer"].split(str(analyse["taskID"]), 1)
                 print(t);print(q)
             else:
-                print("google it")
+                # Don't know the specific task? Google it!
+                print("Googlin' it")
+                web_finds = ask_the_web(analyse["answer"])
+                print(web_finds)
+                combined_snippets = " ".join(web_finds[1].split(". ")[:5])
+                self.reply = text_sum(combined_snippets)
 
         # Type the message
         self.current_index = 0
@@ -240,8 +247,10 @@ class Chatbot(QtWidgets.QWidget):
             elif self.main_window.radio_two.isChecked():
                 self.disect = False
                 return "schizobot"
-        self.disect = False
-        return "routerbot"
+            self.disect = False
+            return "routerbot"
+        self.disect = True
+        return "mainbot"
 #--------------------------------
 
 # Temporary main
