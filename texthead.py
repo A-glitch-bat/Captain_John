@@ -7,8 +7,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QImage, QPainter
 from tasks.request_worker import RequestsThread
-from AI_heads.summarizer import text_sum
-from tasks.scrape import ask_the_web
+from AI_heads.summarizer import Summarizer
 import config
 #--------------------------------
 
@@ -19,6 +18,7 @@ class Chatbot(QtWidgets.QWidget):
         #--------------------------------
         self.main_window = main_window
         self.f_path = os.path.dirname(os.path.abspath(__file__))
+        self.summy = Summarizer()
         self.disect = False
 
         # Set up main window properties
@@ -183,39 +183,13 @@ class Chatbot(QtWidgets.QWidget):
         get the bot reply and type it out
         """
         if reply["success"]:
-            self.reply = f"{reply['data']}"
+            if self.disect:
+                self.reply = self.summy.process_reply(reply)
+            else:
+                self.reply = f"{reply['data']}"
+        # or return error
         else:
             self.reply = f"Error: {reply['error']}"
-
-        if self.disect:
-            analyse = json.loads(reply['data'])
-            #--------------------------------
-            # 0 -> task not defined yet
-            # 1 -> task finished
-            # 2 -> short reply, process accordingly
-            # 3 -> timer
-            # 4 -> music
-            # 5 -> idk google it
-            #--------------------------------
-            if analyse["taskID"] == 1:
-                print("task finished") 
-            elif analyse["taskID"] == 2:
-                print("yesno")
-                t, q = analyse["answer"].split(str(analyse["taskID"]), 1)
-                print(t);print(q)
-            elif analyse["taskID"] == 3:
-                print("timer")
-            elif analyse["taskID"] == 4:
-                print("spotify")
-                t, q = analyse["answer"].split(str(analyse["taskID"]), 1)
-                print(t);print(q)
-            else:
-                # Don't know the specific task? Google it!
-                print("Googlin' it")
-                web_finds = ask_the_web(analyse["answer"])
-                print(web_finds)
-                combined_snippets = " ".join(web_finds[1].split(". ")[:5])
-                self.reply = text_sum(combined_snippets)
 
         # Type the message
         self.current_index = 0

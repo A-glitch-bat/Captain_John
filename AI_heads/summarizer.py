@@ -1,23 +1,61 @@
 #--------------------------------
 
 # Imports
+import json
+import os
+os.environ["USE_TF"] = "0"
+
 from transformers import pipeline
+from tasks.scrape import ask_the_web
 #--------------------------------
 
-def text_sum(text):
-    """
-    want sum text dawg
-    """
-    summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")
+class Summarizer:
+    def __init__(self):
+        self.summarizer = pipeline("summarization", 
+                          model="./models/distilbart-cnn-12-6",
+                          framework="pt")
+    #--------------------------------
 
-    summary = summarizer(
-        text, 
-        max_length=60,
-        min_length=30,
-        do_sample=False
-    )
-    #print(summary[0]['summary_text'])
-    return summary[0]['summary_text']
+    def text_sum(self, text, max_length=60, min_length=30):
+        """
+        want sum text dawg
+        """
+        summary = self.summarizer(
+            text,
+            max_length=max_length,
+            min_length=min_length,
+            do_sample=False
+        )
+        return summary[0]["summary_text"]
+    
+    def process_reply(self, reply):
+        analyse = json.loads(reply['data'])
+        #--------------------------------
+        # 0 -> task not defined yet
+        # 1 -> task finished
+        # 2 -> short reply, process accordingly
+        # 3 -> timer
+        # 4 -> music
+        # 5 -> idk google it
+        #--------------------------------
+        if analyse["taskID"] == 1:
+            print("task finished") 
+        elif analyse["taskID"] == 2:
+            print("yesno")
+            t, q = analyse["answer"].split(str(analyse["taskID"]), 1)
+            print(t);print(q)
+        elif analyse["taskID"] == 3:
+            print("timer")
+        elif analyse["taskID"] == 4:
+            print("spotify")
+            t, q = analyse["answer"].split(str(analyse["taskID"]), 1)
+            print(t);print(q)
+        else:
+            # Don't know the specific task? Google it!
+            print("Googlin' it")
+            web_finds = ask_the_web(analyse["answer"])
+            combined_snippets = " ".join(web_finds[1].split(". ")[:5])
+            return self.text_sum(combined_snippets)
 #--------------------------------
 
 # Temporary main
@@ -42,6 +80,7 @@ if __name__ == "__main__":
     However, AI also raises important ethical questions, including concerns about 
     privacy, bias, and job displacement. 
     """
-    sum = text_sum(text)
+    summy = Summarizer()
+    sum = summy.text_sum(text)
     print(sum)
 #--------------------------------

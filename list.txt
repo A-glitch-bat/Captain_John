@@ -1,6 +1,6 @@
 Train router again
 Prove P = NP or P != NP
-Move scrape&sum to an AI_head
 Fix sumbot load and limits
 Connect client side to speech
 Return schizobot
+Movable interface button
