@@ -12,7 +12,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (
     QRadioButton, QHBoxLayout, QVBoxLayout, QButtonGroup, QWidget)
 from PyQt5.QtGui import QColor, QPixmap, QIcon, QImage, QPainter
-from PyQt5.QtCore import Qt, QSize, QTimer
+from PyQt5.QtCore import Qt, QSize, QTimer, QPoint
 
 from panel import MainWindow
 from texthead import Chatbot
@@ -36,6 +36,7 @@ class CustomWindow(QtWidgets.QMainWindow):
         """
         self.init_class = Initializer()
         self.txt_file = os.path.join(self.f_path, "list.txt")
+        self._drag_pos = None
         B1 = os.path.join(self.f_path, "visuals/Button1.png").replace("\\", "/")
         B2 = os.path.join(self.f_path, "visuals/Button2.png").replace("\\", "/")
         B2_pressed = os.path.join(self.f_path, "visuals/Button2_pressed.png").replace("\\", "/")
@@ -324,26 +325,50 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.close_button.setGeometry(self.width() - int(config.scale*60), int(config.scale*30),
                                       int(config.scale*50), int(config.scale*30)) # L, H, R, W
     #--------------------------------
+    def mousePressEvent(self, event):
+        """
+        move event logic for entire window
+        """
+        if event.button() == Qt.LeftButton:
+            self._drag_pos = event.globalPos() - self.frameGeometry().topLeft()
+            event.accept()
+    # mouse drag ^
+    def mouseMoveEvent(self, event):
+        if self._drag_pos and event.buttons() & Qt.LeftButton:
+            self.move(event.globalPos() - self._drag_pos)
+            event.accept()
+    # mouse release ^
+    def mouseReleaseEvent(self, event):
+        self._drag_pos = None
+        event.accept()
+    # send to other windows ^
+    def moveEvent(self, event):
+        dPoint = event.pos() - event.oldPos()
+        self.speechbot.move(self.speechbot.pos() + dPoint)
+        self.chatbot.move(self.chatbot.pos() + dPoint)
+        self.info_panel.move(self.info_panel.pos() + dPoint)
+        super().moveEvent(event)
+    #--------------------------------
     def open_vscode(self):
         folder_path = "C:/John"
         subprocess.Popen(["code", folder_path], shell=True)
     #--------------------------------
     def open_info_panel(self):
         """
-        open InfoPanel on button click
+        open info panel
         """
         self.info_panel = MainWindow()
         self.info_panel.show()
     #--------------------------------
     def start_chats(self):
         """
-        open chat AIs on button click
+        open chat AIs
         """
-        self.aihead = Chatbot(main_window=self)
-        self.aihead.show()
+        self.chatbot = Chatbot(main_window=self)
+        self.chatbot.show()
 
-        self.listdisplay = Speechbot(main_window=self)
-        self.listdisplay.show()
+        self.speechbot = Speechbot(main_window=self)
+        self.speechbot.show()
     #--------------------------------
     def ssh_to_rpi(self):
         """
