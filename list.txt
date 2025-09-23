@@ -2,4 +2,5 @@ Train router again
 Prove P = NP or P != NP
 Fix sumbot load and limits
 Connect client side to speech
+Make settings button
 Return schizobot

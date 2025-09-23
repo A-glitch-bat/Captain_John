@@ -4,7 +4,7 @@
 import os
 import sys
 import subprocess
-import webbrowser
+import ctypes
 import requests
 
 from datetime import datetime
@@ -12,7 +12,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (
     QRadioButton, QHBoxLayout, QVBoxLayout, QButtonGroup, QWidget)
 from PyQt5.QtGui import QColor, QPixmap, QIcon, QImage, QPainter
-from PyQt5.QtCore import Qt, QSize, QTimer, QPoint
+from PyQt5.QtCore import Qt, QSize, QTimer
 
 from panel import MainWindow
 from texthead import Chatbot
@@ -23,6 +23,7 @@ from elements.transparent_img import TransparentImageWidget
 
 os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 import config
+from assets import settings
 #--------------------------------
 
 # Main class
@@ -569,8 +570,18 @@ class CustomWindow(QtWidgets.QMainWindow):
 
 #--------------------------------
 # Wake John up
-app = QtWidgets.QApplication(sys.argv)
-window = CustomWindow()
-window.show()
-sys.exit(app.exec_())
+def check_startup():
+    """
+    open app if called from console
+    or autostart is enabled
+    """
+    return ctypes.windll.kernel32.GetConsoleWindow() != 0 or settings.autostart
+# check and run main ^
+if check_startup():
+    app = QtWidgets.QApplication(sys.argv)
+    window = CustomWindow()
+    window.show()
+    sys.exit(app.exec_())
+else:
+    sys.exit(0)
 #--------------------------------
