@@ -4,3 +4,5 @@ Fix sumbot load and limits
 Connect client side to speech
 Make settings button
 Return schizobot
+Window use without main
+Gather science news
