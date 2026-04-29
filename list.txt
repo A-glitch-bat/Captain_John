@@ -1,6 +1,6 @@
-Train router again
-Prove P = NP or P != NP
+Set up Redmine project management 
 Fix sumbot load and limits
+Prove P = NP or P != NP
 Connect client side to speech
 Make settings button
 Return schizobot

@@ -6,7 +6,9 @@ import sys
 import subprocess
 import ctypes
 import requests
+import json
 
+from pathlib import Path
 from datetime import datetime
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (
@@ -23,8 +25,9 @@ from elements.transparent_img import TransparentImageWidget
 
 os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 import config
-from assets import settings
 #--------------------------------
+
+CONFIG_PATH = Path.home() / ".settings_config.json"
 
 # Main class
 class CustomWindow(QtWidgets.QMainWindow):
@@ -570,12 +573,22 @@ class CustomWindow(QtWidgets.QMainWindow):
 
 #--------------------------------
 # Wake John up
+def get_autostart():
+    if not CONFIG_PATH.exists():
+        return False
+
+    with open(CONFIG_PATH, "r") as f:
+        config = json.load(f)
+
+    return config.get("autostart", False)
+
 def check_startup():
     """
     open app if called from console
     or autostart is enabled
     """
-    return ctypes.windll.kernel32.GetConsoleWindow() != 0 or settings.autostart
+    return ctypes.windll.kernel32.GetConsoleWindow() != 0 or get_autostart()
+
 # check and run main ^
 if check_startup():
     app = QtWidgets.QApplication(sys.argv)
