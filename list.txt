@@ -4,3 +4,5 @@ Prove P = NP or P != NP
 Connect client side to speech
 Make settings button
 Return schizobot
+Window use without main
+Gather science news
