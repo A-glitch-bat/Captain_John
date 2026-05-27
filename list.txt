@@ -1,6 +1,6 @@
 Set up Redmine project management 
 Fix sumbot load and limits
-Prove P = NP or P != NP
+STOUT STOUT STOUT STOUT
 Connect client side to speech
 Make settings button
 Return schizobot
