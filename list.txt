@@ -6,3 +6,8 @@ Make settings button
 Return schizobot
 Window use without main
 Gather science news
+Rust executable starts at login
+System tray icon appears
+Clicking LAUNCH starts Docker Compose
+Tray icon responds to launch success
+Clicking STOP shuts Docker down
