@@ -1,13 +1,11 @@
-Set up Redmine project management 
-Fix sumbot load and limits
-STOUT STOUT STOUT STOUT
-Connect client side to speech
-Make settings button
-Return schizobot
-Window use without main
-Gather science news
-Rust executable starts at login
 System tray icon appears
+Make settings button
 Clicking LAUNCH starts Docker Compose
 Tray icon responds to launch success
 Clicking STOP shuts Docker down
+Set up Redmine project management 
+Gather science news
+Return schizobot
+Fix sumbot load and limits
+STOUT STOUT STOUT STOUT
+Connect client side to speech
