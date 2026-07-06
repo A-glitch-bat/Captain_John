@@ -30,6 +30,7 @@ pub struct FrontLauncher {
     window: Option<Rc<Window>>,
     surface: Option<Surface<Rc<Window>, Rc<Window>>>,
     mode: LauncherMode,
+    cursor_position: Option<(f64, f64)>,
 }
 
 impl Default for FrontLauncher {
@@ -38,6 +39,7 @@ impl Default for FrontLauncher {
             window: None,
             surface: None,
             mode: LauncherMode::Bubble,
+            cursor_position: None,
         }
     }
 }
@@ -139,7 +141,18 @@ impl ApplicationHandler for FrontLauncher {
                     let _ = window.drag_window();
                 }
                 LauncherMode::Panel => {
-                    // Later: handle panel buttons here.
+                    println!("click");
+
+                    if let Some((x, y)) = self.cursor_position {
+                        let close_left = 0.0;
+                        let close_right = 32.0;
+                        let close_top = 0.0;
+                        let close_bottom = 32.0;
+
+                        if x >= close_left && x <= close_right && y >= close_top && y <= close_bottom {
+                            event_loop.exit();
+                        }
+                    }
                 }
             },
 
@@ -180,7 +193,11 @@ impl ApplicationHandler for FrontLauncher {
 
                 window.request_redraw();
             }
-
+            
+            WindowEvent::CursorMoved { position, .. } => {
+                self.cursor_position = Some((position.x, position.y));
+            }
+            
             WindowEvent::RedrawRequested => {
                 if let Some(surface) = self.surface.as_mut() {
                     match self.mode {
