@@ -3,7 +3,7 @@
 // Imports
 mod app;
 mod colors;
-mod drawing;
+mod ui;
 
 use app::FrontLauncher;
 use winit::event_loop::{ControlFlow, EventLoop};

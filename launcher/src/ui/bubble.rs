@@ -12,7 +12,7 @@ use crate::colors::{blending_to_rgba, rgba};
 
 const TIME: f32 = 0.0;
 
-pub fn draw_popup(window: &Window, surface: &mut Surface<Rc<Window>, Rc<Window>>) {
+pub fn draw_bubble(window: &Window, surface: &mut Surface<Rc<Window>, Rc<Window>>) {
     let size = window.inner_size();
 
     surface
