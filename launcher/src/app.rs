@@ -11,11 +11,12 @@ use winit::{
     event_loop::ActiveEventLoop,
     window::{Window, WindowId, WindowLevel},
 };
-//--------------------------------
-
 
 use crate::ui::bubble::draw_bubble;
 use crate::ui::panel::draw_panel;
+//--------------------------------
+
+
 const BUBBLE_SIZE: u32 = 96;
 const PANEL_WIDTH: u32 = 320;
 const PANEL_HEIGHT: u32 = 220;
@@ -95,9 +96,14 @@ impl FrontLauncher {
         window.set_outer_position(PhysicalPosition::new(panel_x, panel_y));
     }
 }
+//--------------------------------
 
 impl ApplicationHandler for FrontLauncher {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
+        if self.window.is_some() {
+            return;
+        }
+
         let window = Rc::new(
             event_loop
                 .create_window(
@@ -110,7 +116,17 @@ impl ApplicationHandler for FrontLauncher {
                         .with_window_level(WindowLevel::AlwaysOnTop),
                 )
                 .unwrap(),
-        );
+            );
+
+        if let Some(monitor) = window.current_monitor() {
+            let monitor_position = monitor.position();
+            let monitor_size = monitor.size();
+
+            let margin = 120;
+            let x = monitor_position.x + monitor_size.width as i32 - BUBBLE_SIZE as i32 - margin;
+            let y = monitor_position.y + monitor_size.height as i32 - BUBBLE_SIZE as i32 - margin;
+            window.set_outer_position(PhysicalPosition::new(x, y));
+        }
 
         let context = Context::new(window.clone()).unwrap();
         let surface = Surface::new(&context, window.clone()).unwrap();
@@ -210,11 +226,7 @@ impl ApplicationHandler for FrontLauncher {
         }
     }
 
-    fn about_to_wait(&mut self, _event_loop: &ActiveEventLoop) {
-        if let Some(window) = self.window.as_ref() {
-            window.request_redraw();
-        }
-    }
+    fn about_to_wait(&mut self, _event_loop: &ActiveEventLoop) {}
 }
 //--------------------------------
 

@@ -1,8 +1,19 @@
 [package]
+
 name = "launcher"
 version = "0.1.0"
 edition = "2024"
+#--------------------------------
+
 
 [dependencies]
+
+# window creation, event loop, mouse/keyboard input and window management
 winit = "0.30"
+
+# direct access to the window pixel buffer for custom software rendering
 softbuffer = "0.4"
+
+# built-in 8x8 bitmap font for drawing simple text
+font8x8 = "0.3"
+#--------------------------------
