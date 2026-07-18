@@ -22,5 +22,31 @@ pub fn blending_to_rgba(coefficient: f32, mute_factor: f32, alpha: u8) -> u32 {
 
     rgba((r * m) as u8, (g * m) as u8, (b * m) as u8, alpha)
 }
+
+pub fn lighten(color: u32, amount: u8, new_a: u8) -> u32 {
+    let r = ((color >> 16) & 0xFF) as u8;
+    let g = ((color >> 8) & 0xFF) as u8;
+    let b = (color & 0xFF) as u8;
+
+    rgba(
+        r.saturating_add(amount),
+        g.saturating_add(amount),
+        b.saturating_add(amount),
+        new_a,
+    )
+}
+
+pub fn darken(color: u32, amount: u8, new_a: u8) -> u32 {
+    let r = ((color >> 16) & 0xFF) as u8;
+    let g = ((color >> 8) & 0xFF) as u8;
+    let b = (color & 0xFF) as u8;
+
+    rgba(
+        r.saturating_sub(amount),
+        g.saturating_sub(amount),
+        b.saturating_sub(amount),
+        new_a,
+    )
+}
 //--------------------------------
 

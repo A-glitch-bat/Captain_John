@@ -2,8 +2,9 @@
 
 // Imports
 mod app;
-mod colors;
 mod ui;
+mod colors;
+mod status;
 
 use app::FrontLauncher;
 use winit::event_loop::{ControlFlow, EventLoop};

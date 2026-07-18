@@ -7,8 +7,8 @@ use softbuffer::Surface;
 use winit::window::Window;
 use font8x8::{UnicodeFonts, BASIC_FONTS};
 
-use crate::colors::rgba;
-use crate::colors::blending_to_rgba;
+use crate::colors::{rgba, blending_to_rgba, lighten, darken};
+use crate::status::Status;
 //--------------------------------
 
 
@@ -66,15 +66,46 @@ fn draw_text(buffer: &mut [u32], width: u32, text: &str, start_x: u32, start_y: 
 fn draw_status_box(buffer: &mut [u32], width: u32, x: u32, y: u32, rectangle_width: u32, rectangle_height: u32, color: u32) {
     for row in y..y + rectangle_height {
         for column in x..x + rectangle_width {
-            let index = (row * width + column) as usize;
+            let index = (row*width + column) as usize;
             buffer[index] = color;
         }
     }
+
+    // highlight the edge of the border
+    let highlight_color = lighten(color, 50, 255);
+    for column in x..x + rectangle_width {
+        buffer[((y+2)*width + column) as usize] = highlight_color;
+        buffer[((y+rectangle_height-3)*width + column) as usize] = highlight_color;
+    }
+    for row in y..y + rectangle_height {
+        buffer[(row*width + x+2) as usize] = highlight_color;
+        buffer[(row*width + (x-3+rectangle_width)) as usize] = highlight_color;
+    }
+
+    // darken 2 border pixels
+    let border_color = darken(color, 50, 255);
+    for column in x..x + rectangle_width {
+        buffer[(y*width + column) as usize] = border_color;
+        buffer[((y+1)*width + column) as usize] = border_color;
+        buffer[((y+rectangle_height-2)*width + column) as usize] = border_color;
+        buffer[((y+rectangle_height-1)*width + column) as usize] = border_color;
+    }
+    for row in y..y + rectangle_height {
+        buffer[(row*width + x) as usize] = border_color;
+        buffer[(row*width + x+1) as usize] = border_color;
+        buffer[(row*width + (x-2+rectangle_width)) as usize] = border_color;
+        buffer[(row*width + (x-1+rectangle_width)) as usize] = border_color;
+    }
+
 }
 //--------------------------------
 
 
-pub fn draw_panel(window: &Window, surface: &mut Surface<Rc<Window>, Rc<Window>>) {
+pub fn draw_panel(
+    window: &Window, 
+    surface: &mut Surface<Rc<Window>, Rc<Window>>,
+    status: &Status
+) {
     let size = window.inner_size();
 
     surface
@@ -119,7 +150,7 @@ pub fn draw_panel(window: &Window, surface: &mut Surface<Rc<Window>, Rc<Window>>
         status_y - 20 + (4*status_scale),
         40,
         40,
-        rgba(200, 50, 50, 255),
+        status.color()
     );
 
     buffer.present().unwrap();

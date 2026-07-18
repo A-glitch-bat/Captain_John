@@ -14,6 +14,7 @@ use winit::{
 
 use crate::ui::bubble::draw_bubble;
 use crate::ui::panel::draw_panel;
+use crate::status::Status;
 //--------------------------------
 
 
@@ -28,6 +29,7 @@ enum LauncherMode {
 }
 
 pub struct FrontLauncher {
+    pub status: Status,
     window: Option<Rc<Window>>,
     surface: Option<Surface<Rc<Window>, Rc<Window>>>,
     mode: LauncherMode,
@@ -37,6 +39,7 @@ pub struct FrontLauncher {
 impl Default for FrontLauncher {
     fn default() -> Self {
         Self {
+            status: Status::Offline,
             window: None,
             surface: None,
             mode: LauncherMode::Bubble,
@@ -167,6 +170,39 @@ impl ApplicationHandler for FrontLauncher {
 
                         if x >= close_left && x <= close_right && y >= close_top && y <= close_bottom {
                             event_loop.exit();
+                            return;
+                        }
+
+                        let status_x = 20;
+                        let status_y = 40;
+                        let status_scale = 2;
+
+                        let indicator_x =
+                            status_x + "Status".len() as u32 * status_scale * 8;
+
+                        let indicator_y =
+                            status_y - 20 + 4 * status_scale;
+
+                        let indicator_width = 40;
+                        let indicator_height = 40;
+
+                        let inside_status_indicator =
+                            x >= indicator_x as f64
+                                && x < (indicator_x + indicator_width) as f64
+                                && y >= indicator_y as f64
+                                && y < (indicator_y + indicator_height) as f64;
+
+                        if inside_status_indicator {
+                            if self.status == Status::Offline {
+                                self.status = Status::Starting;
+                            }
+                            else if self.status == Status::Starting {
+                                self.status = Status::Online;
+                            }
+                            else {
+                                self.status = Status::Offline;
+                            }
+                            window.request_redraw();
                         }
                     }
                 }
@@ -218,7 +254,7 @@ impl ApplicationHandler for FrontLauncher {
                 if let Some(surface) = self.surface.as_mut() {
                     match self.mode {
                         LauncherMode::Bubble => draw_bubble(window, surface),
-                        LauncherMode::Panel => draw_panel(window, surface),
+                        LauncherMode::Panel => draw_panel(window, surface, &self.status),
                     }
                 }
             }
