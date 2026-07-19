@@ -1,5 +1,4 @@
 Make settings button
-Clicking LAUNCH starts Docker Compose
 Clicking STOP shuts Docker down
 System tray icon appears
 Set up Redmine project management 

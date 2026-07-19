@@ -5,7 +5,7 @@ use std::{
     thread,
     rc::Rc,
     sync::mpsc,
-    time::Duration,
+    process::Command,
 };
 use softbuffer::{Context, Surface};
 use winit::{
@@ -61,24 +61,41 @@ impl Default for FrontLauncher {
 
 impl FrontLauncher {
     fn start_services(&mut self) {
-        print!("Starting.\n");
+        println!("Starting.");
         self.status = Status::Starting;
+
         if let Some(window) = self.window.as_ref() {
             window.request_redraw();
-            print!("Button turned yellow!\n");
+            println!("Button turned yellow!");
         }
 
         let (tx, rx) = mpsc::channel();
         self.worker_rx = Some(rx);
 
         thread::spawn(move || {
-            thread::sleep(Duration::from_secs(2));
-
-            let result: Result<(), String> = Ok(());
+            let result: Result<std::process::ExitStatus, std::io::Error> = Command::new("docker")
+                .args(["compose", "up", "-d"])
+                .current_dir("..")
+                .status();
 
             let message = match result {
-                Ok(()) => WorkerMessage::Success,
-                Err(error) => WorkerMessage::Error(error),
+                Ok(exit_status) if exit_status.success() => {
+                    WorkerMessage::Success
+                }
+
+                Ok(exit_status) => {
+                    WorkerMessage::Error(format!(
+                        "Docker Compose exited with status: {}",
+                        exit_status
+                    ))
+                }
+
+                Err(error) => {
+                    WorkerMessage::Error(format!(
+                        "Could not launch Docker: {}",
+                        error
+                    ))
+                }
             };
 
             let _ = tx.send(message);
