@@ -1,8 +1,12 @@
 //--------------------------------
 
 // Imports
-use std::rc::Rc;
-
+use std::{
+    thread,
+    rc::Rc,
+    sync::mpsc,
+    time::Duration,
+};
 use softbuffer::{Context, Surface};
 use winit::{
     application::ApplicationHandler,
@@ -22,6 +26,11 @@ const BUBBLE_SIZE: u32 = 96;
 const PANEL_WIDTH: u32 = 320;
 const PANEL_HEIGHT: u32 = 220;
 
+enum WorkerMessage {
+    Success,
+    Error(String),
+}
+
 #[derive(Clone, Copy)]
 enum LauncherMode {
     Bubble,
@@ -30,6 +39,7 @@ enum LauncherMode {
 
 pub struct FrontLauncher {
     pub status: Status,
+    worker_rx: Option<mpsc::Receiver<WorkerMessage>>,
     window: Option<Rc<Window>>,
     surface: Option<Surface<Rc<Window>, Rc<Window>>>,
     mode: LauncherMode,
@@ -40,6 +50,7 @@ impl Default for FrontLauncher {
     fn default() -> Self {
         Self {
             status: Status::Offline,
+            worker_rx: None,
             window: None,
             surface: None,
             mode: LauncherMode::Bubble,
@@ -49,6 +60,58 @@ impl Default for FrontLauncher {
 }
 
 impl FrontLauncher {
+    fn start_services(&mut self) {
+        print!("Starting.\n");
+        self.status = Status::Starting;
+        if let Some(window) = self.window.as_ref() {
+            window.request_redraw();
+            print!("Button turned yellow!\n");
+        }
+
+        let (tx, rx) = mpsc::channel();
+        self.worker_rx = Some(rx);
+
+        thread::spawn(move || {
+            thread::sleep(Duration::from_secs(2));
+
+            let result: Result<(), String> = Ok(());
+
+            let message = match result {
+                Ok(()) => WorkerMessage::Success,
+                Err(error) => WorkerMessage::Error(error),
+            };
+
+            let _ = tx.send(message);
+        });
+    }
+
+    fn check_worker_messages(&mut self) {
+        let message = self
+            .worker_rx
+            .as_ref()
+            .and_then(|rx| rx.try_recv().ok());
+
+        match message {
+            Some(WorkerMessage::Success) => {
+                println!("Worker succeeded.");
+                self.status = Status::Online;
+                self.worker_rx = None;
+            }
+
+            Some(WorkerMessage::Error(error)) => {
+                eprintln!("Worker failed: {error}");
+                self.status = Status::Offline;
+                self.worker_rx = None;
+            }
+
+            None => return,
+        }
+
+        if let Some(window) = self.window.as_ref() {
+            window.request_redraw();
+        }
+    }
+
     fn position_panel_from_bubble(&self) {
         let Some(window) = self.window.as_ref() else {
             return;
@@ -194,15 +257,12 @@ impl ApplicationHandler for FrontLauncher {
 
                         if inside_status_indicator {
                             if self.status == Status::Offline {
-                                self.status = Status::Starting;
+                                self.start_services();
                             }
-                            else if self.status == Status::Starting {
-                                self.status = Status::Online;
+
+                            if let Some(window) = self.window.as_ref() {
+                                window.request_redraw();
                             }
-                            else {
-                                self.status = Status::Offline;
-                            }
-                            window.request_redraw();
                         }
                     }
                 }
@@ -262,7 +322,9 @@ impl ApplicationHandler for FrontLauncher {
         }
     }
 
-    fn about_to_wait(&mut self, _event_loop: &ActiveEventLoop) {}
+    fn about_to_wait(&mut self, _event_loop: &ActiveEventLoop) {
+        self.check_worker_messages();
+    }
 }
 //--------------------------------
 

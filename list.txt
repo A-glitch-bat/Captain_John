@@ -1,8 +1,7 @@
-System tray icon appears
 Make settings button
 Clicking LAUNCH starts Docker Compose
-Tray icon responds to launch success
 Clicking STOP shuts Docker down
+System tray icon appears
 Set up Redmine project management 
 Gather science news
 Return schizobot
