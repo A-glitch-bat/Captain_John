@@ -1,3 +1,6 @@
 services:
-  test:
-    image: hello-world
+  captain-john:
+    build:
+      context: .
+    container_name: captain-john
+    restart: unless-stopped

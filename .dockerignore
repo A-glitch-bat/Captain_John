@@ -1,0 +1,8 @@
+launcher/
+.git/
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+models/
