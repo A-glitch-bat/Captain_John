@@ -71,7 +71,7 @@ impl FrontLauncher {
 
         let (tx, rx) = mpsc::channel();
         self.worker_rx = Some(rx);
-
+        /*
         thread::spawn(move || {
             let result: Result<std::process::ExitStatus, std::io::Error> = Command::new("docker")
                 .args(["compose", "up", "-d"])
@@ -96,6 +96,24 @@ impl FrontLauncher {
                         error
                     ))
                 }
+            };
+
+            let _ = tx.send(message);
+        });
+        */
+        thread::spawn(move || {
+            let result = Command::new("py")
+                .args(["-3.11", "main.py"])
+                .current_dir("..")
+                .spawn();
+
+            let message = match result {
+                Ok(_child) => WorkerMessage::Success,
+
+                Err(error) => WorkerMessage::Error(format!(
+                    "Could not launch main.py: {}",
+                    error
+                )),
             };
 
             let _ = tx.send(message);

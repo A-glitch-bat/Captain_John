@@ -1,7 +1,7 @@
 Make settings button
-Clicking STOP shuts Docker down
 System tray icon appears
-Set up Redmine project management 
+App shutdown from front desk
+Redmine project management 
 Gather science news
 Return schizobot
 Fix sumbot load and limits
