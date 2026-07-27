@@ -2,10 +2,12 @@
 
 // Imports
 use std::{
+    io,
     thread,
     rc::Rc,
     sync::mpsc,
     process::Command,
+    path::{Path, PathBuf},
 };
 use softbuffer::{Context, Surface};
 use winit::{
@@ -59,6 +61,30 @@ impl Default for FrontLauncher {
     }
 }
 
+// find main file regardless of run location
+fn find_app_root(exe_path: &Path) -> io::Result<PathBuf> {
+    let exe_dir = exe_path.parent().ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::NotFound,
+            "Could not determine the launcher directory",
+        )
+    })?;
+
+    for directory in exe_dir.ancestors() {
+        if directory.join("main.py").is_file() {
+            return Ok(directory.to_path_buf());
+        }
+    }
+
+    Err(io::Error::new(
+        io::ErrorKind::NotFound,
+        format!(
+            "Could not find main.py above {}",
+            exe_dir.display()
+        ),
+    ))
+}
+
 impl FrontLauncher {
     fn start_services(&mut self) {
         println!("Starting.");
@@ -102,14 +128,31 @@ impl FrontLauncher {
         });
         */
         thread::spawn(move || {
-            let result = Command::new("py")
-                .args(["-3.11", "main.py"])
-                .current_dir("..")
-                .spawn();
+            let result = std::env::current_exe()
+                .and_then(|exe_path| find_app_root(&exe_path))
+                .and_then(|app_root| {
+                    let main_path = app_root.join("main.py");
+
+                    Command::new("py")
+                        .args(["-3.11"])
+                        .arg(&main_path)
+                        .current_dir(&app_root)
+                        .spawn()
+                        .map_err(|error| {
+                            io::Error::new(
+                                error.kind(),
+                                format!(
+                                    "Failed to run pyw -3.11 \"{}\" from \"{}\": {}",
+                                    main_path.display(),
+                                    app_root.display(),
+                                    error
+                                ),
+                            )
+                        })
+                });
 
             let message = match result {
                 Ok(_child) => WorkerMessage::Success,
-
                 Err(error) => WorkerMessage::Error(format!(
                     "Could not launch main.py: {}",
                     error

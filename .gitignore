@@ -26,7 +26,6 @@ target/
 
 # Executables
 assets/start_john.bat
-*.exe
 *.dll
 *.so
 *.dylib
