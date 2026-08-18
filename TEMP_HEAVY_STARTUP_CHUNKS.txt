@@ -1,0 +1,268 @@
+TEMP HEAVY STARTUP CHUNKS
+
+These chunks have now been removed from frontend startup or replaced with
+lightweight placeholders. This file is a holding area in case any of the old
+logic needs to be rebuilt later.
+
+Safe timing pass:
+- main.py import/startup path: about 11s with GUI launch disabled
+- panel: 2.28s
+- texthead: 5.42s
+- speechhead: 3.75s
+- main_init: 0.52s
+- AI_heads.summarizer: 5.46s
+- AI_heads.ASR_head: 3.47s
+- tasks.spotifyauth: 0.27s
+
+After first removal pass:
+- main.py import/startup path with GUI launch disabled: about 0.29s
+- panel: 0.18s
+- texthead: 0.22s
+- speechhead: 0.10s
+
+============================================================
+main.py
+============================================================
+
+Heavy top-level imports to move behind lazy frontend actions:
+
+from panel import MainWindow
+from texthead import Chatbot
+from speechhead import Speechbot
+from main_init import Initializer
+
+Startup initializer:
+
+self.init_class = Initializer()
+
+Blocking startup weather/location chunk:
+
+self.coords = self.init_class.get_geostats()
+self.suntime = self.init_class.daytime_calculator(self.coords[0], self.coords[1], self.today)
+self.update_weather()
+
+Startup window creation chunk:
+
+self.start_chats()
+self.open_info_panel()
+
+Info panel startup:
+
+def open_info_panel(self):
+    """
+    open info panel
+    """
+    self.info_panel = MainWindow()
+    self.info_panel.show()
+
+Chat/speech startup:
+
+def start_chats(self):
+    """
+    open chat AIs
+    """
+    self.chatbot = Chatbot(main_window=self)
+    self.chatbot.show()
+
+    self.speechbot = Speechbot(main_window=self)
+    self.speechbot.show()
+
+============================================================
+texthead.py
+============================================================
+
+Heavy top-level import:
+
+from AI_heads.summarizer import Summarizer
+
+Heavy constructor line:
+
+self.summy = Summarizer()
+
+Backend-dependent reply processing:
+
+if self.disect:
+    self.reply = self.summy.process_reply(reply)
+else:
+    self.reply = f"{reply['data']}"
+
+============================================================
+AI_heads/summarizer.py
+============================================================
+
+Heavy top-level import:
+
+from transformers import pipeline
+
+Heavy model load:
+
+class Summarizer:
+    def __init__(self):
+        self.summarizer = pipeline("summarization",
+                          model="./models/distilbart-cnn-12-6",
+                          framework="pt")
+
+Backend-only work:
+
+def text_sum(self, text, max_length=60, min_length=30):
+    summary = self.summarizer(
+        text,
+        max_length=max_length,
+        min_length=min_length,
+        do_sample=False
+    )
+    return summary[0]["summary_text"]
+
+============================================================
+speechhead.py
+============================================================
+
+Heavy top-level imports:
+
+from AI_heads.ASR_head import ASRHead
+from audio.audioplayer import AmbientPlayer
+from tasks.spotifyauth import SpotifyAPI
+
+Heavy constructor lines:
+
+self.speech_listener = ASRHead(self.f_path)
+self.spotify_API = SpotifyAPI()
+
+Auto-start speech listener:
+
+self.launch_speech()
+
+Speech listener startup:
+
+def launch_speech(self):
+    """
+    start listener
+    """
+    if self.speech_listener.running: self.shutdown_speech()
+    else:
+        self.speech_listener.text_detected.connect(self.process_detected_command)
+        self.listener_thread = threading.Thread(
+            target=self.speech_listener.listen,
+            daemon=True
+        )
+        self.listener_thread.start()
+        self.tts_onoff.set_status(1)
+        self.text_field.append("Speech head ready")
+
+============================================================
+AI_heads/ASR_head.py
+============================================================
+
+Heavy top-level imports:
+
+import vosk
+import pygame
+import sounddevice as sd
+import speech_recognition as sr
+import whisper
+from AI_heads.TTS_head import TTSHead
+
+Heavy constructor chunk:
+
+wl_path = os.path.join(self.f_path,"models/vosk-model-small-en-us-0.15")
+self.wakeword_listener = None
+try:
+    self.wakeword_listener = vosk.Model(wl_path)
+except Exception as e:
+    print(f"Error loading Vosk model: {e}")
+
+self.speech_engine = TTSHead()
+self.running = False
+self.q = queue.Queue()
+self.audio_path = os.path.join(self.f_path, "audio/success.mp3")
+self.recognizer = sr.Recognizer()
+self.transcriber = whisper.load_model("small")
+pygame.mixer.init()
+
+Backend-only transcription/listen work:
+
+with sd.RawInputStream(samplerate=16000, blocksize=4000, dtype='int16',
+                       channels=1, callback=callback):
+    rec = vosk.KaldiRecognizer(self.wakeword_listener, 16000)
+
+result = self.transcriber.transcribe(resampled_audio, language="en")
+DATA = {'message':result["text"]}
+
+route_task = json.loads(requests.post(url = os.path.join(config.URL, "mainbot"),
+                        data=DATA).text)
+
+============================================================
+AI_heads/TTS_head.py
+============================================================
+
+Heavy constructor chunk:
+
+self.engine = pyttsx3.init()
+self.engine.setProperty('rate', 140)
+self.free = True
+
+voices = self.engine.getProperty('voices')
+self.engine.setProperty('voice', voices[1].id)
+
+============================================================
+panel.py
+============================================================
+
+Heavy top-level import and device check:
+
+import torch
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("Device:", device)
+
+Startup worker:
+
+self.worker = UsageThread()
+self.worker.data_updated.connect(self.update_stats)
+self.worker.start()
+
+============================================================
+main_init.py
+============================================================
+
+Blocking location startup:
+
+def get_geostats(self):
+    threading.Thread(target=self.start_server, daemon=True).start()
+    time.sleep(1)
+    webbrowser.open("http://localhost:5000")
+
+    while not self.location_data:
+        time.sleep(0.5)
+
+    lat = self.location_data["latitude"]
+    lon = self.location_data["longitude"]
+    city = self.get_city_name(lat, lon)
+
+    time.sleep(2)
+    for window in gw.getWindowsWithTitle('Chrome'):
+        if window.visible and not window.isMinimized:
+            hwnd = window._hWnd
+            win32gui.ShowWindow(hwnd, win32con.SW_MINIMIZE)
+            break
+
+    return [lat, lon, city]
+
+============================================================
+tasks/spotifyauth.py
+============================================================
+
+Startup auth/control chunk:
+
+self.sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
+    client_id=config.spotify_client_id,
+    client_secret=config.spotify_client_secret,
+    redirect_uri="http://127.0.0.1:5000",
+    scope="user-read-playback-state,user-modify-playback-state,user-read-currently-playing",
+    open_browser=False,
+    show_dialog=False
+))
+
+devices = self.sp.devices()
+computer_device = next((d for d in devices["devices"] if d["type"] == "Computer"), {"id": None})
+self.device_ID = computer_device["id"]

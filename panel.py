@@ -3,7 +3,6 @@
 # Imports
 import shutil
 import os
-import torch
 import json
 
 from PyQt5 import QtCore
@@ -20,9 +19,6 @@ from elements.ratio_widgets import (
 from tasks.usage_worker import UsageThread
 import config
 #--------------------------------
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print("Device:", device)
 
 # Classes for separate parts of an L-shaped panel component
 class TopInfoPanel(QWidget):

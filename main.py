@@ -19,7 +19,6 @@ from PyQt5.QtCore import Qt, QSize, QTimer
 from panel import MainWindow
 from texthead import Chatbot
 from speechhead import Speechbot
-from main_init import Initializer
 from elements.digitrain import DigitalRainPanel
 from elements.transparent_img import TransparentImageWidget
 
@@ -38,7 +37,6 @@ class CustomWindow(QtWidgets.QMainWindow):
         """
         define all the important jazz
         """
-        self.init_class = Initializer()
         self.txt_file = os.path.join(self.f_path, "list.txt")
         self._drag_pos = None
         B1 = os.path.join(self.f_path, "visuals/Button1.png").replace("\\", "/")
@@ -310,10 +308,6 @@ class CustomWindow(QtWidgets.QMainWindow):
         self.read_list()
         self.adjust_close_button_position()
         self.close_button.raise_()
-        self.coords = self.init_class.get_geostats()
-        self.suntime = self.init_class.daytime_calculator(self.coords[0], self.coords[1], self.today)
-        self.update_weather()
-
         # Start other app windows
         self.start_chats()
         self.open_info_panel()
@@ -511,11 +505,9 @@ class CustomWindow(QtWidgets.QMainWindow):
         """
         called periodically to update weather status
         """
-        if self.coords:
+        if self.coords and self.suntime:
             # compare sundown and sunrise times and update when needed
             self.today = datetime.now().date()
-            if self.today > self.suntime[0]:
-                self.suntime = self.init_class.daytime_calculator(self.coords[0], self.coords[1], self.today)
             if self.suntime[1] < datetime.now() and datetime.now() < self.suntime[2]:
                 text = "Sunset\nat "+self.suntime[2].strftime("%H:%M")
                 if self.temp_stats.caption_label.text() != text:

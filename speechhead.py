@@ -2,16 +2,12 @@
 
 # Imports
 import os
-import threading
 import subprocess
 
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QColor, QPixmap, QMovie, QImage, QPainter
 from PyQt5.QtCore import Qt, QSize
 
-from AI_heads.ASR_head import ASRHead
-from audio.audioplayer import AmbientPlayer
-from tasks.spotifyauth import SpotifyAPI
 from elements.glitchwidget import GlitchWidget
 from elements.status_button import StatusButton
 import config
@@ -24,6 +20,8 @@ class Speechbot(QtWidgets.QWidget):
         #--------------------------------
         self.main_window = main_window
         self.f_path = os.path.dirname(os.path.abspath(__file__))
+        self.sound_player = None
+        self.speech_enabled = False
         
         # Set up main window properties
         self.setWindowTitle("Speech interface")
@@ -31,8 +29,6 @@ class Speechbot(QtWidgets.QWidget):
         self.setAttribute(Qt.WA_TranslucentBackground) # transparent background
         self.setGeometry(int((config.scale-0.45)*200), int((config.scale-0.40)*150 + int(config.scale*400)), 
                          int(config.scale*350), int(config.scale*450))  # window position, size
-        self.speech_listener = ASRHead(self.f_path)
-        self.spotify_API = SpotifyAPI()
         #--------------------------------
 
         # Load custom background image
@@ -218,8 +214,6 @@ class Speechbot(QtWidgets.QWidget):
         gif.start()
         main_layout.addWidget(gif_label)
         #--------------------------------
-        self.launch_speech()
-
         # Ensure the app works as intended
         self.adjust_close_button_position()
         self.close_button.raise_()
@@ -239,16 +233,12 @@ class Speechbot(QtWidgets.QWidget):
         """
         start listener
         """
-        if self.speech_listener.running: self.shutdown_speech()
+        self.speech_enabled = not self.speech_enabled
+        self.tts_onoff.set_status(self.speech_enabled)
+        if self.speech_enabled:
+            self.text_field.append("Speech backend not connected")
         else:
-            self.speech_listener.text_detected.connect(self.process_detected_command)
-            self.listener_thread = threading.Thread(
-                target=self.speech_listener.listen,
-                daemon=True # terminate thread on main app close
-            )
-            self.listener_thread.start()
-            self.tts_onoff.set_status(1)
-            self.text_field.append("Speech head ready")
+            self.text_field.append("Speech head stopped")
 
     # sub-function ^
     def process_detected_command(self, task_route: int, text_command: str):
@@ -275,8 +265,7 @@ class Speechbot(QtWidgets.QWidget):
         """
         shut down the speech listener and TTS
         """
-        self.speech_listener.stop()
-        self.listener_thread.join()
+        self.speech_enabled = False
         self.tts_onoff.set_status(None)
         self.text_field.append("Speech head stopped")
     #--------------------------------
@@ -294,23 +283,18 @@ class Speechbot(QtWidgets.QWidget):
         """
         start the sound player
         """
-        if not self.sound_player:
-            self.sound_player = AmbientPlayer(min_interval=60, max_interval=360)
-            self.sound_player.start()
-            self.audio_onoff.set_status(self.sound_player)
+        self.sound_player = not self.sound_player
+        self.audio_onoff.set_status(self.sound_player)
+        if self.sound_player:
+            self.text_field.append("Audio backend not connected")
         else:
-            self.sound_player.stop()
-            self.sound_player = None
-            self.audio_onoff.set_status(self.sound_player)
+            self.text_field.append("Audio stopped")
     #--------------------------------
     def spotify_start(self, keywords=None):
         """
         main spotify handling function
         """
-        if keywords:
-            self.spotify_API.play_track(keywords)
-        else:
-            self.spotify_API.playlist()
+        self.text_field.append("Spotify backend not connected")
     #--------------------------------
     def start_timer(self, seconds):
         """
@@ -323,7 +307,8 @@ class Speechbot(QtWidgets.QWidget):
         )
     #--------------------------------
     def closeEvent(self, event):
-        self.shutdown_speech()
+        if self.speech_enabled:
+            self.shutdown_speech()
         super().closeEvent(event)
     #--------------------------------
 

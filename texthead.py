@@ -2,12 +2,10 @@
 
 # Imports
 import os
-import json
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QImage, QPainter
 from tasks.request_worker import RequestsThread
-from AI_heads.summarizer import Summarizer
 import config
 #--------------------------------
 
@@ -18,8 +16,6 @@ class Chatbot(QtWidgets.QWidget):
         #--------------------------------
         self.main_window = main_window
         self.f_path = os.path.dirname(os.path.abspath(__file__))
-        self.summy = Summarizer()
-        self.disect = False
 
         # Set up main window properties
         self.setWindowTitle("Chat interface")
@@ -183,10 +179,7 @@ class Chatbot(QtWidgets.QWidget):
         get the bot reply and type it out
         """
         if reply["success"]:
-            if self.disect:
-                self.reply = self.summy.process_reply(reply)
-            else:
-                self.reply = f"{reply['data']}"
+            self.reply = f"{reply['data']}"
         # or return error
         else:
             self.reply = f"Error: {reply['error']}"
@@ -216,14 +209,10 @@ class Chatbot(QtWidgets.QWidget):
         """
         if self.main_window is not None:
             if self.main_window.radio_one.isChecked():
-                self.disect = True
                 return "mainbot"
             elif self.main_window.radio_two.isChecked():
-                self.disect = False
                 return "schizobot"
-            self.disect = False
             return "routerbot"
-        self.disect = True
         return "mainbot"
 #--------------------------------
 
