@@ -3,14 +3,13 @@
 // Imports
 use std::{cmp, num::NonZeroU32, rc::Rc};
 
+use font8x8::{BASIC_FONTS, UnicodeFonts};
 use softbuffer::Surface;
 use winit::window::Window;
-use font8x8::{UnicodeFonts, BASIC_FONTS};
 
-use crate::colors::{rgba, blending_to_rgba, lighten, darken};
+use crate::colors::{blending_to_rgba, darken, lighten, rgba};
 use crate::status::Status;
 //--------------------------------
-
 
 #[derive(Clone, Copy)]
 struct Rect {
@@ -22,7 +21,12 @@ struct Rect {
 
 impl Rect {
     const fn new(x: u32, y: u32, width: u32, height: u32) -> Self {
-        Self { x, y, width, height }
+        Self {
+            x,
+            y,
+            width,
+            height,
+        }
     }
 }
 
@@ -91,30 +95,32 @@ fn draw_x_button(buffer: &mut [u32], width: u32, height: u32, cx: u32, cy: u32) 
     }
 }
 
-
 fn text_width(text: &str, scale: u32) -> u32 {
     text.chars().count() as u32 * 7 * scale
 }
 
-
-fn draw_text(buffer: &mut [u32], width: u32, height: u32, text: &str, start_x: u32, start_y: u32, color: u32, scale:u32) {
+fn draw_text(
+    buffer: &mut [u32],
+    width: u32,
+    height: u32,
+    text: &str,
+    start_x: u32,
+    start_y: u32,
+    color: u32,
+    scale: u32,
+) {
     let mut cursor_x = start_x;
 
     for character in text.chars() {
         if let Some(glyph) = BASIC_FONTS.get(character) {
-
             for (row, bits) in glyph.iter().enumerate() {
-
                 for column in 0..8 {
-
                     if bits & (1 << column) != 0 {
-
                         let x = cursor_x + column * scale;
                         let y = start_y + row as u32 * scale;
 
                         for sy in 0..scale {
                             for sx in 0..scale {
-
                                 put_pixel(buffer, width, height, x + sx, y + sy, color);
                             }
                         }
@@ -127,14 +133,20 @@ fn draw_text(buffer: &mut [u32], width: u32, height: u32, text: &str, start_x: u
     }
 }
 
-
-fn draw_centered_text(buffer: &mut [u32], width: u32, height: u32, rect: Rect, text: &str, color: u32, scale:u32) {
+fn draw_centered_text(
+    buffer: &mut [u32],
+    width: u32,
+    height: u32,
+    rect: Rect,
+    text: &str,
+    color: u32,
+    scale: u32,
+) {
     let x = rect.x + rect.width.saturating_sub(text_width(text, scale)) / 2;
     let y = rect.y + rect.height.saturating_sub(8 * scale) / 2;
 
     draw_text(buffer, width, height, text, x, y, color, scale);
 }
-
 
 fn status_label(status: &Status) -> &'static str {
     match status {
@@ -143,7 +155,6 @@ fn status_label(status: &Status) -> &'static str {
         Status::Online => "ONLINE",
     }
 }
-
 
 fn draw_button(buffer: &mut [u32], width: u32, height: u32, rect: Rect, label: &str, active: bool) {
     let fill = if active {
@@ -174,19 +185,47 @@ fn draw_button(buffer: &mut [u32], width: u32, height: u32, rect: Rect, label: &
     draw_centered_text(buffer, width, height, rect, label, text, 1);
 }
 
-
-fn draw_status_box(buffer: &mut [u32], width: u32, height: u32, x: u32, y: u32, rectangle_width: u32, rectangle_height: u32, color: u32) {
-    draw_rect(buffer, width, height, Rect::new(x, y, rectangle_width, rectangle_height), color);
+fn draw_status_box(
+    buffer: &mut [u32],
+    width: u32,
+    height: u32,
+    x: u32,
+    y: u32,
+    rectangle_width: u32,
+    rectangle_height: u32,
+    color: u32,
+) {
+    draw_rect(
+        buffer,
+        width,
+        height,
+        Rect::new(x, y, rectangle_width, rectangle_height),
+        color,
+    );
 
     // highlight the edge of the border
     let highlight_color = lighten(color, 50, 255);
     for column in x..x + rectangle_width {
         put_pixel(buffer, width, height, column, y + 2, highlight_color);
-        put_pixel(buffer, width, height, column, y + rectangle_height - 3, highlight_color);
+        put_pixel(
+            buffer,
+            width,
+            height,
+            column,
+            y + rectangle_height - 3,
+            highlight_color,
+        );
     }
     for row in y..y + rectangle_height {
         put_pixel(buffer, width, height, x + 2, row, highlight_color);
-        put_pixel(buffer, width, height, x - 3 + rectangle_width, row, highlight_color);
+        put_pixel(
+            buffer,
+            width,
+            height,
+            x - 3 + rectangle_width,
+            row,
+            highlight_color,
+        );
     }
 
     // darken 2 border pixels
@@ -194,35 +233,74 @@ fn draw_status_box(buffer: &mut [u32], width: u32, height: u32, x: u32, y: u32, 
     for column in x..x + rectangle_width {
         put_pixel(buffer, width, height, column, y, border_color);
         put_pixel(buffer, width, height, column, y + 1, border_color);
-        put_pixel(buffer, width, height, column, y + rectangle_height - 2, border_color);
-        put_pixel(buffer, width, height, column, y + rectangle_height - 1, border_color);
+        put_pixel(
+            buffer,
+            width,
+            height,
+            column,
+            y + rectangle_height - 2,
+            border_color,
+        );
+        put_pixel(
+            buffer,
+            width,
+            height,
+            column,
+            y + rectangle_height - 1,
+            border_color,
+        );
     }
     for row in y..y + rectangle_height {
         put_pixel(buffer, width, height, x, row, border_color);
         put_pixel(buffer, width, height, x + 1, row, border_color);
-        put_pixel(buffer, width, height, x - 2 + rectangle_width, row, border_color);
-        put_pixel(buffer, width, height, x - 1 + rectangle_width, row, border_color);
+        put_pixel(
+            buffer,
+            width,
+            height,
+            x - 2 + rectangle_width,
+            row,
+            border_color,
+        );
+        put_pixel(
+            buffer,
+            width,
+            height,
+            x - 1 + rectangle_width,
+            row,
+            border_color,
+        );
     }
-
 }
 
-
 fn draw_console_row(buffer: &mut [u32], width: u32, height: u32, y: u32, label: &str, value: &str) {
-    let row = Rect::new(16, y, width.saturating_sub(88), 32);
+    let row = Rect::new(16, y, width.saturating_sub(88), 34);
 
     draw_rect(buffer, width, height, row, rgba(8, 10, 18, 170));
     draw_frame(buffer, width, height, row, rgba(0, 255, 255, 85));
-    draw_text(buffer, width, height, label, row.x + 10, row.y + 12, rgba(255, 210, 235, 235), 1);
-    draw_text(buffer, width, height, value, row.x + 142, row.y + 12, rgba(150, 170, 180, 200), 1);
+    draw_text(
+        buffer,
+        width,
+        height,
+        label,
+        row.x + 10,
+        row.y + 12,
+        rgba(255, 210, 235, 235),
+        1,
+    );
+    draw_text(
+        buffer,
+        width,
+        height,
+        value,
+        row.x + 142,
+        row.y + 12,
+        rgba(150, 170, 180, 200),
+        1,
+    );
 }
 //--------------------------------
 
-
-pub fn draw_panel(
-    window: &Window, 
-    surface: &mut Surface<Rc<Window>, Rc<Window>>,
-    status: &Status
-) {
+pub fn draw_panel(window: &Window, surface: &mut Surface<Rc<Window>, Rc<Window>>, frontend_status: &Status, backend_status: &Status) {
     let size = window.inner_size();
 
     surface
@@ -239,10 +317,12 @@ pub fn draw_panel(
 
     for y in 0..height {
         for x in 0..width {
-            buffer[(y * width + x) as usize] = rgba(4, 6, 12, 215);
+            buffer[(y * width + x) as usize] = rgba(4, 6, 12, 200);
         }
     }
+    //--------------------------------
 
+    // Outer frame
     draw_frame(
         &mut buffer,
         width,
@@ -274,7 +354,7 @@ pub fn draw_panel(
         44,
         14,
         rgba(255, 245, 255, 255),
-        1
+        1,
     );
     draw_text(
         &mut buffer,
@@ -284,50 +364,46 @@ pub fn draw_panel(
         44,
         27,
         rgba(0, 255, 255, 220),
-        1
+        1,
     );
-    
-    let indicator_x = width.saturating_sub(56);
-    let indicator_y = 58;
+    //--------------------------------
 
-    draw_console_row(
-        &mut buffer,
-        width,
-        height,
-        62,
+    // Buttons and stuff
+    let frontend_indicator_x = width.saturating_sub(56);
+    let frontend_indicator_y = 62;
+    let backend_indicator_x = width.saturating_sub(56);
+    let backend_indicator_y = 106;
+
+    // Frontend
+    draw_console_row(&mut buffer, width, height, 62,
         "FRONTEND",
-        status_label(status),
+        status_label(frontend_status),
     );
-
-    draw_text(
-        &mut buffer,
-        width,
-        height,
-        "POWER",
-        indicator_x,
-        indicator_y + 44,
-        rgba(0, 255, 255, 180),
-        1
-    );
-
     draw_status_box(
         &mut buffer,
         width,
         height,
-        indicator_x,
-        indicator_y,
-        40,
-        40,
-        status.color()
+        frontend_indicator_x,
+        frontend_indicator_y,
+        34,
+        34,
+        frontend_status.color(),
     );
 
-    draw_console_row(
+    // Backend
+    draw_console_row(&mut buffer, width, height, 106, 
+        "BACKEND", 
+        status_label(backend_status),
+    );
+    draw_status_box(
         &mut buffer,
         width,
         height,
-        106,
-        "BACKEND",
-        "STANDBY",
+        backend_indicator_x,
+        backend_indicator_y,
+        34,
+        34,
+        backend_status.color(),
     );
 
     draw_button(

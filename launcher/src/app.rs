@@ -1,6 +1,7 @@
 //--------------------------------
 
 // Imports
+use softbuffer::{Context, Surface};
 use std::{
     io,
     thread,
@@ -9,7 +10,6 @@ use std::{
     process::Command,
     path::{Path, PathBuf},
 };
-use softbuffer::{Context, Surface};
 use winit::{
     application::ApplicationHandler,
     dpi::{LogicalSize, PhysicalPosition},
@@ -18,11 +18,10 @@ use winit::{
     window::{Window, WindowId, WindowLevel},
 };
 
+use crate::status::Status;
 use crate::ui::bubble::draw_bubble;
 use crate::ui::panel::draw_panel;
-use crate::status::Status;
 //--------------------------------
-
 
 const BUBBLE_SIZE: u32 = 96;
 const PANEL_WIDTH: u32 = 320;
@@ -39,8 +38,66 @@ enum LauncherMode {
     Panel,
 }
 
+#[derive(Clone, Copy)]
+enum LauncherButton {
+    Close,
+    Frontend,
+    Backend,
+    Cyberspace,
+}
+
+#[derive(Clone, Copy)]
+struct ButtonBounds {
+    x: u32,
+    y: u32,
+    width: u32,
+    height: u32,
+}
+
+impl ButtonBounds {
+    const fn new(x: u32, y: u32, width: u32, height: u32) -> Self {
+        Self {
+            x,
+            y,
+            width,
+            height,
+        }
+    }
+
+    fn contains(self, x: f64, y: f64) -> bool {
+        x >= self.x as f64
+            && x < (self.x + self.width) as f64
+            && y >= self.y as f64
+            && y < (self.y + self.height) as f64
+    }
+}
+
+fn panel_button_at(x: f64, y: f64, width: u32) -> Option<LauncherButton> {
+    let buttons = [
+        (LauncherButton::Close, ButtonBounds::new(0, 0, 32, 32)),
+        (
+            LauncherButton::Frontend,
+            ButtonBounds::new(width.saturating_sub(56), 62, 34, 34),
+        ),
+        (
+            LauncherButton::Backend,
+            ButtonBounds::new(width.saturating_sub(56), 106, 34, 34),
+        ),
+        (
+            LauncherButton::Cyberspace,
+            ButtonBounds::new(16, 158, width.saturating_sub(32), 34),
+        ),
+    ];
+
+    buttons
+        .iter()
+        .find(|(_, bounds)| bounds.contains(x, y))
+        .map(|(button, _)| *button)
+}
+
 pub struct FrontLauncher {
-    pub status: Status,
+    pub frontend_status: Status,
+    pub backend_status: Status,
     worker_rx: Option<mpsc::Receiver<WorkerMessage>>,
     window: Option<Rc<Window>>,
     surface: Option<Surface<Rc<Window>, Rc<Window>>>,
@@ -51,7 +108,8 @@ pub struct FrontLauncher {
 impl Default for FrontLauncher {
     fn default() -> Self {
         Self {
-            status: Status::Offline,
+            frontend_status: Status::Offline,
+            backend_status: Status::Offline,
             worker_rx: None,
             window: None,
             surface: None,
@@ -78,17 +136,14 @@ fn find_app_root(exe_path: &Path) -> io::Result<PathBuf> {
 
     Err(io::Error::new(
         io::ErrorKind::NotFound,
-        format!(
-            "Could not find main.py above {}",
-            exe_dir.display()
-        ),
+        format!("Could not find main.py above {}", exe_dir.display()),
     ))
 }
 
 impl FrontLauncher {
-    fn start_services(&mut self) {
-        println!("Starting.");
-        self.status = Status::Starting;
+    fn start_frontend_service(&mut self) {
+        println!("Starting frontend");
+        self.frontend_status = Status::Starting;
 
         if let Some(window) = self.window.as_ref() {
             window.request_redraw();
@@ -153,32 +208,37 @@ impl FrontLauncher {
 
             let message = match result {
                 Ok(_child) => WorkerMessage::Success,
-                Err(error) => WorkerMessage::Error(format!(
-                    "Could not launch main.py: {}",
-                    error
-                )),
+                Err(error) => WorkerMessage::Error(format!("Could not launch main.py: {}", error)),
             };
 
             let _ = tx.send(message);
         });
     }
+    
+
+    fn start_backend_service(&mut self) {
+        println!("Starting backend");
+        self.backend_status = Status::Starting;
+
+        if let Some(window) = self.window.as_ref() {
+            window.request_redraw();
+            println!("Button turned yellow!");
+        }
+    }
 
     fn check_worker_messages(&mut self) {
-        let message = self
-            .worker_rx
-            .as_ref()
-            .and_then(|rx| rx.try_recv().ok());
+        let message = self.worker_rx.as_ref().and_then(|rx| rx.try_recv().ok());
 
         match message {
             Some(WorkerMessage::Success) => {
                 println!("Worker succeeded.");
-                self.status = Status::Online;
+                self.frontend_status = Status::Online;
                 self.worker_rx = None;
             }
 
             Some(WorkerMessage::Error(error)) => {
                 eprintln!("Worker failed: {error}");
-                self.status = Status::Offline;
+                self.frontend_status = Status::Offline;
                 self.worker_rx = None;
             }
 
@@ -260,7 +320,7 @@ impl ApplicationHandler for FrontLauncher {
                         .with_window_level(WindowLevel::AlwaysOnTop),
                 )
                 .unwrap(),
-            );
+        );
 
         if let Some(monitor) = window.current_monitor() {
             let monitor_position = monitor.position();
@@ -301,39 +361,45 @@ impl ApplicationHandler for FrontLauncher {
                     let _ = window.drag_window();
                 }
                 LauncherMode::Panel => {
-                    println!("click");
-
                     if let Some((x, y)) = self.cursor_position {
-                        let close_left = 0.0;
-                        let close_right = 32.0;
-                        let close_top = 0.0;
-                        let close_bottom = 32.0;
-
-                        if x >= close_left && x <= close_right && y >= close_top && y <= close_bottom {
-                            event_loop.exit();
-                            return;
-                        }
-
-                        let indicator_width = 40;
-                        let indicator_height = 40;
-                        let indicator_x = window.inner_size().width.saturating_sub(56);
-                        let indicator_y = 58;
-
-                        let inside_status_indicator =
-                            x >= indicator_x as f64
-                                && x < (indicator_x + indicator_width) as f64
-                                && y >= indicator_y as f64
-                                && y < (indicator_y + indicator_height) as f64;
-
-                        if inside_status_indicator {
-                            if self.status == Status::Offline {
-                                self.start_services();
+                        match panel_button_at(x, y, window.inner_size().width) {
+                            Some(LauncherButton::Close) => {
+                                event_loop.exit();
                             }
 
-                            if let Some(window) = self.window.as_ref() {
-                                window.request_redraw();
+                            Some(LauncherButton::Frontend) => {
+                                println!("Frontend button clicked");
+
+                                if self.frontend_status == Status::Offline {
+                                    self.start_frontend_service();
+                                }
+
+                                if let Some(window) = self.window.as_ref() {
+                                    window.request_redraw();
+                                }
                             }
+
+                            Some(LauncherButton::Backend) => {
+                                println!("Backend button clicked");
+
+                                if self.backend_status == Status::Offline {
+                                    self.start_backend_service();
+                                }
+
+                                if let Some(window) = self.window.as_ref() {
+                                    window.request_redraw();
+                                }
+                            }
+
+                            Some(LauncherButton::Cyberspace) => {
+                                println!("Cyberspace button clicked");
+                            }
+
+                            None => {}
                         }
+                    }
+                    else {
+                        println!("Black space clicked");
                     }
                 }
             },
@@ -346,10 +412,8 @@ impl ApplicationHandler for FrontLauncher {
                 match self.mode {
                     LauncherMode::Bubble => {
                         self.mode = LauncherMode::Panel;
-                        let _ = window.request_inner_size(LogicalSize::new(
-                            PANEL_WIDTH,
-                            PANEL_HEIGHT,
-                        ));
+                        let _ =
+                            window.request_inner_size(LogicalSize::new(PANEL_WIDTH, PANEL_HEIGHT));
 
                         self.position_panel_from_bubble();
                     }
@@ -359,10 +423,8 @@ impl ApplicationHandler for FrontLauncher {
 
                         self.mode = LauncherMode::Bubble;
 
-                        let _ = window.request_inner_size(LogicalSize::new(
-                            BUBBLE_SIZE,
-                            BUBBLE_SIZE,
-                        ));
+                        let _ =
+                            window.request_inner_size(LogicalSize::new(BUBBLE_SIZE, BUBBLE_SIZE));
 
                         if let Some(pos) = panel_pos {
                             let bubble_x = pos.x + PANEL_WIDTH as i32 - BUBBLE_SIZE as i32;
@@ -375,16 +437,16 @@ impl ApplicationHandler for FrontLauncher {
 
                 window.request_redraw();
             }
-            
+
             WindowEvent::CursorMoved { position, .. } => {
                 self.cursor_position = Some((position.x, position.y));
             }
-            
+
             WindowEvent::RedrawRequested => {
                 if let Some(surface) = self.surface.as_mut() {
                     match self.mode {
                         LauncherMode::Bubble => draw_bubble(window, surface),
-                        LauncherMode::Panel => draw_panel(window, surface, &self.status),
+                        LauncherMode::Panel => draw_panel(window, surface, &self.frontend_status, &self.backend_status),
                     }
                 }
             }
