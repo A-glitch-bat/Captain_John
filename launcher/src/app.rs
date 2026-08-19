@@ -314,18 +314,10 @@ impl ApplicationHandler for FrontLauncher {
                             return;
                         }
 
-                        let status_x = 20;
-                        let status_y = 40;
-                        let status_scale = 2;
-
-                        let indicator_x =
-                            status_x + "Status".len() as u32 * status_scale * 8;
-
-                        let indicator_y =
-                            status_y - 20 + 4 * status_scale;
-
                         let indicator_width = 40;
                         let indicator_height = 40;
+                        let indicator_x = window.inner_size().width.saturating_sub(56);
+                        let indicator_y = 58;
 
                         let inside_status_indicator =
                             x >= indicator_x as f64
