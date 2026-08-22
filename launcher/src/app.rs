@@ -4,6 +4,7 @@
 use softbuffer::{Context, Surface};
 use std::{
     io,
+    time::{Duration, Instant},
     thread,
     rc::Rc,
     sync::mpsc,
@@ -14,7 +15,7 @@ use winit::{
     application::ApplicationHandler,
     dpi::{LogicalSize, PhysicalPosition},
     event::{ElementState, MouseButton, WindowEvent},
-    event_loop::ActiveEventLoop,
+    event_loop::{ActiveEventLoop, ControlFlow},
     window::{Window, WindowId, WindowLevel},
 };
 
@@ -30,6 +31,8 @@ const PANEL_HEIGHT: u32 = 220;
 enum WorkerMessage {
     Success,
     Error(String),
+    BackendOnline,
+    BackendOffline(String),
 }
 
 #[derive(Clone, Copy)]
@@ -99,6 +102,8 @@ pub struct FrontLauncher {
     pub frontend_status: Status,
     pub backend_status: Status,
     worker_rx: Option<mpsc::Receiver<WorkerMessage>>,
+    backend_rx: Option<mpsc::Receiver<WorkerMessage>>,
+    next_backend_check: Instant,
     window: Option<Rc<Window>>,
     surface: Option<Surface<Rc<Window>, Rc<Window>>>,
     mode: LauncherMode,
@@ -111,6 +116,8 @@ impl Default for FrontLauncher {
             frontend_status: Status::Offline,
             backend_status: Status::Offline,
             worker_rx: None,
+            backend_rx: None,
+            next_backend_check: Instant::now(),
             window: None,
             surface: None,
             mode: LauncherMode::Bubble,
@@ -217,12 +224,57 @@ impl FrontLauncher {
     
 
     fn start_backend_service(&mut self) {
-        println!("Starting backend");
+        println!("Checking backend health");
         self.backend_status = Status::Starting;
 
         if let Some(window) = self.window.as_ref() {
             window.request_redraw();
-            println!("Button turned yellow!");
+        }
+
+        let (tx, rx) = mpsc::channel();
+        self.backend_rx = Some(rx);
+
+        thread::spawn(move || {
+            let result = reqwest::blocking::get("http://localhost:8080/health")
+                .and_then(|response| response.error_for_status())
+                .and_then(|response| response.json::<serde_json::Value>());
+
+            let message = match result {
+                Ok(body)
+                    if body.get("status").and_then(|value| value.as_str()) == Some("healthy") =>
+                {
+                    WorkerMessage::BackendOnline
+                }
+                Ok(body) => WorkerMessage::BackendOffline(format!(
+                    "Unexpected health response: {body}"
+                )),
+                Err(error) => WorkerMessage::BackendOffline(error.to_string()),
+            };
+
+            let _ = tx.send(message);
+        });
+
+        self.next_backend_check = Instant::now() + Duration::from_secs(5);
+    }
+
+    fn check_backend_messages(&mut self) {
+        let message = self.backend_rx.as_ref().and_then(|rx| rx.try_recv().ok());
+
+        match message {
+            Some(WorkerMessage::BackendOnline) => {
+                self.backend_status = Status::Online;
+                self.backend_rx = None;
+            }
+            Some(WorkerMessage::BackendOffline(error)) => {
+                eprintln!("Backend health check failed: {error}");
+                self.backend_status = Status::Offline;
+                self.backend_rx = None;
+            }
+            Some(_) | None => return,
+        }
+
+        if let Some(window) = self.window.as_ref() {
+            window.request_redraw();
         }
     }
 
@@ -241,6 +293,8 @@ impl FrontLauncher {
                 self.frontend_status = Status::Offline;
                 self.worker_rx = None;
             }
+
+            Some(WorkerMessage::BackendOnline) | Some(WorkerMessage::BackendOffline(_)) => return,
 
             None => return,
         }
@@ -337,6 +391,7 @@ impl ApplicationHandler for FrontLauncher {
 
         self.window = Some(window);
         self.surface = Some(surface);
+        self.start_backend_service();
     }
 
     fn window_event(
@@ -382,7 +437,7 @@ impl ApplicationHandler for FrontLauncher {
                             Some(LauncherButton::Backend) => {
                                 println!("Backend button clicked");
 
-                                if self.backend_status == Status::Offline {
+                                if self.backend_status != Status::Starting {
                                     self.start_backend_service();
                                 }
 
@@ -454,8 +509,15 @@ impl ApplicationHandler for FrontLauncher {
         }
     }
 
-    fn about_to_wait(&mut self, _event_loop: &ActiveEventLoop) {
+    fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
         self.check_worker_messages();
+        self.check_backend_messages();
+
+        if self.backend_rx.is_none() && Instant::now() >= self.next_backend_check {
+            self.start_backend_service();
+        }
+
+        event_loop.set_control_flow(ControlFlow::WaitUntil(self.next_backend_check));
     }
 }
 //--------------------------------

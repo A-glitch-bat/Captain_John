@@ -16,6 +16,8 @@ softbuffer = "0.4"
 
 # built-in 8x8 bitmap font for drawing simple text
 font8x8 = "0.3"
+reqwest = { version = "0.12", features = ["blocking", "json"] }
+serde_json = "1"
 #--------------------------------
 
 
