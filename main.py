@@ -579,7 +579,11 @@ def check_startup():
     open app if called from console
     or autostart is enabled
     """
-    return ctypes.windll.kernel32.GetConsoleWindow() != 0 or get_autostart()
+    return (
+        ctypes.windll.kernel32.GetConsoleWindow() != 0
+        or get_autostart()
+        or os.environ.get("JOHN_LAUNCHER") == "1"
+    )
 
 # check and run main ^
 if check_startup():

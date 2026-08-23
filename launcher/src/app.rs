@@ -4,13 +4,13 @@
 use softbuffer::{Context, Surface};
 use std::{
     io,
-    time::{Duration, Instant},
     thread,
     rc::Rc,
     sync::mpsc,
-    process::Command,
+    process::{Child, Command},
     path::{Path, PathBuf},
 };
+use std::os::windows::process::CommandExt;
 use winit::{
     application::ApplicationHandler,
     dpi::{LogicalSize, PhysicalPosition},
@@ -29,7 +29,7 @@ const PANEL_WIDTH: u32 = 320;
 const PANEL_HEIGHT: u32 = 220;
 
 enum WorkerMessage {
-    Success,
+    FrontendStarted(Child),
     Error(String),
     BackendOnline,
     BackendOffline(String),
@@ -102,8 +102,8 @@ pub struct FrontLauncher {
     pub frontend_status: Status,
     pub backend_status: Status,
     worker_rx: Option<mpsc::Receiver<WorkerMessage>>,
+    frontend_process: Option<Child>,
     backend_rx: Option<mpsc::Receiver<WorkerMessage>>,
-    next_backend_check: Instant,
     window: Option<Rc<Window>>,
     surface: Option<Surface<Rc<Window>, Rc<Window>>>,
     mode: LauncherMode,
@@ -116,8 +116,8 @@ impl Default for FrontLauncher {
             frontend_status: Status::Offline,
             backend_status: Status::Offline,
             worker_rx: None,
+            frontend_process: None,
             backend_rx: None,
-            next_backend_check: Instant::now(),
             window: None,
             surface: None,
             mode: LauncherMode::Bubble,
@@ -159,36 +159,7 @@ impl FrontLauncher {
 
         let (tx, rx) = mpsc::channel();
         self.worker_rx = Some(rx);
-        /*
-        thread::spawn(move || {
-            let result: Result<std::process::ExitStatus, std::io::Error> = Command::new("docker")
-                .args(["compose", "up", "-d"])
-                .current_dir("..")
-                .status();
-
-            let message = match result {
-                Ok(exit_status) if exit_status.success() => {
-                    WorkerMessage::Success
-                }
-
-                Ok(exit_status) => {
-                    WorkerMessage::Error(format!(
-                        "Docker Compose exited with status: {}",
-                        exit_status
-                    ))
-                }
-
-                Err(error) => {
-                    WorkerMessage::Error(format!(
-                        "Could not launch Docker: {}",
-                        error
-                    ))
-                }
-            };
-
-            let _ = tx.send(message);
-        });
-        */
+     
         thread::spawn(move || {
             let result = std::env::current_exe()
                 .and_then(|exe_path| find_app_root(&exe_path))
@@ -199,6 +170,8 @@ impl FrontLauncher {
                         .args(["-3.11"])
                         .arg(&main_path)
                         .current_dir(&app_root)
+                        .env("JOHN_LAUNCHER", "1")
+                        .creation_flags(0x08000000)
                         .spawn()
                         .map_err(|error| {
                             io::Error::new(
@@ -214,12 +187,30 @@ impl FrontLauncher {
                 });
 
             let message = match result {
-                Ok(_child) => WorkerMessage::Success,
+                Ok(child) => WorkerMessage::FrontendStarted(child),
                 Err(error) => WorkerMessage::Error(format!("Could not launch main.py: {}", error)),
             };
 
             let _ = tx.send(message);
         });
+    }
+
+    fn stop_frontend_service(&mut self) {
+        println!("Stopping frontend");
+
+        if let Some(mut process) = self.frontend_process.take() {
+            if let Err(error) = process.kill() {
+                eprintln!("Could not stop frontend process: {error}");
+            }
+
+            let _ = process.wait();
+        }
+
+        self.frontend_status = Status::Offline;
+
+        if let Some(window) = self.window.as_ref() {
+            window.request_redraw();
+        }
     }
     
 
@@ -254,7 +245,6 @@ impl FrontLauncher {
             let _ = tx.send(message);
         });
 
-        self.next_backend_check = Instant::now() + Duration::from_secs(5);
     }
 
     fn check_backend_messages(&mut self) {
@@ -282,8 +272,9 @@ impl FrontLauncher {
         let message = self.worker_rx.as_ref().and_then(|rx| rx.try_recv().ok());
 
         match message {
-            Some(WorkerMessage::Success) => {
+            Some(WorkerMessage::FrontendStarted(child)) => {
                 println!("Worker succeeded.");
+                self.frontend_process = Some(child);
                 self.frontend_status = Status::Online;
                 self.worker_rx = None;
             }
@@ -301,6 +292,34 @@ impl FrontLauncher {
 
         if let Some(window) = self.window.as_ref() {
             window.request_redraw();
+        }
+    }
+
+    fn check_frontend_process(&mut self) {
+        let Some(process) = self.frontend_process.as_mut() else {
+            return;
+        };
+
+        match process.try_wait() {
+            Ok(None) => {}
+            Ok(Some(status)) => {
+                println!("Frontend exited with status: {status}");
+                self.frontend_process = None;
+                self.frontend_status = Status::Offline;
+
+                if let Some(window) = self.window.as_ref() {
+                    window.request_redraw();
+                }
+            }
+            Err(error) => {
+                eprintln!("Could not check frontend process: {error}");
+                self.frontend_process = None;
+                self.frontend_status = Status::Offline;
+
+                if let Some(window) = self.window.as_ref() {
+                    window.request_redraw();
+                }
+            }
         }
     }
 
@@ -425,8 +444,10 @@ impl ApplicationHandler for FrontLauncher {
                             Some(LauncherButton::Frontend) => {
                                 println!("Frontend button clicked");
 
-                                if self.frontend_status == Status::Offline {
-                                    self.start_frontend_service();
+                                match self.frontend_status {
+                                    Status::Offline => self.start_frontend_service(),
+                                    Status::Online => self.stop_frontend_service(),
+                                    Status::Starting => {}
                                 }
 
                                 if let Some(window) = self.window.as_ref() {
@@ -511,13 +532,14 @@ impl ApplicationHandler for FrontLauncher {
 
     fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
         self.check_worker_messages();
+        self.check_frontend_process();
         self.check_backend_messages();
 
-        if self.backend_rx.is_none() && Instant::now() >= self.next_backend_check {
-            self.start_backend_service();
+        if self.worker_rx.is_some() || self.backend_rx.is_some() {
+            event_loop.set_control_flow(ControlFlow::Poll);
+        } else {
+            event_loop.set_control_flow(ControlFlow::Wait);
         }
-
-        event_loop.set_control_flow(ControlFlow::WaitUntil(self.next_backend_check));
     }
 }
 //--------------------------------

@@ -1,6 +1,5 @@
 Make settings button
 System tray icon appears
-App shutdown from front desk
 Make an actual backend
 Redmine project management 
 Gather science news
