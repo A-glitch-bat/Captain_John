@@ -1,5 +1,4 @@
 Make settings button
-System tray icon appears
 Make an actual backend
 Redmine project management 
 Gather science news

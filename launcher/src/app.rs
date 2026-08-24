@@ -16,7 +16,7 @@ use winit::{
     dpi::{LogicalSize, PhysicalPosition},
     event::{ElementState, MouseButton, WindowEvent},
     event_loop::{ActiveEventLoop, ControlFlow},
-    window::{Window, WindowId, WindowLevel},
+    window::{Window, WindowId, WindowLevel, CursorIcon},
 };
 
 use crate::status::Status;
@@ -432,6 +432,7 @@ impl ApplicationHandler for FrontLauncher {
                 ..
             } => match self.mode {
                 LauncherMode::Bubble => {
+                    window.set_cursor(CursorIcon::Grab);
                     let _ = window.drag_window();
                 }
                 LauncherMode::Panel => {
@@ -516,6 +517,22 @@ impl ApplicationHandler for FrontLauncher {
 
             WindowEvent::CursorMoved { position, .. } => {
                 self.cursor_position = Some((position.x, position.y));
+                
+                match self.mode {
+                    LauncherMode::Bubble => {
+                        window.set_cursor(CursorIcon::Pointer)
+                    }
+                    LauncherMode::Panel => {
+                        match panel_button_at(
+                            position.x,
+                            position.y,
+                            window.inner_size().width,
+                        ) {
+                            Some(_) => window.set_cursor(CursorIcon::Pointer),
+                            None => window.set_cursor(CursorIcon::Default),
+                        }
+                    }
+                }
             }
 
             WindowEvent::RedrawRequested => {
