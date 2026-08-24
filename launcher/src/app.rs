@@ -44,6 +44,7 @@ enum LauncherMode {
 #[derive(Clone, Copy)]
 enum LauncherButton {
     Close,
+    Settings,
     Frontend,
     Backend,
     Cyberspace,
@@ -77,7 +78,14 @@ impl ButtonBounds {
 
 fn panel_button_at(x: f64, y: f64, width: u32) -> Option<LauncherButton> {
     let buttons = [
-        (LauncherButton::Close, ButtonBounds::new(0, 0, 32, 32)),
+        (
+            LauncherButton::Close, 
+            ButtonBounds::new(0, 0, 36, 36)
+        ),
+        (
+            LauncherButton::Settings, 
+            ButtonBounds::new(width.saturating_sub(44), 8, 40, 40)
+        ),
         (
             LauncherButton::Frontend,
             ButtonBounds::new(width.saturating_sub(56), 62, 34, 34),
@@ -440,6 +448,10 @@ impl ApplicationHandler for FrontLauncher {
                         match panel_button_at(x, y, window.inner_size().width) {
                             Some(LauncherButton::Close) => {
                                 event_loop.exit();
+                            }
+
+                            Some(LauncherButton::Settings) => {
+                                println!("Settings button clicked");
                             }
 
                             Some(LauncherButton::Frontend) => {

@@ -66,6 +66,7 @@ fn draw_frame(buffer: &mut [u32], width: u32, height: u32, rect: Rect, color: u3
     }
 }
 
+// Close button
 fn draw_x_button(buffer: &mut [u32], width: u32, height: u32, cx: u32, cy: u32) {
     let frame = Rect::new(6, 6, 26, 26);
     let color = rgba(220, 220, 220, 190);
@@ -92,6 +93,52 @@ fn draw_x_button(buffer: &mut [u32], width: u32, height: u32, cx: u32, cy: u32) 
         let y = cy - half + i;
         put_pixel(buffer, width, height, x + 1, y, color);
         put_pixel(buffer, width, height, x, y, color);
+    }
+}
+
+// Settings button
+fn draw_settings_button(buffer: &mut [u32], width: u32, height: u32, cx: u32, cy: u32) {
+    let color = rgba(220, 220, 220, 190);
+
+    let body_r = 8.0;
+    let tooth_r = 12.0;
+    let hole_r = 3.0;
+
+    for dy in -12..=12 {
+        for dx in -12..=12 {
+            let fx = dx as f32;
+            let fy = dy as f32;
+            let dist = (fx * fx + fy * fy).sqrt();
+            let angle = fy.atan2(fx);
+
+            // Six teeth on the outer edge
+            let tooth_strength = (angle * 3.0).cos().abs();
+            let profile_r = body_r + (tooth_r - body_r) * tooth_strength.powf(6.0);
+            let outer_edge = dist >= profile_r - (tooth_r/10.0) && dist <= profile_r + (tooth_r/10.0);
+
+            // Inner circle edge
+            let inner_edge = dist >= hole_r - (tooth_r/10.0) && dist <= hole_r + (tooth_r/10.0);
+
+            if outer_edge || inner_edge {
+                let x = cx as i32 + dx;
+                let y = cy as i32 + dy;
+
+                if x >= 0 &&
+                   y >= 0 &&
+                   x < width as i32 &&
+                   y < height as i32
+                {
+                    put_pixel(
+                        buffer,
+                        width,
+                        height,
+                        x as u32,
+                        y as u32,
+                        color,
+                    );
+                }
+            }
+        }
     }
 }
 
@@ -346,6 +393,7 @@ pub fn draw_panel(window: &Window, surface: &mut Surface<Rc<Window>, Rc<Window>>
     );
 
     draw_x_button(&mut buffer, width, height, 18, 18);
+    draw_settings_button(&mut buffer, width, height, width-26, 26);
     draw_text(
         &mut buffer,
         width,

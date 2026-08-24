@@ -1,4 +1,4 @@
-Make settings button
+Make settings button useful
 Make an actual backend
 Redmine project management 
 Gather science news
