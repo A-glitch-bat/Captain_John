@@ -1,8 +1,9 @@
 Make settings button useful
 Make an actual backend
 Redmine project management 
-Gather science news
 Return schizobot
 Fix sumbot load and limits
 STOUT STOUT STOUT STOUT
 Connect client side to speech
+Display science news in cyberspace
+Starter scripts to codeman5000
