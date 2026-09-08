@@ -2,34 +2,38 @@
 #--------------------------------
 
 # Imports
-import arxiv
-from semanticscholar import SemanticScholar
+import json
+import subprocess
+from pathlib import Path
 #--------------------------------
+
+NEWS_FLASH_DIR = Path(__file__).resolve().parent.parent.parent / "news_flash"
+print(NEWS_FLASH_DIR)
 
 # Something about science
-def gather_papers():
-    arxiv_search_client = arxiv.Client()
-    scholar_search_clien = SemanticScholar()
-
-    search = arxiv.Search(
-        # Computer Science, Physics, Biology, Chemistry
-        query="cat:cs.* OR cat:physics.* OR cat:q-bio.* OR cat:chem-ph",
-        max_results=30,
-        sort_by=arxiv.SortCriterion.SubmittedDate
+def gather_papers(topic: str = "particle physics", days: int = 90, limit: int = 20):
+    """Run the Node news pipeline and return the result as a Python list of dicts."""
+    result = subprocess.run(
+        [
+            "node",
+            "src/example.js",
+            "--json",
+        ],
+        cwd=NEWS_FLASH_DIR,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
     )
 
-    arxiv_ID_list = []
-    for r in arxiv_search_client.results(search):
-        raw_id = r.entry_id.split("/")[-1]       # 2602.12281v1
-        base_id = raw_id.split("v")[0]           # 2602.12281
-        arxiv_ID_list.append(f"ARXIV:{base_id}") # tag that bad boy
-        #print(r.title, r.primary_category)
-
-    print(arxiv_ID_list)
-    papers_enriched = scholar_search_clien.get_papers(arxiv_ID_list)
-    print(papers_enriched)
+    papers = json.loads(result.stdout.strip())
+    return papers
 #--------------------------------
 
-# Temporary main
+
+# Main
 if __name__ == "__main__":
-    gather_papers()
+    paper_list = gather_papers()
+    print(json.dumps(paper_list, indent=2))
+#--------------------------------
+
