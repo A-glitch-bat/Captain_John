@@ -347,7 +347,7 @@ fn draw_console_row(buffer: &mut [u32], width: u32, height: u32, y: u32, label: 
 }
 //--------------------------------
 
-pub fn draw_panel(window: &Window, surface: &mut Surface<Rc<Window>, Rc<Window>>, frontend_status: &Status, backend_status: &Status) {
+pub fn draw_panel(window: &Window, surface: &mut Surface<Rc<Window>, Rc<Window>>, frontend_status: &Status, backend_status: &Status, cs_active: bool) {
     let size = window.inner_size();
 
     surface
@@ -460,7 +460,7 @@ pub fn draw_panel(window: &Window, surface: &mut Surface<Rc<Window>, Rc<Window>>
         height,
         Rect::new(16, 158, width.saturating_sub(32), 34),
         "CYBERSPACE",
-        false,
+        cs_active,
     );
 
     buffer.present().unwrap();

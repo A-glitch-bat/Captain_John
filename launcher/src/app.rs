@@ -3,12 +3,7 @@
 // Imports
 use softbuffer::{Context, Surface};
 use std::{
-    io,
-    thread,
-    rc::Rc,
-    sync::mpsc,
-    process::{Child, Command},
-    path::{Path, PathBuf},
+    io, path::{Path, PathBuf}, println, process::{Child, Command}, rc::Rc, sync::mpsc, thread,
 };
 use std::os::windows::process::CommandExt;
 use winit::{
@@ -109,6 +104,7 @@ fn panel_button_at(x: f64, y: f64, width: u32) -> Option<LauncherButton> {
 pub struct FrontLauncher {
     pub frontend_status: Status,
     pub backend_status: Status,
+    pub cyberspace_status: bool,
     worker_rx: Option<mpsc::Receiver<WorkerMessage>>,
     frontend_process: Option<Child>,
     backend_rx: Option<mpsc::Receiver<WorkerMessage>>,
@@ -123,6 +119,7 @@ impl Default for FrontLauncher {
         Self {
             frontend_status: Status::Offline,
             backend_status: Status::Offline,
+            cyberspace_status: false,
             worker_rx: None,
             frontend_process: None,
             backend_rx: None,
@@ -331,6 +328,39 @@ impl FrontLauncher {
         }
     }
 
+    fn start_cyberspace(&self) {
+        let cs_folder = Path::new("../../Cyberspace");
+        let cs_path = cs_folder.join("up.bat");
+        /*
+        ============================
+        RUST PATH & DIRECTORY BASICS
+        ============================
+        * 
+        * Path::new("...")        -> make new path variable
+        * path.parent() / path.join("...") / env::current_dir()
+        * fs::canonicalize(path)  -> resolve to absolute path
+        * Command::current_dir()  -> launch another program from a directory
+        * path.exists() / path.is_dir() / path.is_file()
+        --------------------------------------------------------------------
+        *
+        LAUNCH A PROGRAM FROM ANOTHER DIRECTORY
+        * Command::new("npm")
+        *    .arg("start")
+        *    .current_dir("../javascript_app")
+        *    .spawn()
+        *    .expect("Failed to launch JavaScript app");
+        ============================
+        */
+        match cs_path.canonicalize() {
+            Ok(full_path) => println!("Path: {}", full_path.display()),
+            Err(e) => println!("Invalid path: {}", e),
+        }
+        Command::new(cs_path)
+            .current_dir(cs_folder)
+            .spawn()
+            .expect("Failed to launch Cyberspace app");
+    }
+
     fn position_panel_from_bubble(&self) {
         let Some(window) = self.window.as_ref() else {
             return;
@@ -482,6 +512,18 @@ impl ApplicationHandler for FrontLauncher {
 
                             Some(LauncherButton::Cyberspace) => {
                                 println!("Cyberspace button clicked");
+                                
+                                if self.cyberspace_status {
+                                    self.cyberspace_status = false;
+                                }
+                                else {
+                                    self.cyberspace_status = true;
+                                    self.start_cyberspace();
+                                }
+
+                                if let Some(window) = self.window.as_ref() {
+                                    window.request_redraw();
+                                }
                             }
 
                             None => {}
@@ -551,7 +593,7 @@ impl ApplicationHandler for FrontLauncher {
                 if let Some(surface) = self.surface.as_mut() {
                     match self.mode {
                         LauncherMode::Bubble => draw_bubble(window, surface),
-                        LauncherMode::Panel => draw_panel(window, surface, &self.frontend_status, &self.backend_status),
+                        LauncherMode::Panel => draw_panel(window, surface, &self.frontend_status, &self.backend_status, self.cyberspace_status),
                     }
                 }
             }
