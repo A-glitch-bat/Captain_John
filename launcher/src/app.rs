@@ -2,16 +2,22 @@
 
 // Imports
 use softbuffer::{Context, Surface};
-use std::{
-    io, path::{Path, PathBuf}, println, process::{Child, Command}, rc::Rc, sync::mpsc, thread,
-};
 use std::os::windows::process::CommandExt;
+use std::{
+    io,
+    path::{Path, PathBuf},
+    println,
+    process::{Child, Command},
+    rc::Rc,
+    sync::mpsc,
+    thread,
+};
 use winit::{
     application::ApplicationHandler,
     dpi::{LogicalSize, PhysicalPosition},
     event::{ElementState, MouseButton, WindowEvent},
     event_loop::{ActiveEventLoop, ControlFlow},
-    window::{Window, WindowId, WindowLevel, CursorIcon},
+    window::{CursorIcon, Window, WindowId, WindowLevel},
 };
 
 use crate::status::Status;
@@ -22,6 +28,10 @@ use crate::ui::panel::draw_panel;
 const BUBBLE_SIZE: u32 = 96;
 const PANEL_WIDTH: u32 = 320;
 const PANEL_HEIGHT: u32 = 220;
+const SETTINGS_POPOVER_WIDTH: u32 = 176;
+const SETTINGS_POPOVER_HEIGHT: u32 = 106;
+const SETTINGS_POPOVER_TOP: u32 = 44;
+const SETTINGS_POPOVER_MARGIN_RIGHT: u32 = 16;
 
 enum WorkerMessage {
     FrontendStarted(Child),
@@ -71,16 +81,27 @@ impl ButtonBounds {
     }
 }
 
+fn settings_button_bounds(width: u32) -> ButtonBounds {
+    ButtonBounds::new(width.saturating_sub(44), 8, 40, 40)
+}
+
+fn settings_popover_bounds(width: u32) -> ButtonBounds {
+    ButtonBounds::new(
+        width.saturating_sub(SETTINGS_POPOVER_WIDTH + SETTINGS_POPOVER_MARGIN_RIGHT),
+        SETTINGS_POPOVER_TOP,
+        SETTINGS_POPOVER_WIDTH,
+        SETTINGS_POPOVER_HEIGHT,
+    )
+}
+
+fn settings_hover_area_contains(x: f64, y: f64, width: u32) -> bool {
+    settings_button_bounds(width).contains(x, y) || settings_popover_bounds(width).contains(x, y)
+}
+
 fn panel_button_at(x: f64, y: f64, width: u32) -> Option<LauncherButton> {
     let buttons = [
-        (
-            LauncherButton::Close, 
-            ButtonBounds::new(0, 0, 36, 36)
-        ),
-        (
-            LauncherButton::Settings, 
-            ButtonBounds::new(width.saturating_sub(44), 8, 40, 40)
-        ),
+        (LauncherButton::Close, ButtonBounds::new(0, 0, 36, 36)),
+        (LauncherButton::Settings, settings_button_bounds(width)),
         (
             LauncherButton::Frontend,
             ButtonBounds::new(width.saturating_sub(56), 62, 34, 34),
@@ -112,6 +133,7 @@ pub struct FrontLauncher {
     surface: Option<Surface<Rc<Window>, Rc<Window>>>,
     mode: LauncherMode,
     cursor_position: Option<(f64, f64)>,
+    settings_open: bool,
 }
 
 impl Default for FrontLauncher {
@@ -127,6 +149,7 @@ impl Default for FrontLauncher {
             surface: None,
             mode: LauncherMode::Bubble,
             cursor_position: None,
+            settings_open: false,
         }
     }
 }
@@ -164,7 +187,7 @@ impl FrontLauncher {
 
         let (tx, rx) = mpsc::channel();
         self.worker_rx = Some(rx);
-     
+
         thread::spawn(move || {
             let result = std::env::current_exe()
                 .and_then(|exe_path| find_app_root(&exe_path))
@@ -217,7 +240,6 @@ impl FrontLauncher {
             window.request_redraw();
         }
     }
-    
 
     fn start_backend_service(&mut self) {
         println!("Checking backend health");
@@ -241,15 +263,14 @@ impl FrontLauncher {
                 {
                     WorkerMessage::BackendOnline
                 }
-                Ok(body) => WorkerMessage::BackendOffline(format!(
-                    "Unexpected health response: {body}"
-                )),
+                Ok(body) => {
+                    WorkerMessage::BackendOffline(format!("Unexpected health response: {body}"))
+                }
                 Err(error) => WorkerMessage::BackendOffline(error.to_string()),
             };
 
             let _ = tx.send(message);
         });
-
     }
 
     fn check_backend_messages(&mut self) {
@@ -335,7 +356,7 @@ impl FrontLauncher {
         ============================
         RUST PATH & DIRECTORY BASICS
         ============================
-        * 
+        *
         * Path::new("...")        -> make new path variable
         * path.parent() / path.join("...") / env::current_dir()
         * fs::canonicalize(path)  -> resolve to absolute path
@@ -475,13 +496,21 @@ impl ApplicationHandler for FrontLauncher {
                 }
                 LauncherMode::Panel => {
                     if let Some((x, y)) = self.cursor_position {
-                        match panel_button_at(x, y, window.inner_size().width) {
+                        let panel_width = window.inner_size().width;
+
+                        if self.settings_open && settings_popover_bounds(panel_width).contains(x, y)
+                        {
+                            return;
+                        }
+
+                        match panel_button_at(x, y, panel_width) {
                             Some(LauncherButton::Close) => {
                                 event_loop.exit();
                             }
 
                             Some(LauncherButton::Settings) => {
-                                println!("Settings button clicked");
+                                self.settings_open = true;
+                                window.request_redraw();
                             }
 
                             Some(LauncherButton::Frontend) => {
@@ -512,11 +541,10 @@ impl ApplicationHandler for FrontLauncher {
 
                             Some(LauncherButton::Cyberspace) => {
                                 println!("Cyberspace button clicked");
-                                
+
                                 if self.cyberspace_status {
                                     self.cyberspace_status = false;
-                                }
-                                else {
+                                } else {
                                     self.cyberspace_status = true;
                                     self.start_cyberspace();
                                 }
@@ -528,8 +556,7 @@ impl ApplicationHandler for FrontLauncher {
 
                             None => {}
                         }
-                    }
-                    else {
+                    } else {
                         println!("Black space clicked");
                     }
                 }
@@ -543,6 +570,7 @@ impl ApplicationHandler for FrontLauncher {
                 match self.mode {
                     LauncherMode::Bubble => {
                         self.mode = LauncherMode::Panel;
+                        self.settings_open = false;
                         let _ =
                             window.request_inner_size(LogicalSize::new(PANEL_WIDTH, PANEL_HEIGHT));
 
@@ -553,6 +581,7 @@ impl ApplicationHandler for FrontLauncher {
                         let panel_pos = window.outer_position().ok();
 
                         self.mode = LauncherMode::Bubble;
+                        self.settings_open = false;
 
                         let _ =
                             window.request_inner_size(LogicalSize::new(BUBBLE_SIZE, BUBBLE_SIZE));
@@ -571,17 +600,19 @@ impl ApplicationHandler for FrontLauncher {
 
             WindowEvent::CursorMoved { position, .. } => {
                 self.cursor_position = Some((position.x, position.y));
-                
-                match self.mode {
-                    LauncherMode::Bubble => {
-                        window.set_cursor(CursorIcon::Pointer)
+
+                if matches!(self.mode, LauncherMode::Panel) && self.settings_open {
+                    let panel_width = window.inner_size().width;
+                    if !settings_hover_area_contains(position.x, position.y, panel_width) {
+                        self.settings_open = false;
+                        window.request_redraw();
                     }
+                }
+
+                match self.mode {
+                    LauncherMode::Bubble => window.set_cursor(CursorIcon::Pointer),
                     LauncherMode::Panel => {
-                        match panel_button_at(
-                            position.x,
-                            position.y,
-                            window.inner_size().width,
-                        ) {
+                        match panel_button_at(position.x, position.y, window.inner_size().width) {
                             Some(_) => window.set_cursor(CursorIcon::Pointer),
                             None => window.set_cursor(CursorIcon::Default),
                         }
@@ -589,11 +620,34 @@ impl ApplicationHandler for FrontLauncher {
                 }
             }
 
+            WindowEvent::CursorLeft { .. } => {
+                self.cursor_position = None;
+
+                if self.settings_open {
+                    self.settings_open = false;
+                    window.request_redraw();
+                }
+            }
+
             WindowEvent::RedrawRequested => {
                 if let Some(surface) = self.surface.as_mut() {
                     match self.mode {
                         LauncherMode::Bubble => draw_bubble(window, surface),
-                        LauncherMode::Panel => draw_panel(window, surface, &self.frontend_status, &self.backend_status, self.cyberspace_status),
+                        LauncherMode::Panel => {
+                            let settings_popover = self.settings_open.then(|| {
+                                let bounds = settings_popover_bounds(window.inner_size().width);
+                                (bounds.x, bounds.y, bounds.width, bounds.height)
+                            });
+
+                            draw_panel(
+                                window,
+                                surface,
+                                &self.frontend_status,
+                                &self.backend_status,
+                                self.cyberspace_status,
+                                settings_popover,
+                            )
+                        }
                     }
                 }
             }
@@ -614,4 +668,3 @@ impl ApplicationHandler for FrontLauncher {
     }
 }
 //--------------------------------
-

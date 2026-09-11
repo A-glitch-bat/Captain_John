@@ -9,6 +9,7 @@ use winit::window::Window;
 
 use crate::colors::{blending_to_rgba, darken, lighten, rgba};
 use crate::status::Status;
+use crate::ui::settings::draw_settings_popover;
 //--------------------------------
 
 #[derive(Clone, Copy)]
@@ -114,28 +115,18 @@ fn draw_settings_button(buffer: &mut [u32], width: u32, height: u32, cx: u32, cy
             // Six teeth on the outer edge
             let tooth_strength = (angle * 3.0).cos().abs();
             let profile_r = body_r + (tooth_r - body_r) * tooth_strength.powf(6.0);
-            let outer_edge = dist >= profile_r - (tooth_r/10.0) && dist <= profile_r + (tooth_r/10.0);
+            let outer_edge =
+                dist >= profile_r - (tooth_r / 10.0) && dist <= profile_r + (tooth_r / 10.0);
 
             // Inner circle edge
-            let inner_edge = dist >= hole_r - (tooth_r/10.0) && dist <= hole_r + (tooth_r/10.0);
+            let inner_edge = dist >= hole_r - (tooth_r / 10.0) && dist <= hole_r + (tooth_r / 10.0);
 
             if outer_edge || inner_edge {
                 let x = cx as i32 + dx;
                 let y = cy as i32 + dy;
 
-                if x >= 0 &&
-                   y >= 0 &&
-                   x < width as i32 &&
-                   y < height as i32
-                {
-                    put_pixel(
-                        buffer,
-                        width,
-                        height,
-                        x as u32,
-                        y as u32,
-                        color,
-                    );
+                if x >= 0 && y >= 0 && x < width as i32 && y < height as i32 {
+                    put_pixel(buffer, width, height, x as u32, y as u32, color);
                 }
             }
         }
@@ -347,7 +338,14 @@ fn draw_console_row(buffer: &mut [u32], width: u32, height: u32, y: u32, label: 
 }
 //--------------------------------
 
-pub fn draw_panel(window: &Window, surface: &mut Surface<Rc<Window>, Rc<Window>>, frontend_status: &Status, backend_status: &Status, cs_active: bool) {
+pub fn draw_panel(
+    window: &Window,
+    surface: &mut Surface<Rc<Window>, Rc<Window>>,
+    frontend_status: &Status,
+    backend_status: &Status,
+    cs_active: bool,
+    settings_popover: Option<(u32, u32, u32, u32)>,
+) {
     let size = window.inner_size();
 
     surface
@@ -393,7 +391,7 @@ pub fn draw_panel(window: &Window, surface: &mut Surface<Rc<Window>, Rc<Window>>
     );
 
     draw_x_button(&mut buffer, width, height, 18, 18);
-    draw_settings_button(&mut buffer, width, height, width-26, 26);
+    draw_settings_button(&mut buffer, width, height, width - 26, 26);
     draw_text(
         &mut buffer,
         width,
@@ -423,7 +421,11 @@ pub fn draw_panel(window: &Window, surface: &mut Surface<Rc<Window>, Rc<Window>>
     let backend_indicator_y = 106;
 
     // Frontend
-    draw_console_row(&mut buffer, width, height, 62,
+    draw_console_row(
+        &mut buffer,
+        width,
+        height,
+        62,
         "FRONTEND",
         status_label(frontend_status),
     );
@@ -439,8 +441,12 @@ pub fn draw_panel(window: &Window, surface: &mut Surface<Rc<Window>, Rc<Window>>
     );
 
     // Backend
-    draw_console_row(&mut buffer, width, height, 106, 
-        "BACKEND", 
+    draw_console_row(
+        &mut buffer,
+        width,
+        height,
+        106,
+        "BACKEND",
         status_label(backend_status),
     );
     draw_status_box(
@@ -462,6 +468,18 @@ pub fn draw_panel(window: &Window, surface: &mut Surface<Rc<Window>, Rc<Window>>
         "CYBERSPACE",
         cs_active,
     );
+
+    if let Some((x, y, popover_width, popover_height)) = settings_popover {
+        draw_settings_popover(
+            &mut buffer,
+            width,
+            height,
+            x,
+            y,
+            popover_width,
+            popover_height,
+        );
+    }
 
     buffer.present().unwrap();
 }

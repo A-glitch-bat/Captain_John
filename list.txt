@@ -1,4 +1,3 @@
-Make settings button useful
 Control Kali VB & Cyberspace on/off
 Make an actual backend
 Redmine project management 
