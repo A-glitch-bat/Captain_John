@@ -155,7 +155,7 @@ impl Default for FrontLauncher {
 }
 
 // find main file regardless of run location
-fn find_app_root(exe_path: &Path) -> io::Result<PathBuf> {
+fn find_app_root(exe_path: &Path, filename: &str) -> io::Result<PathBuf> {
     let exe_dir = exe_path.parent().ok_or_else(|| {
         io::Error::new(
             io::ErrorKind::NotFound,
@@ -164,14 +164,14 @@ fn find_app_root(exe_path: &Path) -> io::Result<PathBuf> {
     })?;
 
     for directory in exe_dir.ancestors() {
-        if directory.join("main.py").is_file() {
+        if directory.join(filename).is_file() {
             return Ok(directory.to_path_buf());
         }
     }
 
     Err(io::Error::new(
         io::ErrorKind::NotFound,
-        format!("Could not find main.py above {}", exe_dir.display()),
+        format!("Could not find {} above {}", filename, exe_dir.display()),
     ))
 }
 
@@ -190,7 +190,7 @@ impl FrontLauncher {
 
         thread::spawn(move || {
             let result = std::env::current_exe()
-                .and_then(|exe_path| find_app_root(&exe_path))
+                .and_then(|exe_path| find_app_root(&exe_path, "main.py"))
                 .and_then(|app_root| {
                     let main_path = app_root.join("main.py");
 
@@ -350,7 +350,19 @@ impl FrontLauncher {
     }
 
     fn start_cyberspace(&self) {
-        let cs_folder = Path::new("../../Cyberspace");
+        let cs_folder = match std::env::current_exe()
+            .and_then(|exe_path| {
+                find_app_root(&exe_path, r"Cyberspace\up.bat")
+            })
+            .map(|root| root.join("Cyberspace"))
+        {
+            Ok(path) => path,
+            Err(error) => {
+                eprintln!("Could not find Cyberspace: {error}");
+                return;
+            }
+        };
+
         let cs_path = cs_folder.join("up.bat");
         /*
         ============================
@@ -378,6 +390,7 @@ impl FrontLauncher {
         }
         Command::new(cs_path)
             .current_dir(cs_folder)
+            .creation_flags(0x08000000)
             .spawn()
             .expect("Failed to launch Cyberspace app");
     }
